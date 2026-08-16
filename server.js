@@ -4,7 +4,7 @@ const multer = require('multer');
 const fs = require('fs-extra');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -62,11 +62,14 @@ const upload = multer({ storage: storage });
 // 🌐 ROUTES
 // ==========================================
 
-// --- PUBLIC API (Aliases ONLY) ---
+// --- PUBLIC API ---
 app.get('/api/data', (req, res) => {
     const responses = fs.readJsonSync('./data/responses.json', { throws: false }) || [];
     const photos = fs.readJsonSync('./data/photos.json', { throws: false }) || [];
     const assignments = fs.readJsonSync('./data/assignments.json', { throws: false }) || [];
+    const othersAnnounce = fs.readJsonSync('./data/others.json', { throws: false }) || [];
+    const todayAnnounce = fs.readJsonSync('./data/today.json', { throws: false }) || [];
+    
     const safeResponses = responses.map(r => ({
         id: r.id,
         displayName: r.displayName,
@@ -87,18 +90,26 @@ app.get('/api/data', (req, res) => {
         date: a.date,
         content: a.content
     }));
-    res.json({ responses: safeResponses, photos: safePhotos, assignments: safeAssignments });
+    res.json({ 
+        responses: safeResponses, 
+        photos: safePhotos, 
+        assignments: safeAssignments,
+        others: othersAnnounce,
+        today: todayAnnounce
+    });
 });
 
-// --- PRIVATE ADMIN API (Real Names) ---
+// --- PRIVATE ADMIN API ---
 app.get('/api/admin/data', (req, res) => {
     const responses = fs.readJsonSync('./data/responses.json', { throws: false }) || [];
     const photos = fs.readJsonSync('./data/photos.json', { throws: false }) || [];
     const assignments = fs.readJsonSync('./data/assignments.json', { throws: false }) || [];
-    res.json({ responses, photos, assignments });
+    const othersAnnounce = fs.readJsonSync('./data/others.json', { throws: false }) || [];
+    const todayAnnounce = fs.readJsonSync('./data/today.json', { throws: false }) || [];
+    res.json({ responses, photos, assignments, others: othersAnnounce, today: todayAnnounce });
 });
 
-// --- DELETE MESSAGE (ADMIN) ---
+// --- DELETE MESSAGE (ADMIN ONLY) ---
 app.delete('/api/admin/delete-msg/:id', (req, res) => {
     const id = parseInt(req.params.id);
     let responses = fs.readJsonSync('./data/responses.json', { throws: false }) || [];
@@ -115,7 +126,7 @@ app.delete('/api/admin/delete-msg/:id', (req, res) => {
     }
 });
 
-// --- DELETE PHOTO (ADMIN) ---
+// --- DELETE PHOTO (ADMIN ONLY) ---
 app.delete('/api/admin/delete-photo/:id', (req, res) => {
     const id = parseInt(req.params.id);
     let photos = fs.readJsonSync('./data/photos.json', { throws: false }) || [];
@@ -132,7 +143,7 @@ app.delete('/api/admin/delete-photo/:id', (req, res) => {
     }
 });
 
-// --- DELETE ASSIGNMENT (ADMIN) ---
+// --- DELETE ASSIGNMENT (ADMIN ONLY) ---
 app.delete('/api/admin/delete-assignment/:id', (req, res) => {
     const id = parseInt(req.params.id);
     let assignments = fs.readJsonSync('./data/assignments.json', { throws: false }) || [];
@@ -149,7 +160,41 @@ app.delete('/api/admin/delete-assignment/:id', (req, res) => {
     }
 });
 
-// --- VERIFY STUDENT (ONLY 7-JADE) ---
+// --- DELETE OTHER ANNOUNCEMENT (ADMIN ONLY) ---
+app.delete('/api/admin/delete-other/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    let others = fs.readJsonSync('./data/others.json', { throws: false }) || [];
+    const trash = fs.readJsonSync('./data/trash/others.json', { throws: false }) || [];
+    const index = others.findIndex(o => o.id === id);
+    if(index !== -1) {
+        trash.push(others[index]);
+        others.splice(index, 1);
+        fs.writeJsonSync('./data/others.json', others);
+        fs.writeJsonSync('./data/trash/others.json', trash);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: "Announcement not found" });
+    }
+});
+
+// --- DELETE TODAY ANNOUNCEMENT (ADMIN ONLY) ---
+app.delete('/api/admin/delete-today/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    let today = fs.readJsonSync('./data/today.json', { throws: false }) || [];
+    const trash = fs.readJsonSync('./data/trash/today.json', { throws: false }) || [];
+    const index = today.findIndex(t => t.id === id);
+    if(index !== -1) {
+        trash.push(today[index]);
+        today.splice(index, 1);
+        fs.writeJsonSync('./data/today.json', today);
+        fs.writeJsonSync('./data/trash/today.json', trash);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: "Announcement not found" });
+    }
+});
+
+// --- VERIFY STUDENT ---
 app.post('/api/verify', (req, res) => {
     const { section, name } = req.body;
     if (section !== "7-Jade") {
@@ -208,11 +253,32 @@ app.post('/api/admin/add-assignment', (req, res) => {
     res.json({ success: true });
 });
 
+// --- ADMIN ADD OTHER ---
+app.post('/api/admin/add-other', (req, res) => {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ error: "Text required" });
+    const others = fs.readJsonSync('./data/others.json', { throws: false }) || [];
+    const newEntry = { id: Date.now(), text, date: new Date().toLocaleString() };
+    others.push(newEntry);
+    fs.writeJsonSync('./data/others.json', others);
+    res.json({ success: true });
+});
+
+// --- ADMIN ADD TODAY ANNOUNCEMENT ---
+app.post('/api/admin/add-today', (req, res) => {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ error: "Text required" });
+    const today = fs.readJsonSync('./data/today.json', { throws: false }) || [];
+    const newEntry = { id: Date.now(), text, date: new Date().toLocaleString() };
+    today.push(newEntry);
+    fs.writeJsonSync('./data/today.json', today);
+    res.json({ success: true });
+});
+
 // ==========================================
 // 🚀 START SERVER
 // ==========================================
 app.listen(PORT, () => {
     console.log(`✅ 7-Jade Server is running on port ${PORT}`);
     console.log(`📍 Local: http://localhost:${PORT}`);
-    console.log(`📡 To expose with ngrok: npm run ngrok`);
 });
