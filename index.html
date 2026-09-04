@@ -29,6 +29,7 @@
         .nav-btn.active { background: rgba(255, 255, 255, 0.2); border-color: #2ecc71; box-shadow: 0 0 20px rgba(46, 204, 113, 0.15); }
         .nav-btn.hidden-tab { display: none; }
         .nav-btn.admin-tab { display: none; }
+        .nav-btn.points-only { display: none; }
         .content-area { min-height: 480px; background: rgba(255, 255, 255, 0.04); border-radius: 32px; padding: 24px 28px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.06); color: #f0f6fc; }
         .tab-content { display: none; animation: fade 0.3s ease; }
         .tab-content.active { display: block; }
@@ -47,7 +48,14 @@
         .locked-exit { margin-top: 24px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 10px 28px; border-radius: 40px; cursor: pointer; transition: 0.2s; }
         .locked-exit:hover { background: rgba(255, 255, 255, 0.18); }
 
-        /* CALENDAR */
+        /* CALENDAR NAVIGATION */
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .calendar-nav button { background: #2ecc71; border: none; color: white; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .calendar-nav button:hover { background: #27ae60; transform: scale(1.05); }
+        .calendar-nav button:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); cursor: not-allowed; transform: none; }
+        .calendar-nav .month-label { font-size: 1.4rem; font-weight: 700; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* CALENDAR GRID */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin: 20px 0 16px; }
         .cal-day { background: rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 14px 6px; text-align: center; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
         .cal-day:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.2); }
@@ -94,6 +102,10 @@
         .admin-section input, .admin-section textarea { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255, 255, 255, 0.08); color: white; resize: vertical; margin: 8px 0; }
         .admin-section input:focus, .admin-section textarea:focus { outline: 2px solid #2ecc71; }
         .admin-section button { background: #2ecc71; border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; margin-top: 6px; }
+        
+        /* POINT FORM SELECT */
+        .point-select { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; margin: 8px 0; font-size: 1rem; }
+        .point-select option { background: #1a2e1f; color: white; }
 
         @media (max-width: 700px) { .nav-bar { gap: 8px; } .nav-btn { padding: 8px 14px; font-size: 0.8rem; } .calendar-grid { gap: 6px; } .cal-day { padding: 8px 2px; } .cal-day .day-num { font-size: 1.2rem; } }
     </style>
@@ -108,12 +120,12 @@
         <button class="nav-btn hidden-tab" data-tab="qa">💬 Q&A</button>
         <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
         
-        <!-- Admin Tabs -->
+        <!-- Admin Tabs (Hidden by default) -->
         <button class="nav-btn admin-tab" data-tab="admin-assignments">⚙️ Admin Assign</button>
         <button class="nav-btn admin-tab" data-tab="admin-others">⚙️ Admin Others</button>
         <button class="nav-btn admin-tab" data-tab="admin-announcements">⚙️ Admin Ann</button>
         <button class="nav-btn admin-tab" data-tab="admin-qa">⚙️ Admin Q&A</button>
-        <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Admin Points</button>
+        <button class="nav-btn admin-tab points-only" data-tab="admin-points">⚙️ Admin Points</button>
         
         <button class="nav-btn hidden-tab" data-tab="admin">⚙️ Admin Panel</button>
     </div>
@@ -142,6 +154,11 @@
         <!-- STUDENT TABS -->
         <div id="assignments" class="tab-content">
             <h3 style="font-weight:300; margin-bottom:8px;">📅 Assignments & Projects</h3>
+            <div class="calendar-nav">
+                <button id="prevMonthBtn" onclick="changeMonth(-1)">◀ Previous</button>
+                <span class="month-label" id="monthLabel">June 2026</span>
+                <button id="nextMonthBtn" onclick="changeMonth(1)">Next ▶</button>
+            </div>
             <div class="calendar-grid" id="calendarGrid"></div>
             <div class="date-detail-box" id="dateDetailBox">
                 <h3 id="detailDateTitle">📌 Assignments on this date</h3>
@@ -203,7 +220,21 @@
         <div id="admin-others" class="tab-content"><h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Others</h3><div id="adminOthersList"></div></div>
         <div id="admin-announcements" class="tab-content"><h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Announcements</h3><div id="adminAnnList"></div></div>
         <div id="admin-qa" class="tab-content"><h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Q&A</h3><div id="adminQAList"></div></div>
-        <div id="admin-points" class="tab-content"><h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3><div id="adminPointsList"></div></div>
+        <div id="admin-points" class="tab-content">
+            <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
+            <div class="admin-point-section">
+                <h4>➕ Add Points for Student</h4>
+                <select id="adminPointStudent" class="point-select">
+                    <option value="">-- Select Student --</option>
+                    <!-- Will be populated by JS -->
+                </select>
+                <input type="number" id="adminPointScore" placeholder="Score (out of 15)" min="0" max="15">
+                <textarea id="adminPointRemarks" placeholder="Remarks / Notes..."></textarea>
+                <input type="file" id="adminPointFile" accept="image/*,application/pdf">
+                <button onclick="adminAddPoint()">Add Points</button>
+            </div>
+            <div id="adminPointsList"></div>
+        </div>
     </div>
 </div>
 
@@ -228,8 +259,13 @@
     let points = [];
     let lockedVerified = false, adminLoggedIn = false;
     let currentStudentName = null;
+    let currentMonth = 5; // June 2026
+    let currentYear = 2026;
+    const MIN_MONTH = 5;
+    const MIN_YEAR = 2026;
+    const MAX_MONTH = 4;
+    const MAX_YEAR = 2027;
 
-    // Normalization function
     function normalizeName(name) {
         return name.trim().toUpperCase()
             .replace(/Ñ/g, 'Ñ').replace(/ñ/g, 'Ñ')
@@ -239,6 +275,8 @@
             .replace(/Ó/g, 'Ó').replace(/ó/g, 'Ó')
             .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
     }
+
+    const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -250,15 +288,79 @@
             document.getElementById(this.dataset.tab).classList.add('active');
             if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
             if(this.dataset.tab === 'points') loadMyPoints();
+            if(this.dataset.tab === 'assignments') renderCalendar();
+            if(this.dataset.tab === 'admin-points') populateStudentDropdown();
         });
     });
 
+    // ===== ADMIN LOGIN (DUAL PASSWORD SYSTEM) =====
+    function adminLogin() {
+        const pass = document.getElementById('adminPassInput').value;
+        
+        // Password 1221: Show all admin tabs EXCEPT points
+        if (pass === '1221') {
+            document.getElementById('adminPassBox').style.display = 'none';
+            document.querySelectorAll('.admin-tab').forEach(b => {
+                if (!b.classList.contains('points-only')) {
+                    b.style.display = 'inline-block';
+                }
+            });
+            document.querySelector('.nav-btn[data-tab="admin-assignments"]').click();
+            alert('✅ Admin mode: All tabs except Points unlocked.');
+        }
+        // Password 123: Show ALL admin tabs (including points)
+        else if (pass === '123') {
+            document.getElementById('adminPassBox').style.display = 'none';
+            document.querySelectorAll('.admin-tab').forEach(b => {
+                b.style.display = 'inline-block';
+            });
+            document.querySelector('.nav-btn[data-tab="admin-points"]').click();
+            alert('✅ Full Admin mode: All tabs unlocked.');
+        }
+        else {
+            document.getElementById('adminPassMsg').textContent = '❌ Invalid password';
+        }
+    }
+
+    // Populate student dropdown
+    function populateStudentDropdown() {
+        const select = document.getElementById('adminPointStudent');
+        select.innerHTML = '<option value="">-- Select Student --</option>';
+        JADE_NAMES.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+    }
+
+    function changeMonth(delta) {
+        let newMonth = currentMonth + delta;
+        let newYear = currentYear;
+        if (newMonth > 11) { newMonth = 0; newYear++; }
+        if (newMonth < 0) { newMonth = 11; newYear--; }
+        if (newYear === MIN_YEAR && newMonth < MIN_MONTH) return;
+        if (newYear === MAX_YEAR && newMonth > MAX_MONTH) return;
+        currentMonth = newMonth;
+        currentYear = newYear;
+        updateMonthNavButtons();
+        renderCalendar();
+    }
+
+    function updateMonthNavButtons() {
+        const prevBtn = document.getElementById('prevMonthBtn');
+        const nextBtn = document.getElementById('nextMonthBtn');
+        const label = document.getElementById('monthLabel');
+        label.textContent = MONTH_NAMES[currentMonth] + " " + currentYear;
+        if (currentYear === MIN_YEAR && currentMonth === MIN_MONTH) prevBtn.disabled = true;
+        else prevBtn.disabled = false;
+        if (currentYear === MAX_YEAR && currentMonth === MAX_MONTH) nextBtn.disabled = true;
+        else nextBtn.disabled = false;
+    }
+
     function verifyJade() {
         const input = document.getElementById('jadeNameInput').value.trim();
-        if (!input) {
-            document.getElementById('verifyMsg').textContent = '❌ Please enter your name.';
-            return;
-        }
+        if (!input) { document.getElementById('verifyMsg').textContent = '❌ Please enter your name.'; return; }
         const normalizedInput = normalizeName(input);
         const found = JADE_NAMES.some(name => normalizeName(name) === normalizedInput);
         if (found) {
@@ -286,15 +388,6 @@
         document.querySelector('[data-tab="locked"]').click();
     }
 
-    function adminLogin() {
-        if(document.getElementById('adminPassInput').value === 'bambam1221') {
-            document.getElementById('adminPassBox').style.display = 'none';
-            document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
-            adminLoggedIn = true;
-            document.querySelector('.nav-btn[data-tab="admin-assignments"]').click();
-        } else document.getElementById('adminPassMsg').textContent = '❌ Incorrect passcode';
-    }
-
     async function fetchData() {
         try {
             const res = await fetch('/api/data');
@@ -316,13 +409,14 @@
     }
 
     function renderCalendar() {
+        updateMonthNavButtons();
         const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
-        const today = new Date(); const year = today.getFullYear(); const month = today.getMonth();
-        const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l => { let d = document.createElement('div'); d.textContent = l; d.style.textAlign='center'; d.style.opacity='0.5'; d.style.fontSize='0.7rem'; grid.appendChild(d); });
         for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
         for(let d=1; d<=daysInMonth; d++) {
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const div = document.createElement('div'); div.className = 'cal-day';
             if(assignments[dateStr] && assignments[dateStr].length > 0) { 
                 div.classList.add('has-event'); 
@@ -379,7 +473,7 @@
     async function adminReply(idx) { const input = document.getElementById(`adminReplyInput_${idx}`); const reply = input.value.trim(); if(!reply) return; qaData[idx].a = `Admin: ${reply}`; input.value=''; renderQA(); alert("✅ Reply posted."); }
 
     async function adminAddAssignment() {
-        const pass = prompt("Enter Admin Password to add assignment:"); if(pass !== 'bambam1221') return alert("❌ Incorrect password.");
+        const pass = prompt("Enter Admin Password to add assignment:"); if(pass !== '1221' && pass !== '123') return alert("❌ Incorrect password.");
         const date = document.getElementById('adminAssignDate').value.trim(); const title = document.getElementById('adminAssignTitle').value.trim(); const content = document.getElementById('adminAssignContent').value.trim(); const fileInput = document.getElementById('adminAssignImage');
         if(!date||!title) return alert('Fill date and title');
         const formData = new FormData(); formData.append('password', pass); formData.append('date', date); formData.append('title', title); formData.append('content', content);
@@ -389,20 +483,20 @@
     }
 
     async function adminAddOther() {
-        const pass = prompt("Enter Admin Password to add announcement:"); if(pass !== 'bambam1221') return alert("❌ Incorrect password.");
+        const pass = prompt("Enter Admin Password to add announcement:"); if(pass !== '1221' && pass !== '123') return alert("❌ Incorrect password.");
         const text = document.getElementById('adminOtherText').value.trim(); if(!text) return;
         const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass, text }) });
         if(res.ok) { document.getElementById('adminOtherText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
     async function adminAddAnnounce() {
-        const pass = prompt("Enter Admin Password to add announcement:"); if(pass !== 'bambam1221') return alert("❌ Incorrect password.");
+        const pass = prompt("Enter Admin Password to add announcement:"); if(pass !== '1221' && pass !== '123') return alert("❌ Incorrect password.");
         const text = document.getElementById('adminAnnounceText').value.trim(); if(!text) return;
         const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass, text }) });
         if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
-    // POINT SYSTEM FUNCTIONS
+    // ===== POINT SYSTEM =====
     async function loadMyPoints() {
         if (!currentStudentName) return;
         const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
@@ -416,13 +510,19 @@
     }
 
     async function adminAddPoint() {
-        const pass = prompt("Enter Admin Password:");
-        if(pass !== 'bambam1221') return alert("❌ Incorrect password.");
+        const pass = prompt("Enter Admin Password to add points:");
+        if (pass !== '123') return alert("❌ You don't have permission to add points.");
         
-        const studentName = document.getElementById('adminPointStudent').value.trim();
-        const text = document.getElementById('adminPointText').value.trim();
+        const studentName = document.getElementById('adminPointStudent').value;
+        const score = document.getElementById('adminPointScore').value;
+        const remarks = document.getElementById('adminPointRemarks').value.trim();
         const fileInput = document.getElementById('adminPointFile');
-        if(!studentName || !text) return alert("Fill student name and text.");
+        
+        if(!studentName) return alert("Select a student.");
+        if(!score) return alert("Enter a score.");
+        if(score < 0 || score > 15) return alert("Score must be between 0 and 15.");
+        
+        const text = `Score: ${score}/15\nRemarks: ${remarks || 'No remarks'}`;
         
         const formData = new FormData();
         formData.append('password', pass);
@@ -432,10 +532,10 @@
         
         const res = await fetch('/api/admin/add-point', { method: 'POST', body: formData });
         if(res.ok) {
-            document.getElementById('adminPointStudent').value='';
-            document.getElementById('adminPointText').value='';
+            document.getElementById('adminPointScore').value='';
+            document.getElementById('adminPointRemarks').value='';
             fileInput.value='';
-            alert("✅ Point added!");
+            alert("✅ Points added!");
             renderAdminList('admin-points');
         } else {
             const error = await res.json();
