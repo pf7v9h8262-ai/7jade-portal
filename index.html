@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+       <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,7 +30,6 @@
         .nav-btn.active { background: rgba(255, 255, 255, 0.2); border-color: #2ecc71; box-shadow: 0 0 20px rgba(46, 204, 113, 0.15); }
         .nav-btn.hidden-tab { display: none; }
         .nav-btn.admin-tab { display: none; }
-        .nav-btn.points-only { display: none; }
         .content-area { min-height: 480px; background: rgba(255, 255, 255, 0.04); border-radius: 32px; padding: 24px 28px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.06); color: #f0f6fc; }
         .tab-content { display: none; animation: fade 0.3s ease; }
         .tab-content.active { display: block; }
@@ -120,12 +120,13 @@
         <button class="nav-btn hidden-tab" data-tab="qa">💬 Q&A</button>
         <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
         
-        <!-- Admin Tabs (Hidden by default) -->
+        <!-- Admin Tabs -->
         <button class="nav-btn admin-tab" data-tab="admin-assignments">⚙️ Admin Assign</button>
         <button class="nav-btn admin-tab" data-tab="admin-others">⚙️ Admin Others</button>
         <button class="nav-btn admin-tab" data-tab="admin-announcements">⚙️ Admin Ann</button>
         <button class="nav-btn admin-tab" data-tab="admin-qa">⚙️ Admin Q&A</button>
-        <button class="nav-btn admin-tab points-only" data-tab="admin-points">⚙️ Admin Points</button>
+        <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Admin Points</button>
+        <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
         
         <button class="nav-btn hidden-tab" data-tab="admin">⚙️ Admin Panel</button>
     </div>
@@ -178,7 +179,7 @@
             </div>
         </div>
 
-        <!-- POINTS (PRIVATE - ONLY STUDENT CAN SEE) -->
+        <!-- POINTS (PRIVATE) -->
         <div id="points" class="tab-content">
             <h3 style="font-weight:300;">🏆 My Points</h3>
             <div class="points-container" id="myPointsContainer"></div>
@@ -193,26 +194,6 @@
                 <button onclick="adminLogin()">Unlock</button>
                 <div id="adminPassMsg" style="color:#ffb3b3; margin-top:6px;"></div>
             </div>
-            <div class="admin-panel-content" id="adminPanelContent">
-                <div class="admin-section">
-                    <h4>➕ Add to Assignments</h4>
-                    <input type="text" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
-                    <input type="text" id="adminAssignTitle" placeholder="Assignment title">
-                    <textarea id="adminAssignContent" placeholder="Assignment content/details..."></textarea>
-                    <input type="file" id="adminAssignImage" accept="image/*">
-                    <button onclick="adminAddAssignment()">Add Assignment</button>
-                </div>
-                <div class="admin-section">
-                    <h4>➕ Add to Others</h4>
-                    <textarea id="adminOtherText" placeholder="Announcement text..."></textarea>
-                    <button onclick="adminAddOther()">Add</button>
-                </div>
-                <div class="admin-section">
-                    <h4>➕ Add to General Announcements</h4>
-                    <textarea id="adminAnnounceText" placeholder="Announcement for today..."></textarea>
-                    <button onclick="adminAddAnnounce()">Add</button>
-                </div>
-            </div>
         </div>
 
         <!-- ADMIN TABS -->
@@ -220,6 +201,8 @@
         <div id="admin-others" class="tab-content"><h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Others</h3><div id="adminOthersList"></div></div>
         <div id="admin-announcements" class="tab-content"><h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Announcements</h3><div id="adminAnnList"></div></div>
         <div id="admin-qa" class="tab-content"><h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Q&A</h3><div id="adminQAList"></div></div>
+        
+        <!-- Admin Points (Add/Deduct) -->
         <div id="admin-points" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
             <div class="admin-point-section">
@@ -230,8 +213,15 @@
                 <input type="number" id="adminPointChange" placeholder="+ or - amount (e.g. 2 or -3)">
                 <textarea id="adminPointMessage" placeholder="Message / Reason..."></textarea>
                 <button onclick="adminUpdatePoint()">Update Points</button>
+                <button onclick="resetAllPoints()" style="background:#b34f4f; color:white; padding:10px 20px; border:none; border-radius:20px; font-weight:600; cursor:pointer; margin-top:10px; width:100%;">🔄 Reset All to 15</button>
             </div>
             <div id="adminPointsList"></div>
+        </div>
+
+        <!-- Admin Monitor (Old idea + History) -->
+        <div id="admin-monitor" class="tab-content">
+            <h3 style="font-weight:300; color:#b34f4f;">📊 Points Monitor</h3>
+            <div id="monitorList"></div>
         </div>
     </div>
 </div>
@@ -245,7 +235,7 @@
     let qaData = [];
     let points = [];
     let lockedVerified = false;
-    let adminRole = null; // null, 'content', or 'full'
+    let adminRole = null;
     let currentStudentName = null;
     let currentMonth = 5;
     let currentYear = 2026;
@@ -274,21 +264,17 @@
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(this.dataset.tab).classList.add('active');
-            if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
+            if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
             if(this.dataset.tab === 'points') loadMyPoints();
             if(this.dataset.tab === 'assignments') renderCalendar();
             if(this.dataset.tab === 'admin-points' && adminRole === 'full') populateStudentDropdown();
+            if(this.dataset.tab === 'admin-monitor' && adminRole === 'full') renderMonitor();
         });
     });
 
-    // ===== ADMIN LOGIN (NO PASSWORD NEEDED AFTER) =====
     async function adminLogin() {
         const pass = document.getElementById('adminPassInput').value;
-        const res = await fetch('/api/admin/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: pass })
-        });
+        const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
         const data = await res.json();
         
         if (data.success) {
@@ -296,28 +282,25 @@
             document.getElementById('adminPassBox').style.display = 'none';
             
             if (data.role === 'content') {
-                // Show only content tabs (no points)
                 document.querySelectorAll('.admin-tab').forEach(b => {
-                    if (!b.classList.contains('points-only')) {
+                    if (!b.dataset.tab.includes('admin-points') && !b.dataset.tab.includes('admin-monitor')) {
                         b.style.display = 'inline-block';
                     }
                 });
                 document.querySelector('.nav-btn[data-tab="admin-assignments"]').click();
-                alert('✅ Content Admin mode: You can add assignments, announcements, others. No points access.');
+                alert('✅ Content Admin: You can add assignments, others, announcements, Q&A. No points access.');
             } else if (data.role === 'full') {
-                // Show ALL tabs
                 document.querySelectorAll('.admin-tab').forEach(b => {
                     b.style.display = 'inline-block';
                 });
                 document.querySelector('.nav-btn[data-tab="admin-points"]').click();
-                alert('✅ Full Admin mode: All tabs unlocked.');
+                alert('✅ Full Admin: All tabs unlocked.');
             }
         } else {
             document.getElementById('adminPassMsg').textContent = '❌ Invalid password';
         }
     }
 
-    // ===== POPULATE STUDENT DROPDOWN =====
     function populateStudentDropdown() {
         const select = document.getElementById('adminPointStudent');
         select.innerHTML = '<option value="">-- Select Student --</option>';
@@ -383,7 +366,6 @@
         document.querySelector('[data-tab="locked"]').click();
     }
 
-    // ===== FETCH DATA =====
     async function fetchData() {
         try {
             const res = await fetch('/api/data');
@@ -406,7 +388,6 @@
         }
     }
 
-    // ===== RENDER CALENDAR =====
     function renderCalendar() {
         updateMonthNavButtons();
         const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
@@ -465,7 +446,110 @@
     function renderTodayAnnounce() { document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${t.date || new Date().toISOString().split('T')[0]}</div></div>`).join(''); }
     function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${item.date}</div><div class="admin-reply-area" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><input type="text" placeholder="Admin reply..." id="adminReplyInput_${idx}" style="flex:1; padding:8px 14px; border-radius:40px; border:none; background:rgba(255,255,255,0.06); color:white;"><button onclick="adminReply(${idx})" style="background:#27ae60; border:none; padding:8px 18px; border-radius:40px; color:white; cursor:pointer;">Reply</button></div></div>`).join(''); }
 
-    // ===== DELETE FUNCTIONS (CALL SERVER) =====
+    async function addQuestion() { const input = document.getElementById('qaQuestionInput'); const text = input.value.trim(); if(!text) return; const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }) }); if(res.ok) { input.value=''; fetchData(); alert("✅ Question posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); } }
+
+    async function adminReply(idx) { const input = document.getElementById(`adminReplyInput_${idx}`); const reply = input.value.trim(); if(!reply) return; qaData[idx].a = `Admin: ${reply}`; input.value=''; renderQA(); alert("✅ Reply posted."); }
+
+    // ===== POINTS =====
+    async function loadMyPoints() {
+        if (!currentStudentName) return;
+        const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
+        const data = await res.json();
+        const container = document.getElementById('myPointsContainer');
+        if(data.points) {
+            container.innerHTML = `<div class="point-item"><h4>🏆 ${data.points.studentName}</h4><div class="point-text">Current Points: ${data.points.points}/15</div>`;
+            if(data.points.history.length > 0) {
+                container.innerHTML += '<h4 style="margin-top:15px; color:#f1c40f;">History:</h4>';
+                data.points.history.forEach(h => {
+                    container.innerHTML += `<div class="point-item" style="border-left-color: ${h.change > 0 ? '#2ecc71' : '#b34f4f'}"><strong>${h.change > 0 ? '+' : ''}${h.change}</strong> - ${h.message}<div class="point-date">${new Date(h.timestamp).toLocaleString()}</div></div>`;
+                });
+            }
+            container.innerHTML += '</div>';
+        } else {
+            container.innerHTML = '<p style="opacity:0.6;">No points yet. Starting at 15.</p>';
+        }
+    }
+
+    async function adminUpdatePoint() {
+        if (adminRole !== 'full') return alert("You don't have permission to update points.");
+        const studentName = document.getElementById('adminPointStudent').value;
+        const change = parseInt(document.getElementById('adminPointChange').value);
+        const message = document.getElementById('adminPointMessage').value.trim();
+        if(!studentName) return alert("Select a student.");
+        if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount.");
+        
+        const res = await fetch('/api/admin/update-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, change, message }) });
+        if(res.ok) {
+            document.getElementById('adminPointChange').value = '';
+            document.getElementById('adminPointMessage').value = '';
+            fetchData();
+            alert("✅ Points updated!");
+            renderAdminList('admin-points');
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
+    }
+
+    async function resetAllPoints() {
+        if (!confirm("Are you sure you want to reset ALL student scores to 15?")) return;
+        const res = await fetch('/api/admin/reset-all-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+        if(res.ok) {
+            alert("✅ All scores reset to 15!");
+            fetchData();
+            renderAdminList('admin-points');
+            renderAdminList('admin-monitor');
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
+    }
+
+    // ===== RENDER ADMIN LISTS =====
+    function renderAdminList(tabId) {
+        const container = document.getElementById({
+            'admin-assignments': 'adminAssignList',
+            'admin-others': 'adminOthersList',
+            'admin-announcements': 'adminAnnList',
+            'admin-qa': 'adminQAList',
+            'admin-points': 'adminPointsList',
+            'admin-monitor': 'monitorList'
+        }[tabId]);
+        
+        if(tabId === 'admin-assignments') {
+            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small><button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
+        } else if(tabId === 'admin-others') {
+            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
+        } else if(tabId === 'admin-announcements') {
+            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${t.date || new Date().toISOString().split('T')[0]}</div><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
+        } else if(tabId === 'admin-qa') {
+            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
+        } else if(tabId === 'admin-points') {
+            container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
+        } else if(tabId === 'admin-monitor') {
+            container.innerHTML = points.map(p => `<div class="point-item" style="cursor:pointer;" onclick="toggleMonitorDetails('${p._id}')"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Click for history</div><div id="monitor-details-${p._id}" style="display:none; margin-top:10px;"></div></div>`).join('');
+        }
+    }
+
+    function toggleMonitorDetails(id) {
+        const details = document.getElementById('monitor-details-' + id);
+        const point = points.find(p => p._id === id);
+        if (details.style.display === 'none') {
+            let html = '<h5 style="color:#f1c40f;">History:</h5>';
+            if (point.history.length > 0) {
+                point.history.forEach(h => {
+                    html += `<div style="border-left: 3px solid ${h.change > 0 ? '#2ecc71' : '#b34f4f'}; padding: 8px; margin: 5px 0; background:rgba(255,255,255,0.05);"><strong>${h.change > 0 ? '+' : ''}${h.change}</strong> - ${h.message}<div style="font-size:0.75rem; opacity:0.6;">${new Date(h.timestamp).toLocaleString()}</div></div>`;
+                });
+            } else {
+                html += '<p style="opacity:0.6;">No history yet.</p>';
+            }
+            details.innerHTML = html;
+            details.style.display = 'block';
+        } else {
+            details.style.display = 'none';
+        }
+    }
+
     async function deleteAssign(date, idx) {
         if(!confirm('Delete this assignment?')) return;
         const item = assignments[date][idx];
@@ -494,147 +578,33 @@
         if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
     }
 
-    // ===== ADD FUNCTIONS (NO PASSWORD NEEDED AFTER LOGIN) =====
     async function adminAddAssignment() {
         if (!adminRole) return alert("Please login as admin first.");
         const date = document.getElementById('adminAssignDate').value.trim();
         const title = document.getElementById('adminAssignTitle').value.trim();
         const content = document.getElementById('adminAssignContent').value.trim();
         if(!date||!title) return alert('Fill date and title');
-        
-        const res = await fetch('/api/admin/add-assignment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, date, content })
-        });
-        if(res.ok) {
-            document.getElementById('adminAssignTitle').value='';
-            document.getElementById('adminAssignDate').value='';
-            document.getElementById('adminAssignContent').value='';
-            fetchData();
-            alert("✅ Assignment added!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
+        const res = await fetch('/api/admin/add-assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, date, content }) });
+        if(res.ok) { document.getElementById('adminAssignTitle').value=''; document.getElementById('adminAssignDate').value=''; document.getElementById('adminAssignContent').value=''; fetchData(); alert("✅ Assignment added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
     async function adminAddOther() {
         if (!adminRole) return alert("Please login as admin first.");
         const text = document.getElementById('adminOtherText').value.trim();
         if(!text) return;
-        
-        const res = await fetch('/api/admin/add-other', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-        });
-        if(res.ok) {
-            document.getElementById('adminOtherText').value='';
-            fetchData();
-            alert("✅ Added!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
+        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        if(res.ok) { document.getElementById('adminOtherText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
     async function adminAddAnnounce() {
         if (!adminRole) return alert("Please login as admin first.");
         const text = document.getElementById('adminAnnounceText').value.trim();
         if(!text) return;
-        
-        const res = await fetch('/api/admin/add-today', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-        });
-        if(res.ok) {
-            document.getElementById('adminAnnounceText').value='';
-            fetchData();
-            alert("✅ Added!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
+        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
-    // ===== POINTS =====
-    async function loadMyPoints() {
-        if (!currentStudentName) return;
-        const res = await fetch('/api/points/my', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ studentName: currentStudentName })
-        });
-        const data = await res.json();
-        const container = document.getElementById('myPointsContainer');
-        if(data.points) {
-            container.innerHTML = `<div class="point-item"><h4>🏆 ${data.points.studentName}</h4><div class="point-text">Current Points: ${data.points.points}/15</div>`;
-            if(data.points.history.length > 0) {
-                container.innerHTML += '<h4 style="margin-top:15px; color:#f1c40f;">History:</h4>';
-                data.points.history.forEach(h => {
-                    container.innerHTML += `<div class="point-item" style="border-left-color: ${h.change > 0 ? '#2ecc71' : '#b34f4f'}"><strong>${h.change > 0 ? '+' : ''}${h.change}</strong> - ${h.message}<div class="point-date">${new Date(h.timestamp).toLocaleString()}</div></div>`;
-                });
-            }
-            container.innerHTML += '</div>';
-        } else {
-            container.innerHTML = '<p style="opacity:0.6;">No points yet. Starting at 15.</p>';
-        }
-    }
-
-    // ===== ADMIN UPDATE POINTS =====
-    async function adminUpdatePoint() {
-        if (adminRole !== 'full') return alert("You don't have permission to update points.");
-        const studentName = document.getElementById('adminPointStudent').value;
-        const change = parseInt(document.getElementById('adminPointChange').value);
-        const message = document.getElementById('adminPointMessage').value.trim();
-        
-        if(!studentName) return alert("Select a student.");
-        if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount.");
-        
-        const res = await fetch('/api/admin/update-points', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ studentName, change, message })
-        });
-        
-        if(res.ok) {
-            document.getElementById('adminPointChange').value = '';
-            document.getElementById('adminPointMessage').value = '';
-            fetchData();
-            alert("✅ Points updated!");
-            renderAdminList('admin-points');
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
-    }
-
-    // ===== RENDER ADMIN LISTS =====
-    function renderAdminList(tabId) {
-        const container = document.getElementById({
-            'admin-assignments': 'adminAssignList',
-            'admin-others': 'adminOthersList',
-            'admin-announcements': 'adminAnnList',
-            'admin-qa': 'adminQAList',
-            'admin-points': 'adminPointsList'
-        }[tabId]);
-        
-        if(tabId === 'admin-assignments') {
-            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small><button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
-        } else if(tabId === 'admin-others') {
-            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
-        } else if(tabId === 'admin-announcements') {
-            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${t.date || new Date().toISOString().split('T')[0]}</div><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
-        } else if(tabId === 'admin-qa') {
-            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
-        } else if(tabId === 'admin-points') {
-            container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
-        }
-    }
-
-    // ===== INIT =====
+    // INIT
     fetchData();
 </script>
 </body>

@@ -155,32 +155,29 @@ app.post('/api/verify', (req, res) => {
     return res.json({ success: false, message: "Name not found. Check spelling (Ñ, ñ, special chars)." });
 });
 
-// ✅ ADMIN SESSION (No password needed after login)
-let adminSession = { role: null, password: null };
+// ✅ ADMIN SESSION
+let adminSession = { role: null };
 
 // --- ADMIN LOGIN ---
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === '1221') {
         adminSession.role = 'content';
-        adminSession.password = password;
         return res.json({ success: true, role: 'content' });
     } else if (password === '123') {
         adminSession.role = 'full';
-        adminSession.password = password;
         return res.json({ success: true, role: 'full' });
     } else {
         return res.status(401).json({ error: "Invalid password" });
     }
 });
 
-// --- ADD ASSIGNMENT (No password needed if session active) ---
+// --- ADD ASSIGNMENT ---
 app.post('/api/admin/add-assignment', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
         const { title, date, content } = req.body;
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
-        
         const newAssignment = new Assignment({ title, date, content: content || "No details" });
         await newAssignment.save();
         res.json({ success: true });
@@ -195,7 +192,6 @@ app.post('/api/admin/add-other', async (req, res) => {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
         const { text } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
-        
         const newOther = new Other({ text });
         await newOther.save();
         res.json({ success: true });
@@ -210,7 +206,6 @@ app.post('/api/admin/add-today', async (req, res) => {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
         const { text } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
-        
         const newToday = new Today({ text });
         await newToday.save();
         res.json({ success: true });
@@ -219,11 +214,10 @@ app.post('/api/admin/add-today', async (req, res) => {
     }
 });
 
-// --- ADD / DEDUCT POINTS (FULL ADMIN ONLY) ---
+// --- ADD / DEDUCT POINTS ---
 app.post('/api/admin/update-points', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
-        
         const { studentName, change, message } = req.body;
         if (!studentName || !change) return res.status(400).json({ error: "Student name and change amount required" });
         
@@ -251,6 +245,32 @@ app.post('/api/admin/update-points', async (req, res) => {
         res.json({ success: true, points: pointDoc.points });
     } catch (error) {
         console.error("Error updating points:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// --- RESET ALL POINTS TO 15 (FULL ADMIN ONLY) ---
+app.post('/api/admin/reset-all-points', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') {
+            return res.status(401).json({ error: "Unauthorized. Only full admin can reset points." });
+        }
+        
+        // Reset all points documents to 15 and clear history
+        await Point.updateMany({}, { points: 15, history: [] });
+        
+        // If any students don't have a Point document yet, create them with 15 points
+        for (const studentName of JADE_ROSTER) {
+            const existing = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } });
+            if (!existing) {
+                const newPoint = new Point({ studentName, points: 15, history: [] });
+                await newPoint.save();
+            }
+        }
+        
+        res.json({ success: true, message: "All scores reset to 15" });
+    } catch (error) {
+        console.error("Error resetting points:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
