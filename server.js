@@ -214,12 +214,16 @@ app.post('/api/admin/add-today', async (req, res) => {
     }
 });
 
-// --- ADD / DEDUCT POINTS ---
+// --- ADD / DEDUCT POINTS (ALLOWS DECIMALS) ---
 app.post('/api/admin/update-points', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
         const { studentName, change, message } = req.body;
         if (!studentName || !change) return res.status(400).json({ error: "Student name and change amount required" });
+        
+        // Allow decimals (e.g., 0.5, -1.5, 2.3)
+        const decimalChange = parseFloat(change);
+        if (isNaN(decimalChange)) return res.status(400).json({ error: "Invalid change amount" });
         
         let pointDoc = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } });
         
@@ -231,12 +235,12 @@ app.post('/api/admin/update-points', async (req, res) => {
             });
         }
         
-        pointDoc.points += change;
+        pointDoc.points = Math.round((pointDoc.points + decimalChange) * 10) / 10;
         if (pointDoc.points < 0) pointDoc.points = 0;
         if (pointDoc.points > 100) pointDoc.points = 100;
         
         pointDoc.history.push({
-            change,
+            change: decimalChange,
             message: message || "No message",
             timestamp: new Date()
         });
@@ -256,10 +260,8 @@ app.post('/api/admin/reset-all-points', async (req, res) => {
             return res.status(401).json({ error: "Unauthorized. Only full admin can reset points." });
         }
         
-        // Reset all points documents to 15 and clear history
         await Point.updateMany({}, { points: 15, history: [] });
         
-        // If any students don't have a Point document yet, create them with 15 points
         for (const studentName of JADE_ROSTER) {
             const existing = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } });
             if (!existing) {
