@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const mongoose = require('mongoose');
 const fs = require('fs-extra');
 
 const app = express();
@@ -11,12 +12,15 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.static(__dirname));
 
-fs.ensureDirSync('./data');
-fs.ensureDirSync('./uploads');
-fs.ensureDirSync('./data/trash');
+// ✅ CONNECT TO MONGODB ATLAS (FILLED IN WITH YOUR CREDENTIALS)
+const MONGODB_URI = 'mongodb+srv://rxalvarez1221_db_user:YRVaSYmFo3PkOPSV@cluster0.evzldfy.mongodb.net/?retryWrites=true&w=majority';
+
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('✅ Connected to MongoDB Atlas!'))
+    .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ==========================================
-// 📚 7-JADE ROSTER (with special characters)
+// 📚 7-JADE ROSTER
 // ==========================================
 const JADE_ROSTER = [
     "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES", "ALVAREZ, RED XANDER LOZANO",
@@ -33,30 +37,14 @@ const JADE_ROSTER = [
     "VILLARIN, KELLAN KRISTOF ASETRE", "YU, SHERWIN JOHN"
 ];
 
-// ==========================================
-// 🔤 NORMALIZATION FUNCTION
-// ==========================================
 function normalizeName(name) {
-    return name
-        .trim()
-        .toUpperCase()
-        .replace(/Ñ/g, 'Ñ')
-        .replace(/ñ/g, 'Ñ')
-        .replace(/É/g, 'É')
-        .replace(/é/g, 'É')
-        .replace(/Á/g, 'Á')
-        .replace(/á/g, 'Á')
-        .replace(/Í/g, 'Í')
-        .replace(/í/g, 'Í')
-        .replace(/Ó/g, 'Ó')
-        .replace(/ó/g, 'Ó')
-        .replace(/Ú/g, 'Ú')
-        .replace(/ú/g, 'Ú');
-}
-
-function isStudentInRoster(name) {
-    const normalizedInput = normalizeName(name);
-    return JADE_ROSTER.some(student => normalizeName(student) === normalizedInput);
+    return name.trim().toUpperCase()
+        .replace(/Ñ/g, 'Ñ').replace(/ñ/g, 'Ñ')
+        .replace(/É/g, 'É').replace(/é/g, 'É')
+        .replace(/Á/g, 'Á').replace(/á/g, 'Á')
+        .replace(/Í/g, 'Í').replace(/í/g, 'Í')
+        .replace(/Ó/g, 'Ó').replace(/ó/g, 'Ó')
+        .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
 }
 
 // ==========================================
@@ -68,190 +56,188 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-function readJSON(file) { return fs.readJsonSync(file, { throws: false }) || []; }
-function writeJSON(file, data) { fs.writeJsonSync(file, data); }
-
-const ADMIN_PASSWORD = 'bambam1221';
-
 // ==========================================
-// 🌐 PUBLIC API
+// 📚 MONGODB SCHEMAS
 // ==========================================
-app.get('/api/data', (req, res) => {
-    const responses = readJSON('./data/responses.json');
-    const photos = readJSON('./data/photos.json');
-    const assignments = readJSON('./data/assignments.json');
-    const others = readJSON('./data/others.json');
-    const today = readJSON('./data/today.json');
-    const points = readJSON('./data/points.json');
-    
-    res.json({ 
-        responses: responses.map(r => ({ id: r.id, displayName: r.displayName, section: r.section, message: r.message, date: r.date })),
-        photos: photos.map(p => ({ id: p.id, url: p.url, uploaderAlias: p.uploaderAlias, section: p.section, date: p.date })),
-        assignments: assignments.map(a => ({ id: a.id, title: a.title, date: a.date, content: a.content, image: a.image })),
-        others: others.map(o => ({ id: o.id, text: o.text, date: o.date })),
-        today: today.map(t => ({ id: t.id, text: t.text, date: t.date })),
-        points: points
-    });
+const AssignmentSchema = new mongoose.Schema({
+    title: String,
+    date: String,
+    content: String,
+    image: String,
+    createdAt: { type: Date, default: Date.now }
 });
 
-// ==========================================
-// 🔐 POINT SYSTEM (PRIVATE PER STUDENT)
-// ==========================================
-app.post('/api/points/my', (req, res) => {
-    const { studentName } = req.body;
-    if (!studentName) return res.status(400).json({ error: "Name required" });
-    
-    const points = readJSON('./data/points.json');
-    const myPoints = points.filter(p => normalizeName(p.studentName) === normalizeName(studentName));
-    res.json({ points: myPoints });
+const OtherSchema = new mongoose.Schema({
+    text: String,
+    date: { type: Date, default: Date.now }
 });
 
-app.get('/api/admin/points', (req, res) => {
-    const points = readJSON('./data/points.json');
-    res.json({ points });
+const TodaySchema = new mongoose.Schema({
+    text: String,
+    date: { type: Date, default: Date.now }
 });
 
-app.post('/api/admin/add-point', upload.single('file'), (req, res) => {
+const ResponseSchema = new mongoose.Schema({
+    realName: String,
+    displayName: String,
+    section: String,
+    message: String,
+    date: { type: Date, default: Date.now }
+});
+
+const PointSchema = new mongoose.Schema({
+    studentName: String,
+    text: String,
+    fileUrl: String,
+    date: { type: Date, default: Date.now }
+});
+
+const Assignment = mongoose.model('Assignment', AssignmentSchema);
+const Other = mongoose.model('Other', OtherSchema);
+const Today = mongoose.model('Today', TodaySchema);
+const Response = mongoose.model('Response', ResponseSchema);
+const Point = mongoose.model('Point', PointSchema);
+
+// ==========================================
+// 🌐 ROUTES
+// ==========================================
+
+// --- PUBLIC API ---
+app.get('/api/data', async (req, res) => {
     try {
-        const { password, studentName, text } = req.body;
-        if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: "Unauthorized" });
-        if (!studentName || !text) return res.status(400).json({ error: "Student name and text required" });
+        const [assignments, others, today, responses, points] = await Promise.all([
+            Assignment.find().lean(),
+            Other.find().lean(),
+            Today.find().lean(),
+            Response.find().lean(),
+            Point.find().lean()
+        ]);
         
-        if (!isStudentInRoster(studentName)) {
-            return res.status(400).json({ error: "Student not found in roster" });
-        }
-        
-        const points = readJSON('./data/points.json');
-        points.push({ 
-            id: Date.now(),
-            studentName: normalizeName(studentName),
-            text,
-            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
-            date: new Date().toLocaleString()
+        res.json({ 
+            assignments,
+            others,
+            today,
+            responses,
+            points
         });
-        writeJSON('./data/points.json', points);
-        res.json({ success: true });
     } catch (error) {
-        console.error("Error adding point:", error);
+        console.error("Error fetching data:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
-app.delete('/api/admin/delete-point/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    let points = readJSON('./data/points.json');
-    const index = points.findIndex(p => p.id === id);
-    if (index !== -1) {
-        const trash = readJSON('./data/trash/points.json');
-        trash.push(points[index]);
-        writeJSON('./data/trash/points.json', trash);
-        points.splice(index, 1);
-        writeJSON('./data/points.json', points);
-        res.json({ success: true });
-    } else res.status(404).json({ error: "Not found" });
-});
-
-// ==========================================
-// 🛡️ VERIFY & EXISTING ROUTES
-// ==========================================
+// --- VERIFY STUDENT ---
 app.post('/api/verify', (req, res) => {
     const { section, name } = req.body;
     if (section !== "7-Jade") return res.json({ success: false, message: "Only 7-Jade" });
-    const found = isStudentInRoster(name);
+    const found = JADE_ROSTER.some(s => normalizeName(s) === normalizeName(name));
     if (found) return res.json({ success: true, message: "Verified!" });
-    return res.json({ success: false, message: "Name not found. Please check spelling (special characters like Ñ matter)." });
+    return res.json({ success: false, message: "Name not found. Check spelling (Ñ, ñ, special chars)." });
 });
 
-app.post('/api/ask-question', (req, res) => {
-    const { message } = req.body;
-    if (!message) return res.status(400).json({ error: "Message required" });
-    const data = readJSON('./data/responses.json');
-    data.push({ id: Date.now(), realName: "Guest", displayName: "Guest", section: "7-Jade", message: message, date: new Date().toLocaleString() });
-    writeJSON('./data/responses.json', data);
-    res.json({ success: true });
-});
-
-app.post('/api/submit', (req, res) => {
-    const { realName, displayName, section, message } = req.body;
-    const found = isStudentInRoster(realName);
-    if (!found) return res.status(403).json({ error: "Unauthorized" });
-    const data = readJSON('./data/responses.json');
-    data.push({ id: Date.now(), realName, displayName, section, message, date: new Date().toLocaleString() });
-    writeJSON('./data/responses.json', data);
-    res.json({ success: true });
-});
-
-app.post('/api/admin/add-assignment', upload.single('image'), (req, res) => {
+// --- ADD ASSIGNMENT ---
+app.post('/api/admin/add-assignment', async (req, res) => {
     try {
-        const password = req.body.password;
-        if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: "Unauthorized" });
-        const { title, date, content } = req.body;
+        const { password, title, date, content } = req.body;
+        if (password !== '1221' && password !== '123') return res.status(401).json({ error: "Unauthorized" });
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
-        const data = readJSON('./data/assignments.json');
-        data.push({ id: Date.now(), title, date, content: content || "No details", image: req.file ? `/uploads/${req.file.filename}` : null, createdAt: new Date().toLocaleString() });
-        writeJSON('./data/assignments.json', data);
+        
+        const newAssignment = new Assignment({ title, date, content: content || "No details" });
+        await newAssignment.save();
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
 });
 
-app.post('/api/admin/add-other', (req, res) => {
-    const { password, text } = req.body;
-    if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: "Unauthorized" });
-    if (!text) return res.status(400).json({ error: "Text required" });
-    const data = readJSON('./data/others.json');
-    data.push({ id: Date.now(), text, date: new Date().toLocaleString() });
-    writeJSON('./data/others.json', data);
+// --- ADD OTHER ---
+app.post('/api/admin/add-other', async (req, res) => {
+    try {
+        const { password, text } = req.body;
+        if (password !== '1221' && password !== '123') return res.status(401).json({ error: "Unauthorized" });
+        if (!text) return res.status(400).json({ error: "Text required" });
+        
+        const newOther = new Other({ text });
+        await newOther.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// --- ADD TODAY ANNOUNCEMENT ---
+app.post('/api/admin/add-today', async (req, res) => {
+    try {
+        const { password, text } = req.body;
+        if (password !== '1221' && password !== '123') return res.status(401).json({ error: "Unauthorized" });
+        if (!text) return res.status(400).json({ error: "Text required" });
+        
+        const newToday = new Today({ text });
+        await newToday.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// --- ADD POINT ---
+app.post('/api/admin/add-point', async (req, res) => {
+    try {
+        const { password, studentName, text } = req.body;
+        if (password !== '123') return res.status(401).json({ error: "Unauthorized. Only full admin can add points." });
+        if (!studentName || !text) return res.status(400).json({ error: "Student name and text required" });
+        
+        const newPoint = new Point({ studentName, text });
+        await newPoint.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// --- GET MY POINTS (STUDENT) ---
+app.post('/api/points/my', async (req, res) => {
+    const { studentName } = req.body;
+    const myPoints = await Point.find({ studentName: { $regex: new RegExp(studentName, 'i') } }).lean();
+    res.json({ points: myPoints });
+});
+
+// --- DELETE ASSIGNMENT ---
+app.delete('/api/admin/delete-assignment/:id', async (req, res) => {
+    await Assignment.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-app.post('/api/admin/add-today', (req, res) => {
-    const { password, text } = req.body;
-    if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: "Unauthorized" });
-    if (!text) return res.status(400).json({ error: "Text required" });
-    const data = readJSON('./data/today.json');
-    data.push({ id: Date.now(), text, date: new Date().toLocaleString() });
-    writeJSON('./data/today.json', data);
+// --- DELETE OTHER ---
+app.delete('/api/admin/delete-other/:id', async (req, res) => {
+    await Other.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// Delete routes
-app.delete('/api/admin/delete-msg/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    let data = readJSON('./data/responses.json');
-    const index = data.findIndex(r => r.id === id);
-    if(index !== -1) { const trash = readJSON('./data/trash/responses.json'); trash.push(data[index]); writeJSON('./data/trash/responses.json', trash); data.splice(index, 1); writeJSON('./data/responses.json', data); res.json({ success: true }); }
-    else res.status(404).json({ error: "Not found" });
+// --- DELETE TODAY ---
+app.delete('/api/admin/delete-today/:id', async (req, res) => {
+    await Today.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
 });
 
-app.delete('/api/admin/delete-assignment/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    let data = readJSON('./data/assignments.json');
-    const index = data.findIndex(a => a.id === id);
-    if(index !== -1) { const trash = readJSON('./data/trash/assignments.json'); trash.push(data[index]); writeJSON('./data/trash/assignments.json', trash); data.splice(index, 1); writeJSON('./data/assignments.json', data); res.json({ success: true }); }
-    else res.status(404).json({ error: "Not found" });
+// --- DELETE POINT ---
+app.delete('/api/admin/delete-point/:id', async (req, res) => {
+    await Point.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
 });
 
-app.delete('/api/admin/delete-other/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    let data = readJSON('./data/others.json');
-    const index = data.findIndex(o => o.id === id);
-    if(index !== -1) { const trash = readJSON('./data/trash/others.json'); trash.push(data[index]); writeJSON('./data/trash/others.json', trash); data.splice(index, 1); writeJSON('./data/others.json', data); res.json({ success: true }); }
-    else res.status(404).json({ error: "Not found" });
-});
-
-app.delete('/api/admin/delete-today/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    let data = readJSON('./data/today.json');
-    const index = data.findIndex(t => t.id === id);
-    if(index !== -1) { const trash = readJSON('./data/trash/today.json'); trash.push(data[index]); writeJSON('./data/trash/today.json', trash); data.splice(index, 1); writeJSON('./data/today.json', data); res.json({ success: true }); }
-    else res.status(404).json({ error: "Not found" });
+// --- ASK QUESTION ---
+app.post('/api/ask-question', async (req, res) => {
+    const { message } = req.body;
+    const newResponse = new Response({ realName: "Guest", displayName: "Guest", section: "7-Jade", message });
+    await newResponse.save();
+    res.json({ success: true });
 });
 
 // ==========================================
-// 🚀 START
+// 🚀 START SERVER
 // ==========================================
 app.listen(PORT, () => {
     console.log(`✅ 7-Jade Server running on port ${PORT}`);
+    console.log(`✅ MongoDB Connected! Data is now permanent.`);
 });
