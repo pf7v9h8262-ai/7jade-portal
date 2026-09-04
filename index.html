@@ -119,8 +119,11 @@
         <button class="nav-btn hidden-tab" data-tab="qa">💬 Q&A</button>
         <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
         
-        <!-- Admin Tabs -->
-        <button class="nav-btn admin-tab" data-tab="admin-add">⚙️ Admin Add</button>
+        <!-- Admin Tabs (Hidden by default) -->
+        <button class="nav-btn admin-tab" data-tab="admin-assignments">🗑️ Admin Assign</button>
+        <button class="nav-btn admin-tab" data-tab="admin-others">🗑️ Admin Others</button>
+        <button class="nav-btn admin-tab" data-tab="admin-announcements">🗑️ Admin Ann</button>
+        <button class="nav-btn admin-tab" data-tab="admin-qa">🗑️ Admin Q&A</button>
         <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Admin Points</button>
         <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
         
@@ -192,29 +195,22 @@
             </div>
         </div>
 
-        <!-- ADMIN ADD (TEXTBOXES HERE) -->
-        <div id="admin-add" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Add Content</h3>
-            
-            <div class="admin-section">
-                <h4>➕ Add to Assignments</h4>
-                <input type="text" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
-                <input type="text" id="adminAssignTitle" placeholder="Assignment title">
-                <textarea id="adminAssignContent" placeholder="Assignment content/details..."></textarea>
-                <button onclick="adminAddAssignment()">Add Assignment</button>
-            </div>
-            
-            <div class="admin-section">
-                <h4>➕ Add to Others</h4>
-                <textarea id="adminOtherText" placeholder="Announcement text..."></textarea>
-                <button onclick="adminAddOther()">Add</button>
-            </div>
-            
-            <div class="admin-section">
-                <h4>➕ Add to General Announcements</h4>
-                <textarea id="adminAnnounceText" placeholder="Announcement for today..."></textarea>
-                <button onclick="adminAddAnnounce()">Add</button>
-            </div>
+        <!-- ADMIN DELETE LISTS (WITH DELETE BUTTONS) -->
+        <div id="admin-assignments" class="tab-content">
+            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Assignments</h3>
+            <div id="adminAssignList"></div>
+        </div>
+        <div id="admin-others" class="tab-content">
+            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Others</h3>
+            <div id="adminOthersList"></div>
+        </div>
+        <div id="admin-announcements" class="tab-content">
+            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Announcements</h3>
+            <div id="adminAnnList"></div>
+        </div>
+        <div id="admin-qa" class="tab-content">
+            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Q&A</h3>
+            <div id="adminQAList"></div>
         </div>
 
         <!-- ADMIN POINTS -->
@@ -279,7 +275,7 @@
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(this.dataset.tab).classList.add('active');
-            if(['admin-points','admin-monitor'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
+            if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
             if(this.dataset.tab === 'points') loadMyPoints();
             if(this.dataset.tab === 'assignments') renderCalendar();
             if(this.dataset.tab === 'admin-points' && adminRole === 'full') populateStudentDropdown();
@@ -297,13 +293,14 @@
             document.getElementById('adminPassBox').style.display = 'none';
             
             if (data.role === 'content') {
+                // Show only delete tabs (no points/monitor)
                 document.querySelectorAll('.admin-tab').forEach(b => {
                     if (!b.dataset.tab.includes('admin-points') && !b.dataset.tab.includes('admin-monitor')) {
                         b.style.display = 'inline-block';
                     }
                 });
-                document.querySelector('.nav-btn[data-tab="admin-add"]').click();
-                alert('✅ Content Admin: You can add assignments, others, announcements, Q&A. No points access.');
+                document.querySelector('.nav-btn[data-tab="admin-assignments"]').click();
+                alert('✅ Content Admin: You can add & delete assignments, others, announcements, Q&A. No points access.');
             } else if (data.role === 'full') {
                 document.querySelectorAll('.admin-tab').forEach(b => {
                     b.style.display = 'inline-block';
@@ -465,7 +462,63 @@
 
     async function adminReply(idx) { const input = document.getElementById(`adminReplyInput_${idx}`); const reply = input.value.trim(); if(!reply) return; qaData[idx].a = `Admin: ${reply}`; input.value=''; renderQA(); alert("✅ Reply posted."); }
 
-    // POINTS
+    // ===== DELETE FUNCTIONS (NOW WORK!) =====
+    async function deleteAssign(date, idx) {
+        if(!confirm('Delete this assignment?')) return;
+        const item = assignments[date][idx];
+        const res = await fetch(`/api/admin/delete-assignment/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-assignments'); } else { alert("❌ Failed"); }
+    }
+
+    async function deleteOther(idx) {
+        if(!confirm('Delete this announcement?')) return;
+        const item = othersAnnounce[idx];
+        const res = await fetch(`/api/admin/delete-other/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-others'); } else { alert("❌ Failed"); }
+    }
+
+    async function deleteToday(idx) {
+        if(!confirm('Delete this announcement?')) return;
+        const item = todayAnnounce[idx];
+        const res = await fetch(`/api/admin/delete-today/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-announcements'); } else { alert("❌ Failed"); }
+    }
+
+    async function deleteQA(idx) {
+        if(!confirm('Delete this Q&A?')) return;
+        const item = qaData[idx];
+        const res = await fetch(`/api/admin/delete-msg/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
+    }
+
+    // ===== ADMIN ADD =====
+    async function adminAddAssignment() {
+        if (!adminRole) return alert("Please login as admin first.");
+        const date = document.getElementById('adminAssignDate').value.trim();
+        const title = document.getElementById('adminAssignTitle').value.trim();
+        const content = document.getElementById('adminAssignContent').value.trim();
+        if(!date||!title) return alert('Fill date and title');
+        const res = await fetch('/api/admin/add-assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, date, content }) });
+        if(res.ok) { document.getElementById('adminAssignTitle').value=''; document.getElementById('adminAssignDate').value=''; document.getElementById('adminAssignContent').value=''; fetchData(); alert("✅ Assignment added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+    }
+
+    async function adminAddOther() {
+        if (!adminRole) return alert("Please login as admin first.");
+        const text = document.getElementById('adminOtherText').value.trim();
+        if(!text) return;
+        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        if(res.ok) { document.getElementById('adminOtherText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+    }
+
+    async function adminAddAnnounce() {
+        if (!adminRole) return alert("Please login as admin first.");
+        const text = document.getElementById('adminAnnounceText').value.trim();
+        if(!text) return;
+        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+    }
+
+    // ===== POINTS =====
     async function loadMyPoints() {
         if (!currentStudentName) return;
         const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
@@ -519,14 +572,26 @@
         }
     }
 
-    // RENDER ADMIN LISTS
+    // ===== RENDER ADMIN LISTS (WITH DELETE BUTTONS) =====
     function renderAdminList(tabId) {
         const container = document.getElementById({
+            'admin-assignments': 'adminAssignList',
+            'admin-others': 'adminOthersList',
+            'admin-announcements': 'adminAnnList',
+            'admin-qa': 'adminQAList',
             'admin-points': 'adminPointsList',
             'admin-monitor': 'monitorList'
         }[tabId]);
         
-        if(tabId === 'admin-points') {
+        if(tabId === 'admin-assignments') {
+            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small><button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
+        } else if(tabId === 'admin-others') {
+            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
+        } else if(tabId === 'admin-announcements') {
+            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${t.date || new Date().toISOString().split('T')[0]}</div><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
+        } else if(tabId === 'admin-qa') {
+            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
+        } else if(tabId === 'admin-points') {
             container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
         } else if(tabId === 'admin-monitor') {
             container.innerHTML = points.map(p => `<div class="point-item" style="cursor:pointer;" onclick="toggleMonitorDetails('${p._id}')"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Click for history</div><div id="monitor-details-${p._id}" style="display:none; margin-top:10px;"></div></div>`).join('');
@@ -550,32 +615,6 @@
         } else {
             details.style.display = 'none';
         }
-    }
-
-    async function adminAddAssignment() {
-        if (!adminRole) return alert("Please login as admin first.");
-        const date = document.getElementById('adminAssignDate').value.trim();
-        const title = document.getElementById('adminAssignTitle').value.trim();
-        const content = document.getElementById('adminAssignContent').value.trim();
-        if(!date||!title) return alert('Fill date and title');
-        const res = await fetch('/api/admin/add-assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, date, content }) });
-        if(res.ok) { document.getElementById('adminAssignTitle').value=''; document.getElementById('adminAssignDate').value=''; document.getElementById('adminAssignContent').value=''; fetchData(); alert("✅ Assignment added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
-    }
-
-    async function adminAddOther() {
-        if (!adminRole) return alert("Please login as admin first.");
-        const text = document.getElementById('adminOtherText').value.trim();
-        if(!text) return;
-        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        if(res.ok) { document.getElementById('adminOtherText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
-    }
-
-    async function adminAddAnnounce() {
-        if (!adminRole) return alert("Please login as admin first.");
-        const text = document.getElementById('adminAnnounceText').value.trim();
-        if(!text) return;
-        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
     // INIT
