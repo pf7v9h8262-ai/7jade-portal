@@ -104,9 +104,12 @@ const ResponseSchema = new mongoose.Schema({
 
 const PointSchema = new mongoose.Schema({
     studentName: String,
-    text: String,
-    fileUrl: String,
-    date: { type: Date, default: Date.now }
+    points: { type: Number, default: 15 },
+    history: [{
+        change: Number,
+        message: String,
+        timestamp: { type: Date, default: Date.now }
+    }]
 });
 
 const Assignment = mongoose.model('Assignment', AssignmentSchema);
@@ -152,11 +155,30 @@ app.post('/api/verify', (req, res) => {
     return res.json({ success: false, message: "Name not found. Check spelling (Ñ, ñ, special chars)." });
 });
 
-// --- ADD ASSIGNMENT ---
+// ✅ ADMIN SESSION (No password needed after login)
+let adminSession = { role: null, password: null };
+
+// --- ADMIN LOGIN ---
+app.post('/api/admin/login', (req, res) => {
+    const { password } = req.body;
+    if (password === '1221') {
+        adminSession.role = 'content';
+        adminSession.password = password;
+        return res.json({ success: true, role: 'content' });
+    } else if (password === '123') {
+        adminSession.role = 'full';
+        adminSession.password = password;
+        return res.json({ success: true, role: 'full' });
+    } else {
+        return res.status(401).json({ error: "Invalid password" });
+    }
+});
+
+// --- ADD ASSIGNMENT (No password needed if session active) ---
 app.post('/api/admin/add-assignment', async (req, res) => {
     try {
-        const { password, title, date, content } = req.body;
-        if (password !== '1221' && password !== '123') return res.status(401).json({ error: "Unauthorized" });
+        if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
+        const { title, date, content } = req.body;
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
         
         const newAssignment = new Assignment({ title, date, content: content || "No details" });
@@ -170,8 +192,8 @@ app.post('/api/admin/add-assignment', async (req, res) => {
 // --- ADD OTHER ---
 app.post('/api/admin/add-other', async (req, res) => {
     try {
-        const { password, text } = req.body;
-        if (password !== '1221' && password !== '123') return res.status(401).json({ error: "Unauthorized" });
+        if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
+        const { text } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
         
         const newOther = new Other({ text });
@@ -185,8 +207,8 @@ app.post('/api/admin/add-other', async (req, res) => {
 // --- ADD TODAY ANNOUNCEMENT ---
 app.post('/api/admin/add-today', async (req, res) => {
     try {
-        const { password, text } = req.body;
-        if (password !== '1221' && password !== '123') return res.status(401).json({ error: "Unauthorized" });
+        if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
+        const { text } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
         
         const newToday = new Today({ text });
@@ -197,16 +219,47 @@ app.post('/api/admin/add-today', async (req, res) => {
     }
 });
 
-// --- ADD POINT ---
-app.post('/api/admin/add-point', async (req, res) => {
+// --- ADD / DEDUCT POINTS (FULL ADMIN ONLY) ---
+app.post('/api/admin/update-points', async (req, res) => {
     try {
-        const { password, studentName, text } = req.body;
-        if (password !== '123') return res.status(401).json({ error: "Unauthorized. Only full admin can add points." });
-        if (!studentName || !text) return res.status(400).json({ error: "Student name and text required" });
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
         
-        const newPoint = new Point({ studentName, text });
-        await newPoint.save();
-        res.json({ success: true });
+        const { studentName, change, message } = req.body;
+        if (!studentName || !change) return res.status(400).json({ error: "Student name and change amount required" });
+        
+        let pointDoc = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } });
+        
+        if (!pointDoc) {
+            pointDoc = new Point({
+                studentName: JADE_ROSTER.find(s => normalizeName(s) === normalizeName(studentName)) || studentName,
+                points: 15,
+                history: []
+            });
+        }
+        
+        pointDoc.points += change;
+        if (pointDoc.points < 0) pointDoc.points = 0;
+        if (pointDoc.points > 100) pointDoc.points = 100;
+        
+        pointDoc.history.push({
+            change,
+            message: message || "No message",
+            timestamp: new Date()
+        });
+        
+        await pointDoc.save();
+        res.json({ success: true, points: pointDoc.points });
+    } catch (error) {
+        console.error("Error updating points:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// --- GET ALL POINTS (ADMIN MONITOR) ---
+app.get('/api/admin/points-monitor', async (req, res) => {
+    try {
+        const points = await Point.find().lean();
+        res.json({ points });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
@@ -215,8 +268,8 @@ app.post('/api/admin/add-point', async (req, res) => {
 // --- GET MY POINTS (STUDENT) ---
 app.post('/api/points/my', async (req, res) => {
     const { studentName } = req.body;
-    const myPoints = await Point.find({ studentName: { $regex: new RegExp(studentName, 'i') } }).lean();
-    res.json({ points: myPoints });
+    const myPoints = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } }).lean();
+    res.json({ points: myPoints || { points: 15, history: [] } });
 });
 
 // --- DELETE ASSIGNMENT ---

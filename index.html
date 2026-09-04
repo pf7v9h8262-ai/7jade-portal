@@ -223,28 +223,16 @@
         <div id="admin-points" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
             <div class="admin-point-section">
-                <h4>➕ Add Points for Student</h4>
+                <h4>➕ Add / Deduct Points</h4>
                 <select id="adminPointStudent" class="point-select">
                     <option value="">-- Select Student --</option>
                 </select>
-                <input type="number" id="adminPointScore" placeholder="Score (out of 15)" min="0" max="15">
-                <textarea id="adminPointRemarks" placeholder="Remarks / Notes..."></textarea>
-                <input type="file" id="adminPointFile" accept="image/*,application/pdf">
-                <button onclick="adminAddPoint()">Add Points</button>
+                <input type="number" id="adminPointChange" placeholder="+ or - amount (e.g. 2 or -3)">
+                <textarea id="adminPointMessage" placeholder="Message / Reason..."></textarea>
+                <button onclick="adminUpdatePoint()">Update Points</button>
             </div>
             <div id="adminPointsList"></div>
         </div>
-    </div>
-</div>
-
-<!-- POPUP FOR ASSIGNMENT DETAILS -->
-<div class="popup-overlay" id="assignmentPopup">
-    <div class="popup-content">
-        <h2 id="popupTitle">Assignment Title</h2>
-        <span class="date" id="popupDate">Date</span>
-        <div class="body" id="popupBody">Content goes here...</div>
-        <img id="popupImage" src="" style="display:none;" alt="Assignment Image">
-        <button class="popup-close" onclick="closePopup()">Close</button>
     </div>
 </div>
 
@@ -256,7 +244,8 @@
     let todayAnnounce = [];
     let qaData = [];
     let points = [];
-    let lockedVerified = false, adminLoggedIn = false;
+    let lockedVerified = false;
+    let adminRole = null; // null, 'content', or 'full'
     let currentStudentName = null;
     let currentMonth = 5;
     let currentYear = 2026;
@@ -288,37 +277,47 @@
             if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
             if(this.dataset.tab === 'points') loadMyPoints();
             if(this.dataset.tab === 'assignments') renderCalendar();
-            if(this.dataset.tab === 'admin-points') populateStudentDropdown();
+            if(this.dataset.tab === 'admin-points' && adminRole === 'full') populateStudentDropdown();
         });
     });
 
-    // ADMIN LOGIN
-    function adminLogin() {
+    // ===== ADMIN LOGIN (NO PASSWORD NEEDED AFTER) =====
+    async function adminLogin() {
         const pass = document.getElementById('adminPassInput').value;
-        if (pass === '1221') {
+        const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            adminRole = data.role;
             document.getElementById('adminPassBox').style.display = 'none';
-            document.querySelectorAll('.admin-tab').forEach(b => {
-                if (!b.classList.contains('points-only')) {
+            
+            if (data.role === 'content') {
+                // Show only content tabs (no points)
+                document.querySelectorAll('.admin-tab').forEach(b => {
+                    if (!b.classList.contains('points-only')) {
+                        b.style.display = 'inline-block';
+                    }
+                });
+                document.querySelector('.nav-btn[data-tab="admin-assignments"]').click();
+                alert('✅ Content Admin mode: You can add assignments, announcements, others. No points access.');
+            } else if (data.role === 'full') {
+                // Show ALL tabs
+                document.querySelectorAll('.admin-tab').forEach(b => {
                     b.style.display = 'inline-block';
-                }
-            });
-            document.querySelector('.nav-btn[data-tab="admin-assignments"]').click();
-            alert('✅ Admin mode: All tabs except Points unlocked.');
-        }
-        else if (pass === '123') {
-            document.getElementById('adminPassBox').style.display = 'none';
-            document.querySelectorAll('.admin-tab').forEach(b => {
-                b.style.display = 'inline-block';
-            });
-            document.querySelector('.nav-btn[data-tab="admin-points"]').click();
-            alert('✅ Full Admin mode: All tabs unlocked.');
-        }
-        else {
+                });
+                document.querySelector('.nav-btn[data-tab="admin-points"]').click();
+                alert('✅ Full Admin mode: All tabs unlocked.');
+            }
+        } else {
             document.getElementById('adminPassMsg').textContent = '❌ Invalid password';
         }
     }
 
-    // POPULATE STUDENT DROPDOWN
+    // ===== POPULATE STUDENT DROPDOWN =====
     function populateStudentDropdown() {
         const select = document.getElementById('adminPointStudent');
         select.innerHTML = '<option value="">-- Select Student --</option>';
@@ -374,7 +373,7 @@
     }
 
     function exitLocked() {
-        lockedVerified = false; adminLoggedIn = false; currentStudentName = null;
+        lockedVerified = false; adminRole = null; currentStudentName = null;
         document.getElementById('verifyBox').style.display = 'block';
         document.getElementById('lockedContent').style.display = 'none';
         document.getElementById('jadeNameInput').value = '';
@@ -384,24 +383,20 @@
         document.querySelector('[data-tab="locked"]').click();
     }
 
-    // FETCH DATA FROM SERVER (MongoDB)
+    // ===== FETCH DATA =====
     async function fetchData() {
         try {
             const res = await fetch('/api/data');
             const data = await res.json();
-            
-            // Assignments
             assignments = {};
             data.assignments.forEach(a => {
                 if(!assignments[a.date]) assignments[a.date] = [];
                 assignments[a.date].push({ id: a._id, title: a.title, content: a.content, image: a.image });
             });
-            
             othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, date: o.date }));
             todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, date: t.date }));
             qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: '', user: r.displayName, date: r.date }));
             points = data.points;
-            
             renderCalendar();
             renderOthers();
             renderTodayAnnounce();
@@ -411,7 +406,7 @@
         }
     }
 
-    // RENDER CALENDAR
+    // ===== RENDER CALENDAR =====
     function renderCalendar() {
         updateMonthNavButtons();
         const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
@@ -461,8 +456,6 @@
         document.getElementById('popupTitle').textContent = item.title;
         document.getElementById('popupDate').textContent = `📅 ${date}`;
         document.getElementById('popupBody').textContent = item.content || "No detailed content.";
-        const img = document.getElementById('popupImage');
-        if(item.image) { img.src = item.image; img.style.display = 'block'; } else { img.style.display = 'none'; }
         document.getElementById('assignmentPopup').style.display = 'flex';
     }
 
@@ -472,11 +465,7 @@
     function renderTodayAnnounce() { document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${t.date || new Date().toISOString().split('T')[0]}</div></div>`).join(''); }
     function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${item.date}</div><div class="admin-reply-area" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><input type="text" placeholder="Admin reply..." id="adminReplyInput_${idx}" style="flex:1; padding:8px 14px; border-radius:40px; border:none; background:rgba(255,255,255,0.06); color:white;"><button onclick="adminReply(${idx})" style="background:#27ae60; border:none; padding:8px 18px; border-radius:40px; color:white; cursor:pointer;">Reply</button></div></div>`).join(''); }
 
-    async function addQuestion() { const input = document.getElementById('qaQuestionInput'); const text = input.value.trim(); if(!text) return; const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text }) }); if(res.ok) { input.value=''; fetchData(); alert("✅ Question posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); } }
-
-    async function adminReply(idx) { const input = document.getElementById(`adminReplyInput_${idx}`); const reply = input.value.trim(); if(!reply) return; qaData[idx].a = `Admin: ${reply}`; input.value=''; renderQA(); alert("✅ Reply posted."); }
-
-    // ===== DELETE FUNCTIONS (NOW REALLY DELETE FROM MONGODB) =====
+    // ===== DELETE FUNCTIONS (CALL SERVER) =====
     async function deleteAssign(date, idx) {
         if(!confirm('Delete this assignment?')) return;
         const item = assignments[date][idx];
@@ -505,53 +494,124 @@
         if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
     }
 
-    async function deletePoint(id) {
-        if(!confirm('Delete this point?')) return;
-        const res = await fetch(`/api/admin/delete-point/${id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-points'); } else { alert("❌ Failed"); }
-    }
-
-    // ===== ADD FUNCTIONS =====
+    // ===== ADD FUNCTIONS (NO PASSWORD NEEDED AFTER LOGIN) =====
     async function adminAddAssignment() {
-        const pass = prompt("Enter Admin Password to add assignment:"); if(pass !== '1221' && pass !== '123') return alert("❌ Incorrect password.");
-        const date = document.getElementById('adminAssignDate').value.trim(); const title = document.getElementById('adminAssignTitle').value.trim(); const content = document.getElementById('adminAssignContent').value.trim();
+        if (!adminRole) return alert("Please login as admin first.");
+        const date = document.getElementById('adminAssignDate').value.trim();
+        const title = document.getElementById('adminAssignTitle').value.trim();
+        const content = document.getElementById('adminAssignContent').value.trim();
         if(!date||!title) return alert('Fill date and title');
-        const res = await fetch('/api/admin/add-assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass, title, date, content }) });
-        if(res.ok) { document.getElementById('adminAssignTitle').value=''; document.getElementById('adminAssignDate').value=''; document.getElementById('adminAssignContent').value=''; fetchData(); alert("✅ Assignment added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+        
+        const res = await fetch('/api/admin/add-assignment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, date, content })
+        });
+        if(res.ok) {
+            document.getElementById('adminAssignTitle').value='';
+            document.getElementById('adminAssignDate').value='';
+            document.getElementById('adminAssignContent').value='';
+            fetchData();
+            alert("✅ Assignment added!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
     async function adminAddOther() {
-        const pass = prompt("Enter Admin Password to add announcement:"); if(pass !== '1221' && pass !== '123') return alert("❌ Incorrect password.");
-        const text = document.getElementById('adminOtherText').value.trim(); if(!text) return;
-        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass, text }) });
-        if(res.ok) { document.getElementById('adminOtherText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+        if (!adminRole) return alert("Please login as admin first.");
+        const text = document.getElementById('adminOtherText').value.trim();
+        if(!text) return;
+        
+        const res = await fetch('/api/admin/add-other', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        if(res.ok) {
+            document.getElementById('adminOtherText').value='';
+            fetchData();
+            alert("✅ Added!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
     async function adminAddAnnounce() {
-        const pass = prompt("Enter Admin Password to add announcement:"); if(pass !== '1221' && pass !== '123') return alert("❌ Incorrect password.");
-        const text = document.getElementById('adminAnnounceText').value.trim(); if(!text) return;
-        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass, text }) });
-        if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+        if (!adminRole) return alert("Please login as admin first.");
+        const text = document.getElementById('adminAnnounceText').value.trim();
+        if(!text) return;
+        
+        const res = await fetch('/api/admin/add-today', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        if(res.ok) {
+            document.getElementById('adminAnnounceText').value='';
+            fetchData();
+            alert("✅ Added!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
-    async function adminAddPoint() {
-        const pass = prompt("Enter Admin Password to add points:"); if(pass !== '123') return alert("❌ You don't have permission to add points.");
+    // ===== POINTS =====
+    async function loadMyPoints() {
+        if (!currentStudentName) return;
+        const res = await fetch('/api/points/my', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentName: currentStudentName })
+        });
+        const data = await res.json();
+        const container = document.getElementById('myPointsContainer');
+        if(data.points) {
+            container.innerHTML = `<div class="point-item"><h4>🏆 ${data.points.studentName}</h4><div class="point-text">Current Points: ${data.points.points}/15</div>`;
+            if(data.points.history.length > 0) {
+                container.innerHTML += '<h4 style="margin-top:15px; color:#f1c40f;">History:</h4>';
+                data.points.history.forEach(h => {
+                    container.innerHTML += `<div class="point-item" style="border-left-color: ${h.change > 0 ? '#2ecc71' : '#b34f4f'}"><strong>${h.change > 0 ? '+' : ''}${h.change}</strong> - ${h.message}<div class="point-date">${new Date(h.timestamp).toLocaleString()}</div></div>`;
+                });
+            }
+            container.innerHTML += '</div>';
+        } else {
+            container.innerHTML = '<p style="opacity:0.6;">No points yet. Starting at 15.</p>';
+        }
+    }
+
+    // ===== ADMIN UPDATE POINTS =====
+    async function adminUpdatePoint() {
+        if (adminRole !== 'full') return alert("You don't have permission to update points.");
         const studentName = document.getElementById('adminPointStudent').value;
-        const score = document.getElementById('adminPointScore').value;
-        const remarks = document.getElementById('adminPointRemarks').value.trim();
-        const fileInput = document.getElementById('adminPointFile');
-        if(!studentName) return alert("Select a student."); if(!score) return alert("Enter a score."); if(score < 0 || score > 15) return alert("Score must be between 0 and 15.");
-        const text = `Score: ${score}/15\nRemarks: ${remarks || 'No remarks'}`;
-        const formData = new FormData();
-        formData.append('password', pass);
-        formData.append('studentName', studentName);
-        formData.append('text', text);
-        if(fileInput.files && fileInput.files[0]) formData.append('file', fileInput.files[0]);
-        const res = await fetch('/api/admin/add-point', { method: 'POST', body: formData });
-        if(res.ok) { document.getElementById('adminPointScore').value=''; document.getElementById('adminPointRemarks').value=''; fileInput.value=''; fetchData(); renderAdminList('admin-points'); alert("✅ Points added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+        const change = parseInt(document.getElementById('adminPointChange').value);
+        const message = document.getElementById('adminPointMessage').value.trim();
+        
+        if(!studentName) return alert("Select a student.");
+        if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount.");
+        
+        const res = await fetch('/api/admin/update-points', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentName, change, message })
+        });
+        
+        if(res.ok) {
+            document.getElementById('adminPointChange').value = '';
+            document.getElementById('adminPointMessage').value = '';
+            fetchData();
+            alert("✅ Points updated!");
+            renderAdminList('admin-points');
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
-    // RENDER ADMIN LISTS
+    // ===== RENDER ADMIN LISTS =====
     function renderAdminList(tabId) {
         const container = document.getElementById({
             'admin-assignments': 'adminAssignList',
@@ -570,21 +630,11 @@
         } else if(tabId === 'admin-qa') {
             container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-points') {
-            container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">${p.text}</div>${p.fileUrl ? `<div class="point-file"><a href="${p.fileUrl}" target="_blank">📎 View</a></div>` : ''}<div class="point-date">${p.date}</div><button class="admin-delete-btn" onclick="deletePoint(${p.id})">Delete</button></div>`).join('');
+            container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
         }
     }
 
-    // ===== POINTS =====
-    async function loadMyPoints() {
-        if (!currentStudentName) return;
-        const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
-        const data = await res.json();
-        const container = document.getElementById('myPointsContainer');
-        if(data.points.length === 0) { container.innerHTML = '<p style="opacity:0.6;">No points yet.</p>'; }
-        else { container.innerHTML = data.points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">${p.text}</div>${p.fileUrl ? `<div class="point-file"><a href="${p.fileUrl}" target="_blank">📎 View Attachment</a></div>` : ''}<div class="point-date">${p.date}</div></div>`).join(''); }
-    }
-
-    // INIT
+    // ===== INIT =====
     fetchData();
 </script>
 </body>
