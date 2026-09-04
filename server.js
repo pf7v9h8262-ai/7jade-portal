@@ -12,7 +12,7 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.static(__dirname));
 
-// ✅ CONNECT TO MONGODB ATLAS (FILLED IN WITH YOUR CREDENTIALS)
+// ✅ CONNECT TO MONGODB ATLAS
 const MONGODB_URI = 'mongodb+srv://rxalvarez1221_db_user:YRVaSYmFo3PkOPSV@cluster0.evzldfy.mongodb.net/?retryWrites=true&w=majority';
 
 mongoose.connect(MONGODB_URI)
@@ -20,10 +20,9 @@ mongoose.connect(MONGODB_URI)
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ==========================================
-// 📚 7-JADE ROSTER
+// 📚 7-JADE ROSTER (29 students)
 // ==========================================
 const JADE_ROSTER = [
-    // MALE (21)
     "ALVAREZ, RED XANDER LOZANO",
     "BALBIN, JULIUS JOAQUIN BUBAN",
     "BEA, JAY GIL B.",
@@ -45,7 +44,6 @@ const JADE_ROSTER = [
     "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
     "VILLARIN, KELLAN KRISTOF ASETRE",
     "YU, SHERWIN JOHN",
-    // FEMALE (8)
     "ACUÑA, JASMINE ABUNDO",
     "ALPE, SOPHIA ELLEN ROSALES",
     "CLAVECILLA, PRINCESS JESSICA ATANACIO",
