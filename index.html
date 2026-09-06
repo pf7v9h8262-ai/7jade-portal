@@ -149,8 +149,7 @@
                     <em>Example: DELA CRUZ, JUAN LOZANO</em>
                 </div>
                 <input type="text" id="jadeNameInput" placeholder="e.g. DELA CRUZ, JUAN LOZANO" autocomplete="off">
-                <!-- ✅ EXTRA PASSWORD FIELD -->
-                <input type="password" id="jadePasswordInput" placeholder="Enter password (Jade lang ang Malakas)" autocomplete="off">
+                <input type="password" id="jadePasswordInput" placeholder="Enter password" autocomplete="off">
                 <button onclick="verifyJade()">Enter</button>
                 <div id="verifyMsg" class="verify-msg"></div>
             </div>
@@ -276,6 +275,17 @@
             <h3 style="font-weight:300; color:#b34f4f;">⚠️ Offense Reasons</h3>
             <div id="offenseList"></div>
         </div>
+    </div>
+</div>
+
+<!-- ✅ ASSIGNMENT POPUP (THIS WAS MISSING) -->
+<div class="popup-overlay" id="assignmentPopup">
+    <div class="popup-content">
+        <h2 id="popupTitle">Assignment Title</h2>
+        <span class="date" id="popupDate">Date</span>
+        <div class="body" id="popupBody">Content goes here...</div>
+        <img id="popupImage" src="" style="display:none;" alt="Assignment Image">
+        <button class="popup-close" onclick="closePopup()">Close</button>
     </div>
 </div>
 
@@ -406,7 +416,6 @@
         else nextBtn.disabled = false;
     }
 
-    // ✅ VERIFY WITH EXTRA PASSWORD
     function verifyJade() {
         const name = document.getElementById('jadeNameInput').value.trim();
         const password = document.getElementById('jadePasswordInput').value.trim();
@@ -733,7 +742,7 @@
         if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
     }
 
-    // ✅ AUTO-REFRESH EVERY 5 SECONDS (No need to refresh manually)
+    // ✅ AUTO-REFRESH EVERY 5 SECONDS
     setInterval(() => {
         if (document.visibilityState === 'visible') {
             fetchData();
