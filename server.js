@@ -20,7 +20,7 @@ mongoose.connect(MONGODB_URI)
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ==========================================
-// 📚 7-JADE ROSTER (29 students)
+// 📚 7-JADE ROSTER (30 students - Bersabe added)
 // ==========================================
 const JADE_ROSTER = [
     "ALVAREZ, RED XANDER LOZANO",
@@ -28,6 +28,7 @@ const JADE_ROSTER = [
     "BEA, JAY GIL B.",
     "BELARDO, SEAN EMMANUEL BALASTA",
     "BELER, MATT JOSHUA ESCUETA",
+    "BERSABE, JOHN NESTOR OCTA",
     "CARINAN, KEN BRYAN NOBLEZA",
     "CERENO, KEN JERVIN BERCASIO",
     "DE LA PEÑA, MKRALJ BJORN OLAN",
@@ -222,7 +223,6 @@ app.post('/api/admin/update-points', async (req, res) => {
         const { studentName, change, message, reason } = req.body;
         if (!studentName || !change) return res.status(400).json({ error: "Student name and change amount required" });
         
-        // Allow decimals (e.g., 0.5, -1.5, 2.3)
         const decimalChange = parseFloat(change);
         if (isNaN(decimalChange)) return res.status(400).json({ error: "Invalid change amount" });
         
@@ -236,7 +236,6 @@ app.post('/api/admin/update-points', async (req, res) => {
             });
         }
         
-        // ✅ ALLOW NEGATIVE SCORES (no minimum of 0)
         pointDoc.points = Math.round((pointDoc.points + decimalChange) * 10) / 10;
         if (pointDoc.points > 100) pointDoc.points = 100;
         
