@@ -35,7 +35,7 @@
         @keyframes fade { from { opacity: 0.3; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
         /* LOCKED */
-        .verify-box { max-width: 400px; margin: 20px auto; background: rgba(0, 0, 0, 0.25); padding: 28px 24px; border-radius: 28px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; }
+        .verify-box { max-width: 500px; margin: 20px auto; background: rgba(0, 0, 0, 0.25); padding: 28px 24px; border-radius: 28px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; }
         .verify-box input { width: 100%; padding: 14px 18px; border-radius: 60px; border: none; background: rgba(255, 255, 255, 0.1); color: white; font-size: 1rem; margin: 10px 0 16px; outline: 2px solid transparent; transition: 0.2s; }
         .verify-box input:focus { outline: 2px solid #2ecc71; background: rgba(255, 255, 255, 0.15); }
         .verify-box button { background: #2ecc71; border: none; padding: 12px 32px; border-radius: 60px; font-weight: 600; color: white; cursor: pointer; transition: 0.2s; font-size: 1rem; }
@@ -98,8 +98,8 @@
 
         /* ADMIN SECTIONS */
         .admin-section { background: rgba(255, 255, 255, 0.04); border-radius: 20px; padding: 16px 20px; margin-bottom: 16px; }
-        .admin-section input, .admin-section textarea { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255, 255, 255, 0.08); color: white; resize: vertical; margin: 8px 0; }
-        .admin-section input:focus, .admin-section textarea:focus { outline: 2px solid #2ecc71; }
+        .admin-section input, .admin-section textarea, .admin-section input[type="file"] { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255, 255, 255, 0.08); color: white; resize: vertical; margin: 8px 0; }
+        .admin-section input:focus, .admin-section textarea:focus, .admin-section input[type="file"]:focus { outline: 2px solid #2ecc71; }
         .admin-section button { background: #2ecc71; border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; margin-top: 6px; }
         
         /* POINT FORM SELECT */
@@ -149,6 +149,8 @@
                     <em>Example: DELA CRUZ, JUAN LOZANO</em>
                 </div>
                 <input type="text" id="jadeNameInput" placeholder="e.g. DELA CRUZ, JUAN LOZANO" autocomplete="off">
+                <!-- ✅ EXTRA PASSWORD FIELD -->
+                <input type="password" id="jadePasswordInput" placeholder="Enter password (Jade lang ang Malakas)" autocomplete="off">
                 <button onclick="verifyJade()">Enter</button>
                 <div id="verifyMsg" class="verify-msg"></div>
             </div>
@@ -203,15 +205,16 @@
             </div>
         </div>
 
-        <!-- ADMIN ADD (TEXTBOXES HERE) -->
+        <!-- ADMIN ADD (TEXTBOXES HERE + FILE UPLOAD) -->
         <div id="admin-add" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">➕ Admin: Add Content</h3>
             
             <div class="admin-section">
-                <h4>➕ Add to Assignments</h4>
+                <h4>➕ Add to Assignments (With Image)</h4>
                 <input type="text" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
                 <input type="text" id="adminAssignTitle" placeholder="Assignment title">
                 <textarea id="adminAssignContent" placeholder="Assignment content/details..."></textarea>
+                <input type="file" id="adminAssignImage" accept="image/*">
                 <button onclick="adminAddAssignment()">Add Assignment</button>
             </div>
             
@@ -403,10 +406,14 @@
         else nextBtn.disabled = false;
     }
 
+    // ✅ VERIFY WITH EXTRA PASSWORD
     function verifyJade() {
-        const input = document.getElementById('jadeNameInput').value.trim();
-        if (!input) { document.getElementById('verifyMsg').textContent = '❌ Please enter your name.'; return; }
-        const normalizedInput = normalizeName(input);
+        const name = document.getElementById('jadeNameInput').value.trim();
+        const password = document.getElementById('jadePasswordInput').value.trim();
+        if (!name) { document.getElementById('verifyMsg').textContent = '❌ Please enter your name.'; return; }
+        if (password !== 'Jade lang ang Malakas') { document.getElementById('verifyMsg').textContent = '❌ Incorrect password. Try again.'; return; }
+        
+        const normalizedInput = normalizeName(name);
         const found = JADE_NAMES.some(name => normalizeName(name) === normalizedInput);
         if (found) {
             const exactName = JADE_NAMES.find(name => normalizeName(name) === normalizedInput);
@@ -427,6 +434,7 @@
         document.getElementById('verifyBox').style.display = 'block';
         document.getElementById('lockedContent').style.display = 'none';
         document.getElementById('jadeNameInput').value = '';
+        document.getElementById('jadePasswordInput').value = '';
         document.getElementById('verifyMsg').textContent = '';
         document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'none');
         document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'none');
@@ -504,6 +512,8 @@
         document.getElementById('popupTitle').textContent = item.title;
         document.getElementById('popupDate').textContent = `📅 ${date}`;
         document.getElementById('popupBody').textContent = item.content || "No detailed content.";
+        const img = document.getElementById('popupImage');
+        if(item.image) { img.src = item.image; img.style.display = 'block'; } else { img.style.display = 'none'; }
         document.getElementById('assignmentPopup').style.display = 'flex';
     }
 
@@ -517,15 +527,34 @@
 
     async function adminReply(idx) { const input = document.getElementById(`adminReplyInput_${idx}`); const reply = input.value.trim(); if(!reply) return; qaData[idx].a = `Admin: ${reply}`; input.value=''; renderQA(); alert("✅ Reply posted."); }
 
-    // ===== ADD FUNCTIONS =====
     async function adminAddAssignment() {
         if (!adminRole) return alert("Please login as admin first.");
         const date = document.getElementById('adminAssignDate').value.trim();
         const title = document.getElementById('adminAssignTitle').value.trim();
         const content = document.getElementById('adminAssignContent').value.trim();
+        const fileInput = document.getElementById('adminAssignImage');
         if(!date||!title) return alert('Fill date and title');
-        const res = await fetch('/api/admin/add-assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, date, content }) });
-        if(res.ok) { document.getElementById('adminAssignTitle').value=''; document.getElementById('adminAssignDate').value=''; document.getElementById('adminAssignContent').value=''; fetchData(); alert("✅ Assignment added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+        
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('date', date);
+        formData.append('content', content);
+        if(fileInput.files && fileInput.files[0]) {
+            formData.append('image', fileInput.files[0]);
+        }
+
+        const res = await fetch('/api/admin/add-assignment', { method: 'POST', body: formData });
+        if(res.ok) {
+            document.getElementById('adminAssignTitle').value='';
+            document.getElementById('adminAssignDate').value='';
+            document.getElementById('adminAssignContent').value='';
+            fileInput.value='';
+            fetchData();
+            alert("✅ Assignment added!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
     async function adminAddOther() {
@@ -544,7 +573,6 @@
         if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
-    // ===== POINTS =====
     async function loadMyPoints() {
         if (!currentStudentName) return;
         const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
@@ -569,11 +597,10 @@
         const studentName = document.getElementById('adminPointStudent').value;
         const change = parseFloat(document.getElementById('adminPointChange').value);
         const message = document.getElementById('adminPointMessage').value.trim();
-        const reason = document.getElementById('adminPointReason').value;
         if(!studentName) return alert("Select a student.");
         if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount (e.g. 0.5 or -1.5).");
         
-        const res = await fetch('/api/admin/update-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, change, message, reason }) });
+        const res = await fetch('/api/admin/update-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, change, message }) });
         if(res.ok) {
             document.getElementById('adminPointChange').value = '';
             document.getElementById('adminPointMessage').value = '';
@@ -599,7 +626,6 @@
         }
     }
 
-    // ===== RENDER ADMIN LISTS =====
     function renderAdminList(tabId) {
         const container = document.getElementById({
             'admin-assignments': 'adminAssignList',
@@ -706,6 +732,13 @@
         const res = await fetch(`/api/admin/delete-msg/${item.id}`, { method: 'DELETE' });
         if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
     }
+
+    // ✅ AUTO-REFRESH EVERY 5 SECONDS (No need to refresh manually)
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            fetchData();
+        }
+    }, 5000);
 
     // INIT
     fetchData();
