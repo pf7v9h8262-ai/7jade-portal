@@ -90,8 +90,8 @@
         .point-item .point-file a { color: #2ecc71; text-decoration: none; font-weight: 600; }
         .point-item .point-date { font-size: 0.75rem; opacity: 0.6; margin-top: 5px; }
         .admin-point-section { background: rgba(255,255,255,0.04); border-radius: 20px; padding: 16px 20px; margin-bottom: 16px; }
-        .admin-point-section input, .admin-point-section textarea { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; resize: vertical; margin: 8px 0; }
-        .admin-point-section input:focus, .admin-point-section textarea:focus { outline: 2px solid #2ecc71; }
+        .admin-point-section input, .admin-point-section textarea, .admin-point-section select { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; resize: vertical; margin: 8px 0; }
+        .admin-point-section input:focus, .admin-point-section textarea:focus, .admin-point-section select:focus { outline: 2px solid #2ecc71; }
         .admin-point-section button { background: #2ecc71; border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; margin-top: 6px; }
         .admin-delete-btn { background: #b34f4f; border: none; padding: 4px 14px; border-radius: 40px; color: white; cursor: pointer; font-size: 0.75rem; float: right; transition: 0.2s; }
         .admin-delete-btn:hover { background: #7f1d1d; transform: scale(1.05); }
@@ -105,6 +105,12 @@
         /* POINT FORM SELECT */
         .point-select { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; margin: 8px 0; font-size: 1rem; }
         .point-select option { background: #1a2e1f; color: white; }
+
+        /* OFFENSE REASONS */
+        .offense-reason-item { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #e74c3c; cursor: pointer; transition: 0.2s; }
+        .offense-reason-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
+        .offense-reason-item h4 { color: #e74c3c; margin-bottom: 5px; }
+        .offense-history { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 12px; margin-top: 10px; max-height: 300px; overflow-y: auto; }
 
         @media (max-width: 700px) { .nav-bar { gap: 8px; } .nav-btn { padding: 8px 14px; font-size: 0.8rem; } .calendar-grid { gap: 6px; } .cal-day { padding: 8px 2px; } .cal-day .day-num { font-size: 1.2rem; } }
     </style>
@@ -127,6 +133,7 @@
         <button class="nav-btn admin-tab" data-tab="admin-qa">🗑️ Admin Q&A</button>
         <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Admin Points</button>
         <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
+        <button class="nav-btn admin-tab" data-tab="admin-offenses">⚠️ Offenses</button>
         
         <button class="nav-btn hidden-tab" data-tab="admin">⚙️ Admin Panel</button>
     </div>
@@ -243,7 +250,7 @@
         <div id="admin-points" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
             <div class="admin-point-section">
-                <h4>➕ Add / Deduct Points (Decimals allowed)</h4>
+                <h4>➕ Add / Deduct Points (Decimals allowed, can go negative)</h4>
                 <select id="adminPointStudent" class="point-select">
                     <option value="">-- Select Student --</option>
                 </select>
@@ -260,11 +267,33 @@
             <h3 style="font-weight:300; color:#b34f4f;">📊 Points Monitor</h3>
             <div id="monitorList"></div>
         </div>
+
+        <!-- ADMIN OFFENSES -->
+        <div id="admin-offenses" class="tab-content">
+            <h3 style="font-weight:300; color:#b34f4f;">⚠️ Offense Reasons</h3>
+            <div id="offenseList"></div>
+        </div>
     </div>
 </div>
 
 <script>
     const JADE_NAMES = ["ALVAREZ, RED XANDER LOZANO","BALBIN, JULIUS JOAQUIN BUBAN","BEA, JAY GIL B.","BELARDO, SEAN EMMANUEL BALASTA","BELER, MATT JOSHUA ESCUETA","CARINAN, KEN BRYAN NOBLEZA","CERENO, KEN JERVIN BERCASIO","DE LA PEÑA, MKRALJ BJORN OLAN","ERMAC, ETHAN JOHN LUZANDE","FORMALEJO, EARLJOHN CLARK MARTINEZ","GARCES, SIMEON CEAZARNIE MAGISTRADO","GRAGEDA, DAREL JR. DAZAL","ILAO, ELISEO JOHAN IBANA","NACARIO, KROHN EROS REMOLADOR","PURQUED, DANILO ALFON","RODRIGUEZ, RIONNAH ARANETA","SALCEDA, EMMAN BALLON","TOLOSA, CRIS ALCHED FERRERAS","VARGAS, GIOLUIS ALISTAIR MANLANGIT","VILLARIN, KELLAN KRISTOF ASETRE","YU, SHERWIN JOHN","ACUÑA, JASMINE ABUNDO","ALPE, SOPHIA ELLEN ROSALES","CLAVECILLA, PRINCESS JESSICA ATANACIO","CORDOVA, KYLA RHEA FE PARIS","ESPIRITU, ZIA EMMANUELLE BARCILLANO","MIRASOL, ATHENA THERESE CUERDO","RODRIGUEZ, RIONNAH ARANETA","TAPEL, MIKHAELA ALENA TANON"];
+
+    const OFFENSE_REASONS = [
+        "Sleeping during non-designated periods",
+        "Swearing",
+        "Excess noise",
+        "Not paying attention in class",
+        "Failure to fulfill assigned cleaning duties",
+        "Using Gadgets For Non-academic purposes",
+        "Distracting other classes during class hours",
+        "Public Displays of Affection",
+        "Physically harming another student",
+        "Tardiness",
+        "Cutting of classes",
+        "Leaving of Classroom when not allowed",
+        "Distracting Classmates"
+    ];
 
     let assignments = {}; 
     let othersAnnounce = [];
@@ -301,11 +330,12 @@
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(this.dataset.tab).classList.add('active');
-            if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
+            if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor','admin-offenses'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
             if(this.dataset.tab === 'points') loadMyPoints();
             if(this.dataset.tab === 'assignments') renderCalendar();
             if(this.dataset.tab === 'admin-points' && adminRole === 'full') populateStudentDropdown();
             if(this.dataset.tab === 'admin-monitor' && adminRole === 'full') renderMonitor();
+            if(this.dataset.tab === 'admin-offenses' && adminRole === 'full') renderOffenses();
         });
     });
 
@@ -320,7 +350,7 @@
             
             if (data.role === 'content') {
                 document.querySelectorAll('.admin-tab').forEach(b => {
-                    if (!b.dataset.tab.includes('admin-points') && !b.dataset.tab.includes('admin-monitor')) {
+                    if (!b.dataset.tab.includes('admin-points') && !b.dataset.tab.includes('admin-monitor') && !b.dataset.tab.includes('admin-offenses')) {
                         b.style.display = 'inline-block';
                     }
                 });
@@ -514,35 +544,6 @@
         if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
-    // ===== DELETE FUNCTIONS =====
-    async function deleteAssign(date, idx) {
-        if(!confirm('Delete this assignment?')) return;
-        const item = assignments[date][idx];
-        const res = await fetch(`/api/admin/delete-assignment/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-assignments'); } else { alert("❌ Failed"); }
-    }
-
-    async function deleteOther(idx) {
-        if(!confirm('Delete this announcement?')) return;
-        const item = othersAnnounce[idx];
-        const res = await fetch(`/api/admin/delete-other/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-others'); } else { alert("❌ Failed"); }
-    }
-
-    async function deleteToday(idx) {
-        if(!confirm('Delete this announcement?')) return;
-        const item = todayAnnounce[idx];
-        const res = await fetch(`/api/admin/delete-today/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-announcements'); } else { alert("❌ Failed"); }
-    }
-
-    async function deleteQA(idx) {
-        if(!confirm('Delete this Q&A?')) return;
-        const item = qaData[idx];
-        const res = await fetch(`/api/admin/delete-msg/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
-    }
-
     // ===== POINTS =====
     async function loadMyPoints() {
         if (!currentStudentName) return;
@@ -568,10 +569,11 @@
         const studentName = document.getElementById('adminPointStudent').value;
         const change = parseFloat(document.getElementById('adminPointChange').value);
         const message = document.getElementById('adminPointMessage').value.trim();
+        const reason = document.getElementById('adminPointReason').value;
         if(!studentName) return alert("Select a student.");
         if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount (e.g. 0.5 or -1.5).");
         
-        const res = await fetch('/api/admin/update-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, change, message }) });
+        const res = await fetch('/api/admin/update-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, change, message, reason }) });
         if(res.ok) {
             document.getElementById('adminPointChange').value = '';
             document.getElementById('adminPointMessage').value = '';
@@ -605,7 +607,8 @@
             'admin-announcements': 'adminAnnList',
             'admin-qa': 'adminQAList',
             'admin-points': 'adminPointsList',
-            'admin-monitor': 'monitorList'
+            'admin-monitor': 'monitorList',
+            'admin-offenses': 'offenseList'
         }[tabId]);
         
         if(tabId === 'admin-assignments') {
@@ -620,6 +623,15 @@
             container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
         } else if(tabId === 'admin-monitor') {
             container.innerHTML = points.map(p => `<div class="point-item" style="cursor:pointer;" onclick="toggleMonitorDetails('${p._id}')"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Click for history</div><div id="monitor-details-${p._id}" style="display:none; margin-top:10px;"></div></div>`).join('');
+        } else if(tabId === 'admin-offenses') {
+            container.innerHTML = OFFENSE_REASONS.map((reason, idx) => {
+                const students = points.filter(p => p.history.some(h => h.reason === reason));
+                return `<div class="offense-reason-item" onclick="toggleOffenseDetails(${idx})">
+                    <h4>⚠️ ${reason}</h4>
+                    <p style="opacity:0.7; font-size:0.9rem;">${students.length} student(s) have this offense</p>
+                    <div id="offense-details-${idx}" style="display:none; margin-top:10px;"></div>
+                </div>`;
+            }).join('');
         }
     }
 
@@ -640,6 +652,59 @@
         } else {
             details.style.display = 'none';
         }
+    }
+
+    function toggleOffenseDetails(idx) {
+        const details = document.getElementById('offense-details-' + idx);
+        const reason = OFFENSE_REASONS[idx];
+        const students = points.filter(p => p.history.some(h => h.reason === reason));
+        if (details.style.display === 'none') {
+            let html = '<h5 style="color:#f1c40f;">Students with this offense:</h5>';
+            if (students.length > 0) {
+                students.forEach(student => {
+                    const offenses = student.history.filter(h => h.reason === reason);
+                    html += `<div style="border-left: 3px solid #e74c3c; padding: 8px; margin: 5px 0; background:rgba(255,255,255,0.05);"><strong>${student.studentName}</strong> (Current: ${student.points}/15)`;
+                    offenses.forEach(h => {
+                        html += `<div style="font-size:0.85rem; margin-top:5px;">- ${h.change > 0 ? '+' : ''}${h.change} points on ${new Date(h.timestamp).toLocaleString()}<br><em>${h.message}</em></div>`;
+                    });
+                    html += '</div>';
+                });
+            } else {
+                html += '<p style="opacity:0.6;">No students have this offense.</p>';
+            }
+            details.innerHTML = html;
+            details.style.display = 'block';
+        } else {
+            details.style.display = 'none';
+        }
+    }
+
+    async function deleteAssign(date, idx) {
+        if(!confirm('Delete this assignment?')) return;
+        const item = assignments[date][idx];
+        const res = await fetch(`/api/admin/delete-assignment/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-assignments'); } else { alert("❌ Failed"); }
+    }
+
+    async function deleteOther(idx) {
+        if(!confirm('Delete this announcement?')) return;
+        const item = othersAnnounce[idx];
+        const res = await fetch(`/api/admin/delete-other/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-others'); } else { alert("❌ Failed"); }
+    }
+
+    async function deleteToday(idx) {
+        if(!confirm('Delete this announcement?')) return;
+        const item = todayAnnounce[idx];
+        const res = await fetch(`/api/admin/delete-today/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-announcements'); } else { alert("❌ Failed"); }
+    }
+
+    async function deleteQA(idx) {
+        if(!confirm('Delete this Q&A?')) return;
+        const item = qaData[idx];
+        const res = await fetch(`/api/admin/delete-msg/${item.id}`, { method: 'DELETE' });
+        if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
     }
 
     // INIT

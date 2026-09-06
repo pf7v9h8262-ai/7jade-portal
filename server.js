@@ -108,6 +108,7 @@ const PointSchema = new mongoose.Schema({
     history: [{
         change: Number,
         message: String,
+        reason: String,
         timestamp: { type: Date, default: Date.now }
     }]
 });
@@ -214,11 +215,11 @@ app.post('/api/admin/add-today', async (req, res) => {
     }
 });
 
-// --- ADD / DEDUCT POINTS (ALLOWS DECIMALS) ---
+// --- ADD / DEDUCT POINTS (ALLOWS NEGATIVE) ---
 app.post('/api/admin/update-points', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
-        const { studentName, change, message } = req.body;
+        const { studentName, change, message, reason } = req.body;
         if (!studentName || !change) return res.status(400).json({ error: "Student name and change amount required" });
         
         // Allow decimals (e.g., 0.5, -1.5, 2.3)
@@ -235,13 +236,14 @@ app.post('/api/admin/update-points', async (req, res) => {
             });
         }
         
+        // ✅ ALLOW NEGATIVE SCORES (no minimum of 0)
         pointDoc.points = Math.round((pointDoc.points + decimalChange) * 10) / 10;
-        if (pointDoc.points < 0) pointDoc.points = 0;
         if (pointDoc.points > 100) pointDoc.points = 100;
         
         pointDoc.history.push({
             change: decimalChange,
             message: message || "No message",
+            reason: reason || "No reason",
             timestamp: new Date()
         });
         
