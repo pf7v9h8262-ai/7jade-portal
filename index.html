@@ -210,7 +210,7 @@
             
             <div class="admin-section">
                 <h4>➕ Add to Assignments (With Image)</h4>
-                <input type="text" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
+                <input type="date" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
                 <input type="text" id="adminAssignTitle" placeholder="Assignment title">
                 <textarea id="adminAssignContent" placeholder="Assignment content/details..."></textarea>
                 <input type="file" id="adminAssignImage" accept="image/*">
@@ -585,13 +585,24 @@
         }
     }
 
+    // ✅ FIXED ASSIGNMENT ADD FUNCTION
     async function adminAddAssignment() {
         if (!adminRole) return alert("Please login as admin first.");
-        const date = document.getElementById('adminAssignDate').value.trim();
-        const title = document.getElementById('adminAssignTitle').value.trim();
-        const content = document.getElementById('adminAssignContent').value.trim();
+        
+        const date = document.getElementById('adminAssignDate').value; // Get date value
+        const title = document.getElementById('adminAssignTitle').value.trim(); // Get title value
+        const content = document.getElementById('adminAssignContent').value.trim(); // Get content value
         const fileInput = document.getElementById('adminAssignImage');
-        if(!date||!title) return alert('Fill date and title');
+        
+        // ✅ CHECK VALUES BEFORE SENDING
+        if(!date) {
+            alert('Please fill in the Date');
+            return;
+        }
+        if(!title) {
+            alert('Please fill in the Assignment Title');
+            return;
+        }
         
         const formData = new FormData();
         formData.append('title', title);
