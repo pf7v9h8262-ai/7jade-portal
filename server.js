@@ -12,47 +12,28 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.static(__dirname));
 
-// ✅ CONNECT TO MONGODB ATLAS
 const MONGODB_URI = 'mongodb+srv://rxalvarez1221_db_user:YRVaSYmFo3PkOPSV@cluster0.evzldfy.mongodb.net/?retryWrites=true&w=majority';
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('✅ Connected to MongoDB Atlas!'))
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// ==========================================
-// 📚 7-JADE ROSTER (30 students)
-// ==========================================
 const JADE_ROSTER = [
-    "ALVAREZ, RED XANDER LOZANO",
-    "BALBIN, JULIUS JOAQUIN BUBAN",
-    "BEA, JAY GIL B.",
-    "BELARDO, SEAN EMMANUEL BALASTA",
-    "BELER, MATT JOSHUA ESCUETA",
-    "BERSABE, JOHN NESTOR OCTA",
-    "CARINAN, KEN BRYAN NOBLEZA",
-    "CERENO, KEN JERVIN BERCASIO",
-    "DE LA PEÑA, MKRALJ BJORN OLAN",
-    "ERMAC, ETHAN JOHN LUZANDE",
-    "FORMALEJO, EARLJOHN CLARK MARTINEZ",
-    "GARCES, SIMEON CEAZARNIE MAGISTRADO",
-    "GRAGEDA, DAREL JR. DAZAL",
-    "ILAO, ELISEO JOHAN IBANA",
-    "NACARIO, KROHN EROS REMOLADOR",
-    "PURQUED, DANILO ALFON",
-    "RODRIGUEZ, RIONNAH ARANETA",
-    "SALCEDA, EMMAN BALLON",
-    "TOLOSA, CRIS ALCHED FERRERAS",
-    "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
-    "VILLARIN, KELLAN KRISTOF ASETRE",
-    "YU, SHERWIN JOHN",
-    "ACUÑA, JASMINE ABUNDO",
-    "ALPE, SOPHIA ELLEN ROSALES",
-    "CLAVECILLA, PRINCESS JESSICA ATANACIO",
-    "CORDOVA, KYLA RHEA FE PARIS",
-    "ESPIRITU, ZIA EMMANUELLE BARCILLANO",
-    "MIRASOL, ATHENA THERESE CUERDO",
-    "RODRIGUEZ, RIONNAH ARANETA",
-    "TAPEL, MIKHAELA ALENA TANON"
+    "ALVAREZ, RED XANDER LOZANO", "BALBIN, JULIUS JOAQUIN BUBAN",
+    "BEA, JAY GIL B.", "BELARDO, SEAN EMMANUEL BALASTA",
+    "BELER, MATT JOSHUA ESCUETA", "BERSABE, JOHN NESTOR OCTA",
+    "CARINAN, KEN BRYAN NOBLEZA", "CERENO, KEN JERVIN BERCASIO",
+    "DE LA PEÑA, MKRALJ BJORN OLAN", "ERMAC, ETHAN JOHN LUZANDE",
+    "FORMALEJO, EARLJOHN CLARK MARTINEZ", "GARCES, SIMEON CEAZARNIE MAGISTRADO",
+    "GRAGEDA, DAREL JR. DAZAL", "ILAO, ELISEO JOHAN IBANA",
+    "NACARIO, KROHN EROS REMOLADOR", "PURQUED, DANILO ALFON",
+    "RODRIGUEZ, RIONNAH ARANETA", "SALCEDA, EMMAN BALLON",
+    "TOLOSA, CRIS ALCHED FERRERAS", "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
+    "VILLARIN, KELLAN KRISTOF ASETRE", "YU, SHERWIN JOHN",
+    "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES",
+    "CLAVECILLA, PRINCESS JESSICA ATANACIO", "CORDOVA, KYLA RHEA FE PARIS",
+    "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
+    "RODRIGUEZ, RIONNAH ARANETA", "TAPEL, MIKHAELA ALENA TANON"
 ];
 
 function normalizeName(name) {
@@ -65,18 +46,12 @@ function normalizeName(name) {
         .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
 }
 
-// ==========================================
-// 🛡️ STORAGE SETUP
-// ==========================================
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage: storage });
 
-// ==========================================
-// 📚 MONGODB SCHEMAS
-// ==========================================
 const AssignmentSchema = new mongoose.Schema({
     title: String,
     date: String,
@@ -130,11 +105,7 @@ const Response = mongoose.model('Response', ResponseSchema);
 const Point = mongoose.model('Point', PointSchema);
 const Offense = mongoose.model('Offense', OffenseSchema);
 
-// ==========================================
-// 🌐 ROUTES
-// ==========================================
-
-// --- PUBLIC API ---
+// PUBLIC API
 app.get('/api/data', async (req, res) => {
     try {
         const [assignments, others, today, responses, points, offenses] = await Promise.all([
@@ -145,22 +116,13 @@ app.get('/api/data', async (req, res) => {
             Point.find().lean(),
             Offense.find().lean()
         ]);
-        
-        res.json({ 
-            assignments,
-            others,
-            today,
-            responses,
-            points,
-            offenses
-        });
+        res.json({ assignments, others, today, responses, points, offenses });
     } catch (error) {
-        console.error("Error fetching data:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
-// --- VERIFY STUDENT ---
+// VERIFY STUDENT
 app.post('/api/verify', (req, res) => {
     const { section, name } = req.body;
     if (section !== "7-Jade") return res.json({ success: false, message: "Only 7-Jade" });
@@ -169,10 +131,9 @@ app.post('/api/verify', (req, res) => {
     return res.json({ success: false, message: "Name not found. Check spelling (Ñ, ñ, special chars)." });
 });
 
-// ✅ ADMIN SESSION
+// ADMIN SESSION
 let adminSession = { role: null };
 
-// --- ADMIN LOGIN (CHANGED 123 PASSWORD) ---
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === '1221') {
@@ -186,18 +147,23 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// --- ADD ASSIGNMENT (FIXED) ---
-app.post('/api/admin/add-assignment', async (req, res) => {
+// ADD ASSIGNMENT (WITH FILE)
+app.post('/api/admin/add-assignment', upload.single('image'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { title, date, content, createdBy } = req.body;
+        
+        const title = req.body.title;
+        const date = req.body.date;
+        const content = req.body.content || "No details";
+        
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
         
         const newAssignment = new Assignment({ 
             title, 
             date, 
-            content: content || "No details", 
-            createdBy: createdBy || "Admin",
+            content, 
+            image: req.file ? `/uploads/${req.file.filename}` : null,
+            createdBy: req.body.createdBy || "Admin",
             createdAt: new Date() 
         });
         await newAssignment.save();
@@ -208,18 +174,13 @@ app.post('/api/admin/add-assignment', async (req, res) => {
     }
 });
 
-// --- ADD OTHER (with creator) ---
+// ADD OTHER
 app.post('/api/admin/add-other', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { text, createdBy } = req.body;
+        const { text } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
-        
-        const newOther = new Other({ 
-            text, 
-            createdBy: createdBy || "Admin",
-            date: new Date() 
-        });
+        const newOther = new Other({ text, date: new Date() });
         await newOther.save();
         res.json({ success: true });
     } catch (error) {
@@ -227,18 +188,13 @@ app.post('/api/admin/add-other', async (req, res) => {
     }
 });
 
-// --- ADD TODAY ANNOUNCEMENT (with creator) ---
+// ADD TODAY ANNOUNCEMENT
 app.post('/api/admin/add-today', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { text, createdBy } = req.body;
+        const { text } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
-        
-        const newToday = new Today({ 
-            text, 
-            createdBy: createdBy || "Admin",
-            date: new Date() 
-        });
+        const newToday = new Today({ text, date: new Date() });
         await newToday.save();
         res.json({ success: true });
     } catch (error) {
@@ -246,7 +202,7 @@ app.post('/api/admin/add-today', async (req, res) => {
     }
 });
 
-// --- ADD / DEDUCT POINTS (WITH OFFENSE) ---
+// ADD / DEDUCT POINTS
 app.post('/api/admin/update-points', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
@@ -257,7 +213,6 @@ app.post('/api/admin/update-points', async (req, res) => {
         if (isNaN(decimalChange)) return res.status(400).json({ error: "Invalid change amount" });
         
         let pointDoc = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } });
-        
         if (!pointDoc) {
             pointDoc = new Point({
                 studentName: JADE_ROSTER.find(s => normalizeName(s) === normalizeName(studentName)) || studentName,
@@ -279,39 +234,31 @@ app.post('/api/admin/update-points', async (req, res) => {
         await pointDoc.save();
         res.json({ success: true, points: pointDoc.points });
     } catch (error) {
-        console.error("Error updating points:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
-// --- ADD NEW OFFENSE (CUSTOM) ---
+// ADD NEW OFFENSE
 app.post('/api/admin/add-offense', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can add offenses." });
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: "Offense name required" });
-        
         const newOffense = new Offense({ name });
         await newOffense.save();
         res.json({ success: true });
     } catch (error) {
-        console.error("Error adding offense:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
-// --- RESET ALL POINTS TO CUSTOM NUMBER (FULL ADMIN ONLY) ---
+// RESET ALL POINTS
 app.post('/api/admin/reset-all-points', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') {
-            return res.status(401).json({ error: "Unauthorized. Only full admin can reset points." });
-        }
-        
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can reset points." });
         const { newPoints } = req.body;
         const resetValue = parseInt(newPoints) || 15;
-        
         await Point.updateMany({}, { points: resetValue, history: [] });
-        
         for (const studentName of JADE_ROSTER) {
             const existing = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } });
             if (!existing) {
@@ -319,37 +266,33 @@ app.post('/api/admin/reset-all-points', async (req, res) => {
                 await newPoint.save();
             }
         }
-        
         res.json({ success: true, message: `All scores reset to ${resetValue}` });
     } catch (error) {
-        console.error("Error resetting points:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
-// --- ADMIN ANSWER QUESTION (FULL ADMIN ONLY) ---
+// ANSWER QUESTION
 app.post('/api/admin/answer-question', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can answer questions." });
         const { questionId, answer } = req.body;
         if (!questionId || !answer) return res.status(400).json({ error: "Question ID and answer required" });
-        
         await Response.findByIdAndUpdate(questionId, { adminReply: answer });
         res.json({ success: true });
     } catch (error) {
-        console.error("Error answering question:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
-// --- GET MY POINTS (STUDENT) ---
+// GET MY POINTS
 app.post('/api/points/my', async (req, res) => {
     const { studentName } = req.body;
     const myPoints = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } }).lean();
     res.json({ points: myPoints || { points: 15, history: [] } });
 });
 
-// --- ASK QUESTION (STUDENT) ---
+// ASK QUESTION
 app.post('/api/ask-question', async (req, res) => {
     const { message, realName } = req.body;
     if (!message) return res.status(400).json({ error: "Message required" });
@@ -358,47 +301,44 @@ app.post('/api/ask-question', async (req, res) => {
     res.json({ success: true });
 });
 
-// --- DELETE ASSIGNMENT ---
+// DELETE ASSIGNMENT
 app.delete('/api/admin/delete-assignment/:id', async (req, res) => {
     await Assignment.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// --- DELETE OTHER ---
+// DELETE OTHER
 app.delete('/api/admin/delete-other/:id', async (req, res) => {
     await Other.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// --- DELETE TODAY ---
+// DELETE TODAY
 app.delete('/api/admin/delete-today/:id', async (req, res) => {
     await Today.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// --- DELETE QUESTION (FULL ADMIN ONLY) ---
+// DELETE QUESTION
 app.delete('/api/admin/delete-question/:id', async (req, res) => {
     if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete questions." });
     await Response.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// --- DELETE POINT ---
+// DELETE POINT
 app.delete('/api/admin/delete-point/:id', async (req, res) => {
     await Point.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// --- DELETE OFFENSE ---
+// DELETE OFFENSE
 app.delete('/api/admin/delete-offense/:id', async (req, res) => {
     if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete offenses." });
     await Offense.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// ==========================================
-// 🚀 START SERVER
-// ==========================================
 app.listen(PORT, () => {
     console.log(`✅ 7-Jade Server running on port ${PORT}`);
     console.log(`✅ MongoDB Connected! Data is now permanent.`);

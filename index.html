@@ -585,24 +585,17 @@
         }
     }
 
-    // ✅ FIXED ASSIGNMENT ADD FUNCTION
+    // ✅ FIXED ADD ASSIGNMENT
     async function adminAddAssignment() {
         if (!adminRole) return alert("Please login as admin first.");
         
-        const date = document.getElementById('adminAssignDate').value; // Get date value
-        const title = document.getElementById('adminAssignTitle').value.trim(); // Get title value
-        const content = document.getElementById('adminAssignContent').value.trim(); // Get content value
+        const date = document.getElementById('adminAssignDate').value;
+        const title = document.getElementById('adminAssignTitle').value.trim();
+        const content = document.getElementById('adminAssignContent').value.trim();
         const fileInput = document.getElementById('adminAssignImage');
         
-        // ✅ CHECK VALUES BEFORE SENDING
-        if(!date) {
-            alert('Please fill in the Date');
-            return;
-        }
-        if(!title) {
-            alert('Please fill in the Assignment Title');
-            return;
-        }
+        if(!date) { alert('Please fill in the Date'); return; }
+        if(!title) { alert('Please fill in the Assignment Title'); return; }
         
         const formData = new FormData();
         formData.append('title', title);
@@ -824,14 +817,12 @@
         if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
     }
 
-    // ✅ AUTO-REFRESH EVERY 5 SECONDS
     setInterval(() => {
         if (document.visibilityState === 'visible') {
             fetchData();
         }
     }, 5000);
 
-    // INIT
     fetchData();
 </script>
 </body>
