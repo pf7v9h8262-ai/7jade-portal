@@ -244,7 +244,7 @@
             <div id="adminAnnList"></div>
         </div>
         <div id="admin-qa" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Q&A</h3>
+            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Q&A</h3>
             <div id="adminQAList"></div>
         </div>
 
@@ -688,7 +688,7 @@
         } else if(tabId === 'admin-announcements') {
             container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div><small style="display:block; opacity:0.6;">by ${t.createdBy || 'Admin'}</small><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-qa') {
-            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
+            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><div class="admin-reply-area" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><input type="text" placeholder="Admin reply..." id="adminReplyInput_${idx}" style="flex:1; padding:8px 14px; border-radius:40px; border:none; background:rgba(255,255,255,0.06); color:white;"><button onclick="adminReply(${idx})" style="background:#27ae60; border:none; padding:8px 18px; border-radius:40px; color:white; cursor:pointer;">Reply</button></div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-points') {
             container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
         } else if(tabId === 'admin-monitor') {
