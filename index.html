@@ -533,7 +533,7 @@
         let html = '';
         if(assignments[dateStr] && assignments[dateStr].length > 0) {
             assignments[dateStr].forEach((item, idx) => {
-                html += `<div class="title-item" onclick="openAssignmentPopup('${dateStr}', ${idx})">📋 ${item.title} <small style="opacity:0.6; display:block;">by ${item.createdBy || 'Admin'} • ${new Date(item.createdAt).toLocaleString()}</small></div>`;
+                html += `<div class="title-item" onclick="openAssignmentPopup('${dateStr}', ${idx})">📋 ${item.title}</div>`;
             });
         } else {
             html = `<p style="opacity:0.7;">No assignments on this date.</p>`;
@@ -560,8 +560,8 @@
 
     function closePopup() { document.getElementById('assignmentPopup').style.display = 'none'; }
 
-    function renderOthers() { document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text} <small style="opacity:0.6; display:block;">by ${t.createdBy || 'Admin'} • ${new Date(t.date).toLocaleString()}</small></div>`).join(''); }
-    function renderTodayAnnounce() { document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text} <small style="opacity:0.6; display:block;">by ${t.createdBy || 'Admin'} • ${new Date(t.date).toLocaleString()}</small></div>`).join(''); }
+    function renderOthers() { document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}</div>`).join(''); }
+    function renderTodayAnnounce() { document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div></div>`).join(''); }
     function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${new Date(item.date).toLocaleString()}</div></div>`).join(''); }
 
     async function addQuestion() { const input = document.getElementById('qaQuestionInput'); const text = input.value.trim(); if(!text) return; const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, realName: currentStudentName || "Guest" }) }); if(res.ok) { input.value=''; fetchData(); alert("✅ Question posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); } }
@@ -587,7 +587,6 @@
         formData.append('title', title);
         formData.append('date', date);
         formData.append('content', content);
-        formData.append('createdBy', currentStudentName || "Admin");
         if(fileInput.files && fileInput.files[0]) {
             formData.append('image', fileInput.files[0]);
         }
@@ -610,7 +609,7 @@
         if (!adminRole) return alert("Please login as admin first.");
         const text = document.getElementById('adminOtherText').value.trim();
         if(!text) return;
-        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, createdBy: currentStudentName || "Admin" }) });
+        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
         if(res.ok) { document.getElementById('adminOtherText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
@@ -618,7 +617,7 @@
         if (!adminRole) return alert("Please login as admin first.");
         const text = document.getElementById('adminAnnounceText').value.trim();
         if(!text) return;
-        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, createdBy: currentStudentName || "Admin" }) });
+        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
         if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
@@ -689,11 +688,11 @@
         }[tabId]);
         
         if(tabId === 'admin-assignments') {
-            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small><small style="display:block; opacity:0.6;">by ${item.createdBy || 'Admin'} • ${new Date(item.createdAt).toLocaleString()}</small><button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
+            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small><button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
         } else if(tabId === 'admin-others') {
-            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}<small style="display:block; opacity:0.6;">by ${t.createdBy || 'Admin'} • ${new Date(t.date).toLocaleString()}</small><button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
+            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-announcements') {
-            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div><small style="display:block; opacity:0.6;">by ${t.createdBy || 'Admin'}</small><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
+            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-qa') {
             container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><div class="admin-reply-area" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><input type="text" placeholder="Admin reply..." id="adminReplyInput_${idx}" style="flex:1; padding:8px 14px; border-radius:40px; border:none; background:rgba(255,255,255,0.06); color:white;"><button onclick="adminReply(${idx})" style="background:#27ae60; border:none; padding:8px 18px; border-radius:40px; color:white; cursor:pointer;">Reply</button></div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-points') {
