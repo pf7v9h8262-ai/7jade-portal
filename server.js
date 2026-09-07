@@ -299,10 +299,10 @@ app.post('/api/admin/reset-all-points', async (req, res) => {
     }
 });
 
-// --- ADMIN ANSWER QUESTION ---
+// --- ADMIN ANSWER QUESTION (123 ONLY) ---
 app.post('/api/admin/answer-question', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can answer." });
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can answer questions." });
         const { questionId, answer } = req.body;
         if (!questionId || !answer) return res.status(400).json({ error: "Question ID and answer required" });
         
@@ -348,8 +348,9 @@ app.delete('/api/admin/delete-today/:id', async (req, res) => {
     res.json({ success: true });
 });
 
-// --- DELETE QUESTION ---
+// --- DELETE QUESTION (123 ONLY) ---
 app.delete('/api/admin/delete-question/:id', async (req, res) => {
+    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete questions." });
     await Response.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });

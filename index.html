@@ -387,19 +387,26 @@
             document.getElementById('adminPassBox').style.display = 'none';
             
             if (data.role === 'content') {
+                // ✅ 1221 CANNOT see Q&A, Points, Monitor, Offenses
                 document.querySelectorAll('.admin-tab').forEach(b => {
-                    if (!b.dataset.tab.includes('admin-points') && !b.dataset.tab.includes('admin-monitor') && !b.dataset.tab.includes('admin-offenses')) {
+                    if (b.dataset.tab === 'admin-qa' || 
+                        b.dataset.tab === 'admin-points' || 
+                        b.dataset.tab === 'admin-monitor' || 
+                        b.dataset.tab === 'admin-offenses') {
+                        b.style.display = 'none';
+                    } else {
                         b.style.display = 'inline-block';
                     }
                 });
                 document.querySelector('.nav-btn[data-tab="admin-add"]').click();
-                alert('✅ Content Admin: You can add & delete assignments, others, announcements, Q&A. No points access.');
+                alert('✅ Content Admin: You can add & delete assignments, others, announcements. NO Q&A/Points access.');
             } else if (data.role === 'full') {
+                // ✅ 123 CAN see ALL tabs
                 document.querySelectorAll('.admin-tab').forEach(b => {
                     b.style.display = 'inline-block';
                 });
                 document.querySelector('.nav-btn[data-tab="admin-points"]').click();
-                alert('✅ Full Admin: All tabs unlocked.');
+                alert('✅ Full Admin: All tabs unlocked (including Q&A, Points, Monitor, Offenses).');
             }
         } else {
             document.getElementById('adminPassMsg').textContent = '❌ Invalid password';
@@ -555,7 +562,7 @@
 
     function renderOthers() { document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text} <small style="opacity:0.6; display:block;">by ${t.createdBy || 'Admin'} • ${new Date(t.date).toLocaleString()}</small></div>`).join(''); }
     function renderTodayAnnounce() { document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text} <small style="opacity:0.6; display:block;">by ${t.createdBy || 'Admin'} • ${new Date(t.date).toLocaleString()}</small></div>`).join(''); }
-    function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${new Date(item.date).toLocaleString()}</div><div class="admin-reply-area" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><input type="text" placeholder="Admin reply..." id="adminReplyInput_${idx}" style="flex:1; padding:8px 14px; border-radius:40px; border:none; background:rgba(255,255,255,0.06); color:white;"><button onclick="adminReply(${idx})" style="background:#27ae60; border:none; padding:8px 18px; border-radius:40px; color:white; cursor:pointer;">Reply</button></div></div>`).join(''); }
+    function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${new Date(item.date).toLocaleString()}</div></div>`).join(''); }
 
     async function addQuestion() { const input = document.getElementById('qaQuestionInput'); const text = input.value.trim(); if(!text) return; const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, realName: currentStudentName || "Guest" }) }); if(res.ok) { input.value=''; fetchData(); alert("✅ Question posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); } }
 
