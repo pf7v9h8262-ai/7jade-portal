@@ -118,7 +118,6 @@ const PointSchema = new mongoose.Schema({
     }]
 });
 
-// ✅ NEW SCHEMA FOR CUSTOM OFFENSES
 const OffenseSchema = new mongoose.Schema({
     name: String,
     createdAt: { type: Date, default: Date.now }
@@ -173,7 +172,7 @@ app.post('/api/verify', (req, res) => {
 // ✅ ADMIN SESSION
 let adminSession = { role: null };
 
-// --- ADMIN LOGIN ---
+// --- ADMIN LOGIN (CHANGED 123 PASSWORD) ---
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === '1221') {
@@ -327,7 +326,7 @@ app.post('/api/admin/reset-all-points', async (req, res) => {
     }
 });
 
-// --- ADMIN ANSWER QUESTION (123 ONLY) ---
+// --- ADMIN ANSWER QUESTION (FULL ADMIN ONLY) ---
 app.post('/api/admin/answer-question', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can answer questions." });
@@ -376,7 +375,7 @@ app.delete('/api/admin/delete-today/:id', async (req, res) => {
     res.json({ success: true });
 });
 
-// --- DELETE QUESTION (123 ONLY) ---
+// --- DELETE QUESTION (FULL ADMIN ONLY) ---
 app.delete('/api/admin/delete-question/:id', async (req, res) => {
     if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete questions." });
     await Response.findByIdAndDelete(req.params.id);
