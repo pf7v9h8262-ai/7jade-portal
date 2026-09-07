@@ -257,25 +257,23 @@
                     <option value="">-- Select Student --</option>
                 </select>
                 <input type="number" id="adminPointChange" placeholder="+ or - (e.g. 0.5 or -1.5)" step="0.1">
+                
+                <!-- ✅ CUSTOM OFFENSE DROPDOWN (DYNAMIC) -->
                 <select id="adminPointReason" class="point-select">
                     <option value="">-- Select Offense (Optional) --</option>
-                    <option value="Sleeping during non-designated periods">Sleeping during non-designated periods</option>
-                    <option value="Swearing">Swearing</option>
-                    <option value="Excess noise">Excess noise</option>
-                    <option value="Not paying attention in class">Not paying attention in class</option>
-                    <option value="Failure to fulfill assigned cleaning duties">Failure to fulfill assigned cleaning duties</option>
-                    <option value="Using Gadgets For Non-academic purposes">Using Gadgets For Non-academic purposes</option>
-                    <option value="Distracting other classes during class hours">Distracting other classes during class hours</option>
-                    <option value="Public Displays of Affection">Public Displays of Affection</option>
-                    <option value="Physically harming another student">Physically harming another student</option>
-                    <option value="Tardiness">Tardiness</option>
-                    <option value="Cutting of classes">Cutting of classes</option>
-                    <option value="Leaving of Classroom when not allowed">Leaving of Classroom when not allowed</option>
-                    <option value="Distracting Classmates">Distracting Classmates</option>
+                    <!-- Will be populated dynamically from server -->
                 </select>
+                
                 <textarea id="adminPointMessage" placeholder="Message / Reason..."></textarea>
                 <button onclick="adminUpdatePoint()">Update Points</button>
-                <button onclick="resetAllPoints()" style="background:#b34f4f; color:white; padding:10px 20px; border:none; border-radius:20px; font-weight:600; cursor:pointer; margin-top:10px; width:100%;">🔄 Reset All to 15</button>
+                
+                <!-- ✅ ADD NEW OFFENSE -->
+                <input type="text" id="newOffenseName" placeholder="Add new offense type...">
+                <button onclick="addNewOffense()" style="background:#f1c40f; color:#1a2e1f;">➕ Add Offense</button>
+                
+                <!-- ✅ RESET TO CUSTOM NUMBER -->
+                <input type="number" id="resetPointsValue" placeholder="Reset all to (e.g. 15)">
+                <button onclick="resetAllPoints()" style="background:#b34f4f; color:white; padding:10px 20px; border:none; border-radius:20px; font-weight:600; cursor:pointer; margin-top:10px; width:100%;">🔄 Reset All</button>
             </div>
             <div id="adminPointsList"></div>
         </div>
@@ -324,7 +322,7 @@
         "RODRIGUEZ, RIONNAH ARANETA", "TAPEL, MIKHAELA ALENA TANON"
     ];
 
-    const OFFENSE_REASONS = [
+    const DEFAULT_OFFENSES = [
         "Sleeping during non-designated periods", "Swearing", "Excess noise",
         "Not paying attention in class", "Failure to fulfill assigned cleaning duties",
         "Using Gadgets For Non-academic purposes", "Distracting other classes during class hours",
@@ -338,6 +336,7 @@
     let todayAnnounce = [];
     let qaData = [];
     let points = [];
+    let offenses = [];
     let lockedVerified = false;
     let adminRole = null;
     let currentStudentName = null;
@@ -387,7 +386,6 @@
             document.getElementById('adminPassBox').style.display = 'none';
             
             if (data.role === 'content') {
-                // ✅ 1221 CANNOT see Q&A, Points, Monitor, Offenses
                 document.querySelectorAll('.admin-tab').forEach(b => {
                     if (b.dataset.tab === 'admin-qa' || 
                         b.dataset.tab === 'admin-points' || 
@@ -401,7 +399,6 @@
                 document.querySelector('.nav-btn[data-tab="admin-add"]').click();
                 alert('✅ Content Admin: You can add & delete assignments, others, announcements. NO Q&A/Points access.');
             } else if (data.role === 'full') {
-                // ✅ 123 CAN see ALL tabs
                 document.querySelectorAll('.admin-tab').forEach(b => {
                     b.style.display = 'inline-block';
                 });
@@ -420,6 +417,17 @@
             const opt = document.createElement('option');
             opt.value = name;
             opt.textContent = name;
+            select.appendChild(opt);
+        });
+    }
+
+    function populateOffenseDropdown() {
+        const select = document.getElementById('adminPointReason');
+        select.innerHTML = '<option value="">-- Select Offense (Optional) --</option>';
+        offenses.forEach(offense => {
+            const opt = document.createElement('option');
+            opt.value = offense.name;
+            opt.textContent = offense.name;
             select.appendChild(opt);
         });
     }
@@ -495,10 +503,12 @@
             todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, date: t.date, createdBy: t.createdBy }));
             qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: r.adminReply || '', user: r.realName, date: r.date }));
             points = data.points;
+            offenses = data.offenses || [];
             renderCalendar();
             renderOthers();
             renderTodayAnnounce();
             renderQA();
+            populateOffenseDropdown();
         } catch (error) {
             console.error("Fetch error", error);
         }
@@ -573,6 +583,24 @@
         const questionId = qaData[idx].id;
         const res = await fetch('/api/admin/answer-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId, answer: reply }) });
         if(res.ok) { input.value=''; fetchData(); alert("✅ Reply posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+    }
+
+    // ✅ ADD NEW OFFENSE
+    async function addNewOffense() {
+        if (adminRole !== 'full') return alert("You don't have permission to add offenses.");
+        const input = document.getElementById('newOffenseName');
+        const name = input.value.trim();
+        if(!name) return alert("Enter an offense name.");
+        
+        const res = await fetch('/api/admin/add-offense', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+        if(res.ok) {
+            input.value='';
+            fetchData();
+            alert("✅ New offense added!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
     async function adminAddAssignment() {
@@ -664,11 +692,16 @@
     }
 
     async function resetAllPoints() {
-        if (!confirm("Are you sure you want to reset ALL student scores to 15?")) return;
-        const res = await fetch('/api/admin/reset-all-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+        if (adminRole !== 'full') return alert("You don't have permission to reset points.");
+        const input = document.getElementById('resetPointsValue');
+        const newPoints = parseInt(input.value) || 15;
+        if (!confirm(`Are you sure you want to reset ALL student scores to ${newPoints}?`)) return;
+        
+        const res = await fetch('/api/admin/reset-all-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPoints }) });
         if(res.ok) {
-            alert("✅ All scores reset to 15!");
+            input.value='';
             fetchData();
+            alert(`✅ All scores reset to ${newPoints}!`);
             renderAdminList('admin-points');
         } else {
             const error = await res.json();
@@ -694,16 +727,16 @@
         } else if(tabId === 'admin-announcements') {
             container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-qa') {
-            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><div class="admin-reply-area" style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><input type="text" placeholder="Admin reply..." id="adminReplyInput_${idx}" style="flex:1; padding:8px 14px; border-radius:40px; border:none; background:rgba(255,255,255,0.06); color:white;"><button onclick="adminReply(${idx})" style="background:#27ae60; border:none; padding:8px 18px; border-radius:40px; color:white; cursor:pointer;">Reply</button></div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
+            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-points') {
             container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
         } else if(tabId === 'admin-monitor') {
             container.innerHTML = points.map(p => `<div class="point-item" style="cursor:pointer;" onclick="toggleMonitorDetails('${p._id}')"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Click for history</div><div id="monitor-details-${p._id}" style="display:none; margin-top:10px;"></div></div>`).join('');
         } else if(tabId === 'admin-offenses') {
-            container.innerHTML = OFFENSE_REASONS.map((reason, idx) => {
-                const students = points.filter(p => p.history.some(h => h.reason === reason));
+            container.innerHTML = offenses.map((offense, idx) => {
+                const students = points.filter(p => p.history.some(h => h.reason === offense.name));
                 return `<div class="offense-reason-item" onclick="toggleOffenseDetails(${idx})">
-                    <h4>⚠️ ${reason}</h4>
+                    <h4>⚠️ ${offense.name}</h4>
                     <p style="opacity:0.7; font-size:0.9rem;">${students.length} student(s) have this offense</p>
                     <div id="offense-details-${idx}" style="display:none; margin-top:10px;"></div>
                 </div>`;
@@ -732,13 +765,13 @@
 
     function toggleOffenseDetails(idx) {
         const details = document.getElementById('offense-details-' + idx);
-        const reason = OFFENSE_REASONS[idx];
-        const students = points.filter(p => p.history.some(h => h.reason === reason));
+        const offense = offenses[idx];
+        const students = points.filter(p => p.history.some(h => h.reason === offense.name));
         if (details.style.display === 'none') {
             let html = '<h5 style="color:#f1c40f;">Students with this offense:</h5>';
             if (students.length > 0) {
                 students.forEach(student => {
-                    const offenses = student.history.filter(h => h.reason === reason);
+                    const offenses = student.history.filter(h => h.reason === offense.name);
                     html += `<div style="border-left: 3px solid #e74c3c; padding: 8px; margin: 5px 0; background:rgba(255,255,255,0.05);"><strong>${student.studentName}</strong> (Current: ${student.points}/15)`;
                     offenses.forEach(h => {
                         html += `<div style="font-size:0.85rem; margin-top:5px;">- ${h.change > 0 ? '+' : ''}${h.change} points on ${new Date(h.timestamp).toLocaleString()}<br><em>${h.message}</em></div>`;

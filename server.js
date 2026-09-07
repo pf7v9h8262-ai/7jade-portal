@@ -118,11 +118,18 @@ const PointSchema = new mongoose.Schema({
     }]
 });
 
+// ✅ NEW SCHEMA FOR CUSTOM OFFENSES
+const OffenseSchema = new mongoose.Schema({
+    name: String,
+    createdAt: { type: Date, default: Date.now }
+});
+
 const Assignment = mongoose.model('Assignment', AssignmentSchema);
 const Other = mongoose.model('Other', OtherSchema);
 const Today = mongoose.model('Today', TodaySchema);
 const Response = mongoose.model('Response', ResponseSchema);
 const Point = mongoose.model('Point', PointSchema);
+const Offense = mongoose.model('Offense', OffenseSchema);
 
 // ==========================================
 // 🌐 ROUTES
@@ -131,12 +138,13 @@ const Point = mongoose.model('Point', PointSchema);
 // --- PUBLIC API ---
 app.get('/api/data', async (req, res) => {
     try {
-        const [assignments, others, today, responses, points] = await Promise.all([
+        const [assignments, others, today, responses, points, offenses] = await Promise.all([
             Assignment.find().lean(),
             Other.find().lean(),
             Today.find().lean(),
             Response.find().lean(),
-            Point.find().lean()
+            Point.find().lean(),
+            Offense.find().lean()
         ]);
         
         res.json({ 
@@ -144,7 +152,8 @@ app.get('/api/data', async (req, res) => {
             others,
             today,
             responses,
-            points
+            points,
+            offenses
         });
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -275,24 +284,43 @@ app.post('/api/admin/update-points', async (req, res) => {
     }
 });
 
-// --- RESET ALL POINTS TO 15 (FULL ADMIN ONLY) ---
+// --- ADD NEW OFFENSE (CUSTOM) ---
+app.post('/api/admin/add-offense', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can add offenses." });
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: "Offense name required" });
+        
+        const newOffense = new Offense({ name });
+        await newOffense.save();
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error adding offense:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// --- RESET ALL POINTS TO CUSTOM NUMBER (FULL ADMIN ONLY) ---
 app.post('/api/admin/reset-all-points', async (req, res) => {
     try {
         if (adminSession.role !== 'full') {
             return res.status(401).json({ error: "Unauthorized. Only full admin can reset points." });
         }
         
-        await Point.updateMany({}, { points: 15, history: [] });
+        const { newPoints } = req.body;
+        const resetValue = parseInt(newPoints) || 15;
+        
+        await Point.updateMany({}, { points: resetValue, history: [] });
         
         for (const studentName of JADE_ROSTER) {
             const existing = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } });
             if (!existing) {
-                const newPoint = new Point({ studentName, points: 15, history: [] });
+                const newPoint = new Point({ studentName, points: resetValue, history: [] });
                 await newPoint.save();
             }
         }
         
-        res.json({ success: true, message: "All scores reset to 15" });
+        res.json({ success: true, message: `All scores reset to ${resetValue}` });
     } catch (error) {
         console.error("Error resetting points:", error);
         res.status(500).json({ error: "Server error" });
@@ -358,6 +386,13 @@ app.delete('/api/admin/delete-question/:id', async (req, res) => {
 // --- DELETE POINT ---
 app.delete('/api/admin/delete-point/:id', async (req, res) => {
     await Point.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+});
+
+// --- DELETE OFFENSE ---
+app.delete('/api/admin/delete-offense/:id', async (req, res) => {
+    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete offenses." });
+    await Offense.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
