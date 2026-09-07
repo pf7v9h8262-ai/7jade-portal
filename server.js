@@ -82,16 +82,19 @@ const AssignmentSchema = new mongoose.Schema({
     date: String,
     content: String,
     image: String,
+    createdBy: String,
     createdAt: { type: Date, default: Date.now }
 });
 
 const OtherSchema = new mongoose.Schema({
     text: String,
+    createdBy: String,
     date: { type: Date, default: Date.now }
 });
 
 const TodaySchema = new mongoose.Schema({
     text: String,
+    createdBy: String,
     date: { type: Date, default: Date.now }
 });
 
@@ -100,6 +103,7 @@ const ResponseSchema = new mongoose.Schema({
     displayName: String,
     section: String,
     message: String,
+    adminReply: String,
     date: { type: Date, default: Date.now }
 });
 
@@ -174,13 +178,20 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// --- ADD ASSIGNMENT ---
+// --- ADD ASSIGNMENT (with creator) ---
 app.post('/api/admin/add-assignment', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { title, date, content } = req.body;
+        const { title, date, content, createdBy } = req.body;
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
-        const newAssignment = new Assignment({ title, date, content: content || "No details" });
+        
+        const newAssignment = new Assignment({ 
+            title, 
+            date, 
+            content: content || "No details", 
+            createdBy: createdBy || "Admin",
+            createdAt: new Date() 
+        });
         await newAssignment.save();
         res.json({ success: true });
     } catch (error) {
@@ -188,13 +199,18 @@ app.post('/api/admin/add-assignment', async (req, res) => {
     }
 });
 
-// --- ADD OTHER ---
+// --- ADD OTHER (with creator) ---
 app.post('/api/admin/add-other', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { text } = req.body;
+        const { text, createdBy } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
-        const newOther = new Other({ text });
+        
+        const newOther = new Other({ 
+            text, 
+            createdBy: createdBy || "Admin",
+            date: new Date() 
+        });
         await newOther.save();
         res.json({ success: true });
     } catch (error) {
@@ -202,13 +218,18 @@ app.post('/api/admin/add-other', async (req, res) => {
     }
 });
 
-// --- ADD TODAY ANNOUNCEMENT ---
+// --- ADD TODAY ANNOUNCEMENT (with creator) ---
 app.post('/api/admin/add-today', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { text } = req.body;
+        const { text, createdBy } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
-        const newToday = new Today({ text });
+        
+        const newToday = new Today({ 
+            text, 
+            createdBy: createdBy || "Admin",
+            date: new Date() 
+        });
         await newToday.save();
         res.json({ success: true });
     } catch (error) {
@@ -278,12 +299,17 @@ app.post('/api/admin/reset-all-points', async (req, res) => {
     }
 });
 
-// --- GET ALL POINTS (ADMIN MONITOR) ---
-app.get('/api/admin/points-monitor', async (req, res) => {
+// --- ADMIN ANSWER QUESTION ---
+app.post('/api/admin/answer-question', async (req, res) => {
     try {
-        const points = await Point.find().lean();
-        res.json({ points });
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can answer." });
+        const { questionId, answer } = req.body;
+        if (!questionId || !answer) return res.status(400).json({ error: "Question ID and answer required" });
+        
+        await Response.findByIdAndUpdate(questionId, { adminReply: answer });
+        res.json({ success: true });
     } catch (error) {
+        console.error("Error answering question:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
@@ -293,6 +319,15 @@ app.post('/api/points/my', async (req, res) => {
     const { studentName } = req.body;
     const myPoints = await Point.findOne({ studentName: { $regex: new RegExp(normalizeName(studentName), 'i') } }).lean();
     res.json({ points: myPoints || { points: 15, history: [] } });
+});
+
+// --- ASK QUESTION (STUDENT) ---
+app.post('/api/ask-question', async (req, res) => {
+    const { message, realName } = req.body;
+    if (!message) return res.status(400).json({ error: "Message required" });
+    const newResponse = new Response({ realName: realName || "Guest", displayName: realName || "Guest", section: "7-Jade", message });
+    await newResponse.save();
+    res.json({ success: true });
 });
 
 // --- DELETE ASSIGNMENT ---
@@ -313,17 +348,15 @@ app.delete('/api/admin/delete-today/:id', async (req, res) => {
     res.json({ success: true });
 });
 
-// --- DELETE POINT ---
-app.delete('/api/admin/delete-point/:id', async (req, res) => {
-    await Point.findByIdAndDelete(req.params.id);
+// --- DELETE QUESTION ---
+app.delete('/api/admin/delete-question/:id', async (req, res) => {
+    await Response.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// --- ASK QUESTION ---
-app.post('/api/ask-question', async (req, res) => {
-    const { message } = req.body;
-    const newResponse = new Response({ realName: "Guest", displayName: "Guest", section: "7-Jade", message });
-    await newResponse.save();
+// --- DELETE POINT ---
+app.delete('/api/admin/delete-point/:id', async (req, res) => {
+    await Point.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
