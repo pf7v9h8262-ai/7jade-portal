@@ -186,7 +186,7 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// --- ADD ASSIGNMENT (with creator) ---
+// --- ADD ASSIGNMENT (FIXED) ---
 app.post('/api/admin/add-assignment', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
@@ -203,7 +203,8 @@ app.post('/api/admin/add-assignment', async (req, res) => {
         await newAssignment.save();
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: "Server error" });
+        console.error("Error adding assignment:", error);
+        res.status(500).json({ error: "Server error: " + error.message });
     }
 });
 

@@ -720,9 +720,24 @@
                 return `<div class="offense-reason-item" onclick="toggleOffenseDetails(${idx})">
                     <h4>⚠️ ${offense.name}</h4>
                     <p style="opacity:0.7; font-size:0.9rem;">${students.length} student(s) have this offense</p>
+                    <button class="admin-delete-btn" onclick="deleteOffense('${offense._id}')">Remove</button>
                     <div id="offense-details-${idx}" style="display:none; margin-top:10px;"></div>
                 </div>`;
             }).join('');
+        }
+    }
+
+    // ✅ DELETE OFFENSE FUNCTION
+    async function deleteOffense(id) {
+        if(!confirm('Are you sure you want to remove this offense?')) return;
+        const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
+        if(res.ok) {
+            fetchData();
+            renderAdminList('admin-offenses');
+            alert("✅ Offense removed!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
         }
     }
 
