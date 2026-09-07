@@ -20,7 +20,7 @@ mongoose.connect(MONGODB_URI)
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ==========================================
-// 📚 7-JADE ROSTER (30 students - Bersabe added)
+// 📚 7-JADE ROSTER (30 students)
 // ==========================================
 const JADE_ROSTER = [
     "ALVAREZ, RED XANDER LOZANO",
@@ -216,7 +216,7 @@ app.post('/api/admin/add-today', async (req, res) => {
     }
 });
 
-// --- ADD / DEDUCT POINTS (ALLOWS NEGATIVE) ---
+// --- ADD / DEDUCT POINTS (WITH OFFENSE) ---
 app.post('/api/admin/update-points', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
