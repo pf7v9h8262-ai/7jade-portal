@@ -179,7 +179,7 @@ app.post('/api/admin/login', (req, res) => {
     if (password === '1221') {
         adminSession.role = 'content';
         return res.json({ success: true, role: 'content' });
-    } else if (password === '123') {
+    } else if (password === 'Redamber_1221') {
         adminSession.role = 'full';
         return res.json({ success: true, role: 'full' });
     } else {
