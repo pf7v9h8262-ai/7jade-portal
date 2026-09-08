@@ -12,29 +12,48 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(express.static(__dirname));
 
+// ✅ CONNECT TO MONGODB ATLAS
 const MONGODB_URI = 'mongodb+srv://rxalvarez1221_db_user:YRVaSYmFo3PkOPSV@cluster0.evzldfy.mongodb.net/?retryWrites=true&w=majority';
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('✅ Connected to MongoDB Atlas!'))
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
+// ==========================================
+// 📚 7-JADE ROSTER (31 students)
+// ==========================================
 const JADE_ROSTER = [
-    "ALVAREZ, RED XANDER LOZANO", "BALBIN, JULIUS JOAQUIN BUBAN",
-    "BEA, JAY GIL B.", "BELARDO, SEAN EMMANUEL BALASTA",
-    "BELER, MATT JOSHUA ESCUETA", "BERSABE, JOHN NESTOR OCTA",
-    "CARINAN, KEN BRYAN NOBLEZA", "CERENO, KEN JERVIN BERCASIO",
-    "DE LA PEÑA, MKRALJ BJORN OLAN", "ERMAC, ETHAN JOHN LUZANDE",
-    "FORMALEJO, EARLJOHN CLARK MARTINEZ", "GARCES, SIMEON CEAZARNIE MAGISTRADO",
-    "GRAGEDA, DAREL JR. DAZAL", "ILAO, ELISEO JOHAN IBANA",
+    "ALVAREZ, RED XANDER LOZANO",
+    "BALBIN, JULIUS JOAQUIN BUBAN",
+    "BEA, JAY GIL B.",
+    "BELARDO, SEAN EMMANUEL BALASTA",
+    "BELER, MATT JOSHUA ESCUETA",
+    "BERSABE, JOHN NESTOR OCTA",
+    "CARINAN, KEN BRYAN NOBLEZA",
+    "CERENO, KEN JERVIN BERCASIO",
+    "DE LA PEÑA, MKRALJ BJORN OLAN",
+    "ERMAC, ETHAN JOHN LUZANDE",
+    "FORMALEJO, EARLJOHN CLARK MARTINEZ",
+    "GARCES, SIMEON CEAZARNIE MAGISTRADO",
+    "GRAGEDA, DAREL JR. DAZAL",
+    "ILAO, ELISEO JOHAN IBANA",
     "MORGA, CHARISSA ENCISO",
-    "NACARIO, KROHN EROS REMOLADOR", "PURQUED, DANILO ALFON",
-    "RODRIGUEZ, RIONNAH ARANETA", "SALCEDA, EMMAN BALLON",
-    "TOLOSA, CRIS ALCHED FERRERAS", "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
-    "VILLARIN, KELLAN KRISTOF ASETRE", "YU, SHERWIN JOHN",
-    "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES",
-    "CLAVECILLA, PRINCESS JESSICA ATANACIO", "CORDOVA, KYLA RHEA FE PARIS",
-    "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
-    "RODRIGUEZ, RIONNAH ARANETA", "TAPEL, MIKHAELA ALENA TANON"
+    "NACARIO, KROHN EROS REMOLADOR",
+    "PURQUED, DANILO ALFON",
+    "RODRIGUEZ, RIONNAH ARANETA",
+    "SALCEDA, EMMAN BALLON",
+    "TOLOSA, CRIS ALCHED FERRERAS",
+    "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
+    "VILLARIN, KELLAN KRISTOF ASETRE",
+    "YU, SHERWIN JOHN",
+    "ACUÑA, JASMINE ABUNDO",
+    "ALPE, SOPHIA ELLEN ROSALES",
+    "CLAVECILLA, PRINCESS JESSICA ATANACIO",
+    "CORDOVA, KYLA RHEA FE PARIS",
+    "ESPIRITU, ZIA EMMANUELLE BARCILLANO",
+    "MIRASOL, ATHENA THERESE CUERDO",
+    "RODRIGUEZ, RIONNAH ARANETA",
+    "TAPEL, MIKHAELA ALENA TANON"
 ];
 
 function normalizeName(name) {
@@ -47,12 +66,18 @@ function normalizeName(name) {
         .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
 }
 
+// ==========================================
+// 🛡️ STORAGE SETUP (ALLOW ALL FILE TYPES)
+// ==========================================
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage: storage });
 
+// ==========================================
+// 📚 MONGODB SCHEMAS
+// ==========================================
 const AssignmentSchema = new mongoose.Schema({
     title: String,
     date: String,
@@ -111,6 +136,12 @@ const Response = mongoose.model('Response', ResponseSchema);
 const Point = mongoose.model('Point', PointSchema);
 const Offense = mongoose.model('Offense', OffenseSchema);
 
+// ✅ ADMIN SESSION
+let adminSession = { role: null };
+
+// ==========================================
+// 🌐 ROUTES
+// ==========================================
 app.get('/api/data', async (req, res) => {
     try {
         const [assignments, others, today, responses, points, offenses] = await Promise.all([
@@ -142,8 +173,6 @@ app.post('/api/verify', (req, res) => {
     return res.json({ success: false, message: "Name not found. Check spelling (Ñ, ñ, special chars)." });
 });
 
-let adminSession = { role: null };
-
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === '1221') {
@@ -157,7 +186,7 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// ✅ FIXED ROUTES WITH upload.single('file')
+// ✅ ADD ASSIGNMENT (WITH FILE)
 app.post('/api/admin/add-assignment', upload.single('file'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
@@ -182,6 +211,7 @@ app.post('/api/admin/add-assignment', upload.single('file'), async (req, res) =>
     }
 });
 
+// ✅ ADD OTHER (WITH FILE)
 app.post('/api/admin/add-other', upload.single('file'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
@@ -201,6 +231,7 @@ app.post('/api/admin/add-other', upload.single('file'), async (req, res) => {
     }
 });
 
+// ✅ ADD TODAY ANNOUNCEMENT (WITH FILE)
 app.post('/api/admin/add-today', upload.single('file'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
@@ -340,6 +371,9 @@ app.delete('/api/admin/delete-offense/:id', async (req, res) => {
     res.json({ success: true });
 });
 
+// ==========================================
+// 🚀 START SERVER
+// ==========================================
 app.listen(PORT, () => {
     console.log(`✅ 7-Jade Server running on port ${PORT}`);
     console.log(`✅ MongoDB Connected! Data is now permanent.`);
