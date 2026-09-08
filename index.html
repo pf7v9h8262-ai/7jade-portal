@@ -522,18 +522,30 @@
         document.getElementById('calendarDefaultMsg').style.display = 'block';
     }
 
+    // ✅ UPDATED: View images, PDFs, videos, files
     function openAssignmentPopup(date, idx) {
         const item = assignments[date][idx];
         document.getElementById('popupTitle').textContent = item.title;
         document.getElementById('popupDate').textContent = `📅 ${date}`;
-        document.getElementById('popupBody').textContent = item.content || "No detailed content.";
-        const img = document.getElementById('popupImage');
-        if(item.fileData && item.fileType && item.fileType.startsWith('image/')) {
-            img.src = item.fileData;
-            img.style.display = 'block';
-        } else {
-            img.style.display = 'none';
+        const popupBody = document.getElementById('popupBody');
+        const popupImage = document.getElementById('popupImage');
+        popupImage.style.display = 'none';
+        popupImage.src = '';
+        popupBody.innerHTML = item.content || "No detailed content.";
+        
+        if(item.fileData) {
+            if(item.fileType && item.fileType.startsWith('image/')) {
+                popupImage.src = item.fileData;
+                popupImage.style.display = 'block';
+            } else if(item.fileType && item.fileType.startsWith('video/')) {
+                popupBody.innerHTML += `<video src="${item.fileData}" controls style="width:100%; max-height:400px; margin-top:10px; border-radius:12px;"></video>`;
+            } else if(item.fileType && (item.fileType === 'application/pdf' || item.fileType.includes('pdf'))) {
+                popupBody.innerHTML += `<iframe src="${item.fileData}" style="width:100%; height:500px; margin-top:10px; border-radius:12px; border:1px solid #2ecc71;"></iframe>`;
+            } else {
+                popupBody.innerHTML += `<a href="${item.fileData}" download="${item.fileName}" style="display:block; margin-top:10px; color:#2ecc71; font-weight:600;">📎 Download: ${item.fileName}</a>`;
+            }
         }
+        
         document.getElementById('assignmentPopup').style.display = 'flex';
     }
 
