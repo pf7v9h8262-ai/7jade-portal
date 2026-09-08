@@ -1,59 +1,37 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const mongoose = require('mongoose');
-const fs = require('fs-extra');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use(express.json({ limit: '50mb' })); // ✅ Allows large files (Base64)
 app.use(express.static(__dirname));
 
-// ✅ CONNECT TO MONGODB ATLAS
 const MONGODB_URI = 'mongodb+srv://rxalvarez1221_db_user:YRVaSYmFo3PkOPSV@cluster0.evzldfy.mongodb.net/?retryWrites=true&w=majority';
 
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('✅ Connected to MongoDB Atlas!'))
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// ==========================================
-// 📚 7-JADE ROSTER (31 students)
-// ==========================================
 const JADE_ROSTER = [
-    "ALVAREZ, RED XANDER LOZANO",
-    "BALBIN, JULIUS JOAQUIN BUBAN",
-    "BEA, JAY GIL B.",
-    "BELARDO, SEAN EMMANUEL BALASTA",
-    "BELER, MATT JOSHUA ESCUETA",
-    "BERSABE, JOHN NESTOR OCTA",
-    "CARINAN, KEN BRYAN NOBLEZA",
-    "CERENO, KEN JERVIN BERCASIO",
-    "DE LA PEÑA, MKRALJ BJORN OLAN",
-    "ERMAC, ETHAN JOHN LUZANDE",
-    "FORMALEJO, EARLJOHN CLARK MARTINEZ",
-    "GARCES, SIMEON CEAZARNIE MAGISTRADO",
-    "GRAGEDA, DAREL JR. DAZAL",
-    "ILAO, ELISEO JOHAN IBANA",
+    "ALVAREZ, RED XANDER LOZANO", "BALBIN, JULIUS JOAQUIN BUBAN",
+    "BEA, JAY GIL B.", "BELARDO, SEAN EMMANUEL BALASTA",
+    "BELER, MATT JOSHUA ESCUETA", "BERSABE, JOHN NESTOR OCTA",
+    "CARINAN, KEN BRYAN NOBLEZA", "CERENO, KEN JERVIN BERCASIO",
+    "DE LA PEÑA, MKRALJ BJORN OLAN", "ERMAC, ETHAN JOHN LUZANDE",
+    "FORMALEJO, EARLJOHN CLARK MARTINEZ", "GARCES, SIMEON CEAZARNIE MAGISTRADO",
+    "GRAGEDA, DAREL JR. DAZAL", "ILAO, ELISEO JOHAN IBANA",
     "MORGA, CHARISSA ENCISO",
-    "NACARIO, KROHN EROS REMOLADOR",
-    "PURQUED, DANILO ALFON",
-    "RODRIGUEZ, RIONNAH ARANETA",
-    "SALCEDA, EMMAN BALLON",
-    "TOLOSA, CRIS ALCHED FERRERAS",
-    "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
-    "VILLARIN, KELLAN KRISTOF ASETRE",
-    "YU, SHERWIN JOHN",
-    "ACUÑA, JASMINE ABUNDO",
-    "ALPE, SOPHIA ELLEN ROSALES",
-    "CLAVECILLA, PRINCESS JESSICA ATANACIO",
-    "CORDOVA, KYLA RHEA FE PARIS",
-    "ESPIRITU, ZIA EMMANUELLE BARCILLANO",
-    "MIRASOL, ATHENA THERESE CUERDO",
-    "RODRIGUEZ, RIONNAH ARANETA",
-    "TAPEL, MIKHAELA ALENA TANON"
+    "NACARIO, KROHN EROS REMOLADOR", "PURQUED, DANILO ALFON",
+    "RODRIGUEZ, RIONNAH ARANETA", "SALCEDA, EMMAN BALLON",
+    "TOLOSA, CRIS ALCHED FERRERAS", "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
+    "VILLARIN, KELLAN KRISTOF ASETRE", "YU, SHERWIN JOHN",
+    "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES",
+    "CLAVECILLA, PRINCESS JESSICA ATANACIO", "CORDOVA, KYLA RHEA FE PARIS",
+    "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
+    "RODRIGUEZ, RIONNAH ARANETA", "TAPEL, MIKHAELA ALENA TANON"
 ];
 
 function normalizeName(name) {
@@ -66,23 +44,12 @@ function normalizeName(name) {
         .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
 }
 
-// ==========================================
-// 🛡️ STORAGE SETUP (ALLOW ALL FILE TYPES)
-// ==========================================
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-});
-const upload = multer({ storage: storage });
-
-// ==========================================
-// 📚 MONGODB SCHEMAS
-// ==========================================
 const AssignmentSchema = new mongoose.Schema({
     title: String,
     date: String,
     content: String,
-    fileUrl: String,
+    fileData: String,
+    fileName: String,
     fileType: String,
     createdBy: String,
     createdAt: { type: Date, default: Date.now }
@@ -90,7 +57,8 @@ const AssignmentSchema = new mongoose.Schema({
 
 const OtherSchema = new mongoose.Schema({
     text: String,
-    fileUrl: String,
+    fileData: String,
+    fileName: String,
     fileType: String,
     createdBy: String,
     date: { type: Date, default: Date.now }
@@ -98,7 +66,8 @@ const OtherSchema = new mongoose.Schema({
 
 const TodaySchema = new mongoose.Schema({
     text: String,
-    fileUrl: String,
+    fileData: String,
+    fileName: String,
     fileType: String,
     createdBy: String,
     date: { type: Date, default: Date.now }
@@ -136,12 +105,8 @@ const Response = mongoose.model('Response', ResponseSchema);
 const Point = mongoose.model('Point', PointSchema);
 const Offense = mongoose.model('Offense', OffenseSchema);
 
-// ✅ ADMIN SESSION
 let adminSession = { role: null };
 
-// ==========================================
-// 🌐 ROUTES
-// ==========================================
 app.get('/api/data', async (req, res) => {
     try {
         const [assignments, others, today, responses, points, offenses] = await Promise.all([
@@ -186,42 +151,41 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// ✅ ADD ASSIGNMENT (WITH FILE)
-app.post('/api/admin/add-assignment', upload.single('file'), async (req, res) => {
+// ✅ ADD ASSIGNMENT (Base64 file)
+app.post('/api/admin/add-assignment', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const title = req.body.title;
-        const date = req.body.date;
-        const content = req.body.content || "No details";
+        const { title, date, content, fileData, fileName, fileType, createdBy } = req.body;
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
         const newAssignment = new Assignment({ 
             title, 
             date, 
-            content, 
-            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
-            fileType: req.file ? req.file.mimetype : null,
-            createdBy: req.body.createdBy || "Admin",
+            content: content || "No details", 
+            fileData: fileData || null,
+            fileName: fileName || null,
+            fileType: fileType || null,
+            createdBy: createdBy || "Admin",
             createdAt: new Date() 
         });
         await newAssignment.save();
         res.json({ success: true });
     } catch (error) {
-        console.error("Error adding assignment:", error);
         res.status(500).json({ error: "Server error: " + error.message });
     }
 });
 
-// ✅ ADD OTHER (WITH FILE)
-app.post('/api/admin/add-other', upload.single('file'), async (req, res) => {
+// ✅ ADD OTHER (Base64 file)
+app.post('/api/admin/add-other', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const text = req.body.text;
+        const { text, fileData, fileName, fileType, createdBy } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
         const newOther = new Other({ 
             text, 
-            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
-            fileType: req.file ? req.file.mimetype : null,
-            createdBy: req.body.createdBy || "Admin",
+            fileData: fileData || null,
+            fileName: fileName || null,
+            fileType: fileType || null,
+            createdBy: createdBy || "Admin",
             date: new Date() 
         });
         await newOther.save();
@@ -231,17 +195,18 @@ app.post('/api/admin/add-other', upload.single('file'), async (req, res) => {
     }
 });
 
-// ✅ ADD TODAY ANNOUNCEMENT (WITH FILE)
-app.post('/api/admin/add-today', upload.single('file'), async (req, res) => {
+// ✅ ADD TODAY ANNOUNCEMENT (Base64 file)
+app.post('/api/admin/add-today', async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const text = req.body.text;
+        const { text, fileData, fileName, fileType, createdBy } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
         const newToday = new Today({ 
             text, 
-            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
-            fileType: req.file ? req.file.mimetype : null,
-            createdBy: req.body.createdBy || "Admin",
+            fileData: fileData || null,
+            fileName: fileName || null,
+            fileType: fileType || null,
+            createdBy: createdBy || "Admin",
             date: new Date() 
         });
         await newToday.save();
@@ -371,9 +336,6 @@ app.delete('/api/admin/delete-offense/:id', async (req, res) => {
     res.json({ success: true });
 });
 
-// ==========================================
-// 🚀 START SERVER
-// ==========================================
 app.listen(PORT, () => {
     console.log(`✅ 7-Jade Server running on port ${PORT}`);
     console.log(`✅ MongoDB Connected! Data is now permanent.`);

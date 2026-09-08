@@ -34,7 +34,6 @@
         .tab-content.active { display: block; }
         @keyframes fade { from { opacity: 0.3; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* LOCKED */
         .verify-box { max-width: 500px; margin: 20px auto; background: rgba(0, 0, 0, 0.25); padding: 28px 24px; border-radius: 28px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; }
         .verify-box input { width: 100%; padding: 14px 18px; border-radius: 60px; border: none; background: rgba(255, 255, 255, 0.1); color: white; font-size: 1rem; margin: 10px 0 16px; outline: 2px solid transparent; transition: 0.2s; }
         .verify-box input:focus { outline: 2px solid #2ecc71; background: rgba(255, 255, 255, 0.15); }
@@ -47,14 +46,12 @@
         .locked-exit { margin-top: 24px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 10px 28px; border-radius: 40px; cursor: pointer; transition: 0.2s; }
         .locked-exit:hover { background: rgba(255, 255, 255, 0.18); }
 
-        /* CALENDAR NAVIGATION */
         .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .calendar-nav button { background: #2ecc71; border: none; color: white; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 1rem; }
         .calendar-nav button:hover { background: #27ae60; transform: scale(1.05); }
         .calendar-nav button:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); cursor: not-allowed; transform: none; }
         .calendar-nav .month-label { font-size: 1.4rem; font-weight: 700; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* CALENDAR GRID */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin: 20px 0 16px; }
         .cal-day { background: rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 14px 6px; text-align: center; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
         .cal-day:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.2); }
@@ -63,7 +60,6 @@
         .cal-day.has-event { background: rgba(46, 204, 113, 0.15); border-color: #2ecc71; }
         .cal-day .event-dot { display: inline-block; width: 6px; height: 6px; background: #2ecc71; border-radius: 50%; margin-top: 4px; }
 
-        /* DATE DETAIL BOX */
         .date-detail-box { background: rgba(0, 0, 0, 0.3); border-radius: 24px; padding: 20px 24px; margin-top: 16px; display: none; border: 1px solid rgba(255, 255, 255, 0.08); max-height: 400px; overflow-y: auto; }
         .date-detail-box.active { display: block; }
         .date-detail-box h3 { font-size: 1.8rem; font-weight: 400; margin-bottom: 12px; color: #2ecc71; }
@@ -72,7 +68,6 @@
         .return-btn { margin-top: 15px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: white; padding: 8px 28px; border-radius: 60px; cursor: pointer; transition: 0.2s; font-weight: 500; width: 100%; }
         .return-btn:hover { background: rgba(255, 255, 255, 0.18); }
 
-        /* ASSIGNMENT POPUP */
         .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 9999; justify-content: center; align-items: center; }
         .popup-content { background: #1a2e1f; color: #f0f6fc; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 30px; border-radius: 24px; border: 1px solid #2ecc71; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; }
         .popup-content h2 { color: #2ecc71; margin-bottom: 10px; }
@@ -81,7 +76,6 @@
         .popup-content img { max-width: 100%; height: auto; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
         .popup-close { margin-top: 20px; background: #b34f4f; border: none; padding: 10px 24px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; width: 100%; }
 
-        /* POINT SYSTEM */
         .points-container { background: rgba(255,255,255,0.04); border-radius: 20px; padding: 20px; }
         .point-item { background: rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; border-left: 4px solid #f1c40f; }
         .point-item h4 { color: #f1c40f; margin-bottom: 5px; }
@@ -96,17 +90,14 @@
         .admin-delete-btn { background: #b34f4f; border: none; padding: 4px 14px; border-radius: 40px; color: white; cursor: pointer; font-size: 0.75rem; float: right; transition: 0.2s; }
         .admin-delete-btn:hover { background: #7f1d1d; transform: scale(1.05); }
 
-        /* ADMIN SECTIONS */
         .admin-section { background: rgba(255, 255, 255, 0.04); border-radius: 20px; padding: 16px 20px; margin-bottom: 16px; }
         .admin-section input, .admin-section textarea, .admin-section input[type="file"] { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255, 255, 255, 0.08); color: white; resize: vertical; margin: 8px 0; }
         .admin-section input:focus, .admin-section textarea:focus, .admin-section input[type="file"]:focus { outline: 2px solid #2ecc71; }
         .admin-section button { background: #2ecc71; border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; margin-top: 6px; }
         
-        /* POINT FORM SELECT */
         .point-select { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; margin: 8px 0; font-size: 1rem; }
         .point-select option { background: #1a2e1f; color: white; }
 
-        /* OFFENSE REASONS */
         .offense-reason-item { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #e74c3c; cursor: pointer; transition: 0.2s; }
         .offense-reason-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
         .offense-reason-item h4 { color: #e74c3c; margin-bottom: 5px; }
@@ -124,8 +115,6 @@
         <button class="nav-btn hidden-tab" data-tab="announcements">📢 Announcements</button>
         <button class="nav-btn hidden-tab" data-tab="qa">💬 Q&A</button>
         <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
-        
-        <!-- Admin Tabs -->
         <button class="nav-btn admin-tab" data-tab="admin-add">➕ Admin Add</button>
         <button class="nav-btn admin-tab" data-tab="admin-assignments">🗑️ Admin Assign</button>
         <button class="nav-btn admin-tab" data-tab="admin-others">🗑️ Admin Others</button>
@@ -134,12 +123,10 @@
         <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Admin Points</button>
         <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
         <button class="nav-btn admin-tab" data-tab="admin-offenses">⚠️ Offenses</button>
-        
         <button class="nav-btn hidden-tab" data-tab="admin">⚙️ Admin Panel</button>
     </div>
 
     <div class="content-area">
-        <!-- LOCKED -->
         <div id="locked" class="tab-content active">
             <div id="verifyBox" class="verify-box">
                 <h3 style="font-weight:300; margin-bottom:8px;">🔐 Verify & Enter</h3>
@@ -160,7 +147,6 @@
             </div>
         </div>
 
-        <!-- STUDENT TABS -->
         <div id="assignments" class="tab-content">
             <h3 style="font-weight:300; margin-bottom:8px;">📅 Assignments & Projects</h3>
             <div class="calendar-nav">
@@ -176,6 +162,7 @@
             </div>
             <div id="calendarDefaultMsg" style="opacity:0.6; margin-top:10px;">Click a date to see assignment titles</div>
         </div>
+
         <div id="others" class="tab-content"><h3 style="font-weight:300;">📌 Others</h3><div id="othersList"></div></div>
         <div id="announcements" class="tab-content"><h3 style="font-weight:300;">📢 Today's announcements</h3><div id="todayAnnounceList"></div></div>
         <div id="qa" class="tab-content">
@@ -187,13 +174,11 @@
             </div>
         </div>
 
-        <!-- POINTS (PRIVATE) -->
         <div id="points" class="tab-content">
             <h3 style="font-weight:300;">🏆 My Points</h3>
             <div class="points-container" id="myPointsContainer"></div>
         </div>
 
-        <!-- ADMIN PANEL (LOGIN ONLY) -->
         <div id="admin" class="tab-content">
             <h3 style="font-weight:300;">⚙️ Admin Panel</h3>
             <div class="admin-pass-box" id="adminPassBox">
@@ -204,7 +189,6 @@
             </div>
         </div>
 
-        <!-- ADMIN ADD (TEXTBOXES HERE + FILE UPLOAD) -->
         <div id="admin-add" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">➕ Admin: Add Content</h3>
             
@@ -232,7 +216,6 @@
             </div>
         </div>
 
-        <!-- ADMIN DELETE LISTS -->
         <div id="admin-assignments" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Assignments</h3>
             <div id="adminAssignList"></div>
@@ -250,11 +233,10 @@
             <div id="adminQAList"></div>
         </div>
 
-        <!-- ADMIN POINTS -->
         <div id="admin-points" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
             <div class="admin-point-section">
-                <h4>➕ Add / Deduct Points (Decimals allowed, can go negative)</h4>
+                <h4>➕ Add / Deduct Points</h4>
                 <select id="adminPointStudent" class="point-select">
                     <option value="">-- Select Student --</option>
                 </select>
@@ -272,13 +254,11 @@
             <div id="adminPointsList"></div>
         </div>
 
-        <!-- ADMIN MONITOR -->
         <div id="admin-monitor" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">📊 Points Monitor</h3>
             <div id="monitorList"></div>
         </div>
 
-        <!-- ADMIN OFFENSES -->
         <div id="admin-offenses" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">⚠️ Offense Reasons</h3>
             <div id="offenseList"></div>
@@ -286,7 +266,6 @@
     </div>
 </div>
 
-<!-- ASSIGNMENT POPUP -->
 <div class="popup-overlay" id="assignmentPopup">
     <div class="popup-content">
         <h2 id="popupTitle">Assignment Title</h2>
@@ -366,30 +345,23 @@
         const pass = document.getElementById('adminPassInput').value;
         const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
         const data = await res.json();
-        
         if (data.success) {
             adminRole = data.role;
             document.getElementById('adminPassBox').style.display = 'none';
-            
             if (data.role === 'content') {
                 document.querySelectorAll('.admin-tab').forEach(b => {
-                    if (b.dataset.tab === 'admin-qa' || 
-                        b.dataset.tab === 'admin-points' || 
-                        b.dataset.tab === 'admin-monitor' || 
-                        b.dataset.tab === 'admin-offenses') {
+                    if (b.dataset.tab === 'admin-qa' || b.dataset.tab === 'admin-points' || b.dataset.tab === 'admin-monitor' || b.dataset.tab === 'admin-offenses') {
                         b.style.display = 'none';
                     } else {
                         b.style.display = 'inline-block';
                     }
                 });
                 document.querySelector('.nav-btn[data-tab="admin-add"]').click();
-                alert('✅ Content Admin: You can add & delete assignments, others, announcements. NO Q&A/Points access.');
+                alert('✅ Content Admin');
             } else if (data.role === 'full') {
-                document.querySelectorAll('.admin-tab').forEach(b => {
-                    b.style.display = 'inline-block';
-                });
+                document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
                 document.querySelector('.nav-btn[data-tab="admin-points"]').click();
-                alert('✅ Full Admin: All tabs unlocked (including Q&A, Points, Monitor, Offenses).');
+                alert('✅ Full Admin');
             }
         } else {
             document.getElementById('adminPassMsg').textContent = '❌ Invalid password';
@@ -409,7 +381,7 @@
 
     function populateOffenseDropdown() {
         const select = document.getElementById('adminPointReason');
-        select.innerHTML = '<option value="">-- Select Offense (Optional) --</option>';
+        select.innerHTML = '<option value="">-- Select Offense --</option>';
         offenses.forEach(offense => {
             const opt = document.createElement('option');
             opt.value = offense.name;
@@ -447,7 +419,6 @@
         const password = document.getElementById('jadePasswordInput').value.trim();
         if (!name) { document.getElementById('verifyMsg').textContent = '❌ Please enter your name.'; return; }
         if (password !== 'Jade lang ang Malakas') { document.getElementById('verifyMsg').textContent = '❌ Incorrect password. Try again.'; return; }
-        
         const normalizedInput = normalizeName(name);
         const found = JADE_NAMES.some(name => normalizeName(name) === normalizedInput);
         if (found) {
@@ -458,15 +429,11 @@
             lockedVerified = true;
             document.getElementById('welcomeName').textContent = exactName + " (7-Jade)";
             document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'inline-block');
-            
-            // ✅ AUTOMATIC ADMIN FOR MORGA
             if (normalizedInput === "MORGA, CHARISSA ENCISO") {
                 adminRole = 'full';
-                document.querySelectorAll('.admin-tab').forEach(b => {
-                    b.style.display = 'inline-block';
-                });
+                document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
                 document.querySelector('.nav-btn[data-tab="admin-points"]').click();
-                alert('✅ Full Admin: You have automatic admin access (Morga).');
+                alert('✅ Full Admin (Morga)');
             } else {
                 document.querySelector('.nav-btn[data-tab="assignments"]').click();
             }
@@ -494,10 +461,10 @@
             assignments = {};
             data.assignments.forEach(a => {
                 if(!assignments[a.date]) assignments[a.date] = [];
-                assignments[a.date].push({ id: a._id, title: a.title, content: a.content, fileUrl: a.fileUrl, fileType: a.fileType, createdBy: a.createdBy, createdAt: a.createdAt });
+                assignments[a.date].push({ id: a._id, title: a.title, content: a.content, fileData: a.fileData, fileName: a.fileName, fileType: a.fileType, createdBy: a.createdBy, createdAt: a.createdAt });
             });
-            othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, fileUrl: o.fileUrl, fileType: o.fileType, date: o.date, createdBy: o.createdBy }));
-            todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, fileUrl: t.fileUrl, fileType: t.fileType, date: t.date, createdBy: t.createdBy }));
+            othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, fileData: o.fileData, fileName: o.fileName, fileType: o.fileType, date: o.date, createdBy: o.createdBy }));
+            todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, fileData: t.fileData, fileName: t.fileName, fileType: t.fileType, date: t.date, createdBy: t.createdBy }));
             qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: r.adminReply || '', user: r.realName, date: r.date }));
             points = data.points;
             offenses = data.offenses || [];
@@ -561,17 +528,22 @@
         document.getElementById('popupDate').textContent = `📅 ${date}`;
         document.getElementById('popupBody').textContent = item.content || "No detailed content.";
         const img = document.getElementById('popupImage');
-        if(item.fileUrl) { img.src = item.fileUrl; img.style.display = 'block'; } else { img.style.display = 'none'; }
+        if(item.fileData && item.fileType && item.fileType.startsWith('image/')) {
+            img.src = item.fileData;
+            img.style.display = 'block';
+        } else {
+            img.style.display = 'none';
+        }
         document.getElementById('assignmentPopup').style.display = 'flex';
     }
 
     function closePopup() { document.getElementById('assignmentPopup').style.display = 'none'; }
 
     function renderOthers() { 
-        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}</div>`).join(''); 
+        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join(''); 
     }
     function renderTodayAnnounce() { 
-        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}</div>`).join(''); 
+        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join(''); 
     }
     function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${new Date(item.date).toLocaleString()}</div></div>`).join(''); }
 
@@ -591,7 +563,6 @@
         const input = document.getElementById('newOffenseName');
         const name = input.value.trim();
         if(!name) return alert("Enter an offense name.");
-        
         const res = await fetch('/api/admin/add-offense', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
         if(res.ok) {
             input.value='';
@@ -603,26 +574,35 @@
         }
     }
 
+    function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
     async function adminAddAssignment() {
         if (!adminRole) return alert("Please login as admin first.");
-        
         const date = document.getElementById('adminAssignDate').value;
         const title = document.getElementById('adminAssignTitle').value.trim();
         const content = document.getElementById('adminAssignContent').value.trim();
         const fileInput = document.getElementById('adminAssignFile');
-        
         if(!date) { alert('Please fill in the Date'); return; }
         if(!title) { alert('Please fill in the Assignment Title'); return; }
-        
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('date', date);
-        formData.append('content', content);
+        let fileData = null, fileName = null, fileType = null;
         if(fileInput.files && fileInput.files[0]) {
-            formData.append('file', fileInput.files[0]);
+            const file = fileInput.files[0];
+            fileData = await readFileAsBase64(file);
+            fileName = file.name;
+            fileType = file.type;
         }
-
-        const res = await fetch('/api/admin/add-assignment', { method: 'POST', body: formData });
+        const res = await fetch('/api/admin/add-assignment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, date, content, fileData, fileName, fileType, createdBy: currentStudentName || "Admin" })
+        });
         if(res.ok) {
             document.getElementById('adminAssignTitle').value='';
             document.getElementById('adminAssignDate').value='';
@@ -641,14 +621,18 @@
         const text = document.getElementById('adminOtherText').value.trim();
         const fileInput = document.getElementById('adminOtherFile');
         if(!text) return alert("Enter announcement text.");
-        
-        const formData = new FormData();
-        formData.append('text', text);
+        let fileData = null, fileName = null, fileType = null;
         if(fileInput.files && fileInput.files[0]) {
-            formData.append('file', fileInput.files[0]);
+            const file = fileInput.files[0];
+            fileData = await readFileAsBase64(file);
+            fileName = file.name;
+            fileType = file.type;
         }
-
-        const res = await fetch('/api/admin/add-other', { method: 'POST', body: formData });
+        const res = await fetch('/api/admin/add-other', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, fileData, fileName, fileType, createdBy: currentStudentName || "Admin" })
+        });
         if(res.ok) {
             document.getElementById('adminOtherText').value='';
             fileInput.value='';
@@ -665,14 +649,18 @@
         const text = document.getElementById('adminAnnounceText').value.trim();
         const fileInput = document.getElementById('adminAnnounceFile');
         if(!text) return alert("Enter announcement text.");
-        
-        const formData = new FormData();
-        formData.append('text', text);
+        let fileData = null, fileName = null, fileType = null;
         if(fileInput.files && fileInput.files[0]) {
-            formData.append('file', fileInput.files[0]);
+            const file = fileInput.files[0];
+            fileData = await readFileAsBase64(file);
+            fileName = file.name;
+            fileType = file.type;
         }
-
-        const res = await fetch('/api/admin/add-today', { method: 'POST', body: formData });
+        const res = await fetch('/api/admin/add-today', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, fileData, fileName, fileType, createdBy: currentStudentName || "Admin" })
+        });
         if(res.ok) {
             document.getElementById('adminAnnounceText').value='';
             fileInput.value='';
@@ -699,7 +687,7 @@
             }
             container.innerHTML += '</div>';
         } else {
-            container.innerHTML = '<p style="opacity:0.6;">No points yet. Starting at 15.</p>';
+            container.innerHTML = '<p style="opacity:0.6;">No points yet.</p>';
         }
     }
 
@@ -710,8 +698,7 @@
         const message = document.getElementById('adminPointMessage').value.trim();
         const reason = document.getElementById('adminPointReason').value;
         if(!studentName) return alert("Select a student.");
-        if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount (e.g. 0.5 or -1.5).");
-        
+        if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount.");
         const res = await fetch('/api/admin/update-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, change, message, reason }) });
         if(res.ok) {
             document.getElementById('adminPointChange').value = '';
@@ -730,8 +717,7 @@
         if (adminRole !== 'full') return alert("You don't have permission to reset points.");
         const input = document.getElementById('resetPointsValue');
         const newPoints = parseInt(input.value) || 15;
-        if (!confirm(`Are you sure you want to reset ALL student scores to ${newPoints}?`)) return;
-        
+        if (!confirm(`Reset ALL to ${newPoints}?`)) return;
         const res = await fetch('/api/admin/reset-all-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPoints }) });
         if(res.ok) {
             input.value='';
@@ -756,11 +742,11 @@
         }[tabId]);
         
         if(tabId === 'admin-assignments') {
-            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small>${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}<button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
+            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small>${item.fileData ? `<a href="${item.fileData}" download="${item.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${item.fileName}</a>` : ''}<button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
         } else if(tabId === 'admin-others') {
-            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
+            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-announcements') {
-            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}<button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
+            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}<button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-qa') {
             container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-points') {
@@ -781,7 +767,7 @@
     }
 
     async function deleteOffense(id) {
-        if(!confirm('Are you sure you want to remove this offense?')) return;
+        if(!confirm('Remove this offense?')) return;
         const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
         if(res.ok) {
             fetchData();
