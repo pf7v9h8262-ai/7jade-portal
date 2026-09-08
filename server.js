@@ -20,7 +20,7 @@ mongoose.connect(MONGODB_URI)
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ==========================================
-// 📚 7-JADE ROSTER (31 students - Morga added)
+// 📚 7-JADE ROSTER (31 students)
 // ==========================================
 const JADE_ROSTER = [
     "ALVAREZ, RED XANDER LOZANO",
@@ -67,7 +67,7 @@ function normalizeName(name) {
 }
 
 // ==========================================
-// 🛡️ STORAGE SETUP
+// 🛡️ STORAGE SETUP (ALLOW ALL FILE TYPES)
 // ==========================================
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
@@ -82,19 +82,24 @@ const AssignmentSchema = new mongoose.Schema({
     title: String,
     date: String,
     content: String,
-    image: String,
+    fileUrl: String,
+    fileType: String,
     createdBy: String,
     createdAt: { type: Date, default: Date.now }
 });
 
 const OtherSchema = new mongoose.Schema({
     text: String,
+    fileUrl: String,
+    fileType: String,
     createdBy: String,
     date: { type: Date, default: Date.now }
 });
 
 const TodaySchema = new mongoose.Schema({
     text: String,
+    fileUrl: String,
+    fileType: String,
     createdBy: String,
     date: { type: Date, default: Date.now }
 });
@@ -166,7 +171,15 @@ app.post('/api/verify', (req, res) => {
     const { section, name } = req.body;
     if (section !== "7-Jade") return res.json({ success: false, message: "Only 7-Jade" });
     const found = JADE_ROSTER.some(s => normalizeName(s) === normalizeName(name));
-    if (found) return res.json({ success: true, message: "Verified!" });
+    if (found) {
+        // ✅ Automatically set admin session if Morga logs in
+        if (normalizeName(name) === "MORGA, CHARISSA ENCISO") {
+            adminSession.role = 'full';
+        } else {
+            adminSession.role = null;
+        }
+        return res.json({ success: true, message: "Verified!" });
+    }
     return res.json({ success: false, message: "Name not found. Check spelling (Ñ, ñ, special chars)." });
 });
 
@@ -188,7 +201,7 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // --- ADD ASSIGNMENT (WITH FILE) ---
-app.post('/api/admin/add-assignment', upload.single('image'), async (req, res) => {
+app.post('/api/admin/add-assignment', upload.single('file'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
         
@@ -202,7 +215,8 @@ app.post('/api/admin/add-assignment', upload.single('image'), async (req, res) =
             title, 
             date, 
             content, 
-            image: req.file ? `/uploads/${req.file.filename}` : null,
+            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+            fileType: req.file ? req.file.mimetype : null,
             createdBy: req.body.createdBy || "Admin",
             createdAt: new Date() 
         });
@@ -214,13 +228,19 @@ app.post('/api/admin/add-assignment', upload.single('image'), async (req, res) =
     }
 });
 
-// --- ADD OTHER ---
-app.post('/api/admin/add-other', async (req, res) => {
+// --- ADD OTHER (WITH FILE) ---
+app.post('/api/admin/add-other', upload.single('file'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { text } = req.body;
+        const text = req.body.text;
         if (!text) return res.status(400).json({ error: "Text required" });
-        const newOther = new Other({ text, date: new Date() });
+        const newOther = new Other({ 
+            text, 
+            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+            fileType: req.file ? req.file.mimetype : null,
+            createdBy: req.body.createdBy || "Admin",
+            date: new Date() 
+        });
         await newOther.save();
         res.json({ success: true });
     } catch (error) {
@@ -228,13 +248,19 @@ app.post('/api/admin/add-other', async (req, res) => {
     }
 });
 
-// --- ADD TODAY ANNOUNCEMENT ---
-app.post('/api/admin/add-today', async (req, res) => {
+// --- ADD TODAY ANNOUNCEMENT (WITH FILE) ---
+app.post('/api/admin/add-today', upload.single('file'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        const { text } = req.body;
+        const text = req.body.text;
         if (!text) return res.status(400).json({ error: "Text required" });
-        const newToday = new Today({ text, date: new Date() });
+        const newToday = new Today({ 
+            text, 
+            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+            fileType: req.file ? req.file.mimetype : null,
+            createdBy: req.body.createdBy || "Admin",
+            date: new Date() 
+        });
         await newToday.save();
         res.json({ success: true });
     } catch (error) {

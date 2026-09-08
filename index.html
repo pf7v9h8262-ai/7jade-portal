@@ -209,23 +209,25 @@
             <h3 style="font-weight:300; color:#b34f4f;">➕ Admin: Add Content</h3>
             
             <div class="admin-section">
-                <h4>➕ Add to Assignments (With Image)</h4>
+                <h4>➕ Add to Assignments (PDF/Video/Image)</h4>
                 <input type="date" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
                 <input type="text" id="adminAssignTitle" placeholder="Assignment title">
                 <textarea id="adminAssignContent" placeholder="Assignment content/details..."></textarea>
-                <input type="file" id="adminAssignImage" accept="image/*">
+                <input type="file" id="adminAssignFile" accept="*/*">
                 <button onclick="adminAddAssignment()">Add Assignment</button>
             </div>
             
             <div class="admin-section">
-                <h4>➕ Add to Others</h4>
+                <h4>➕ Add to Others (PDF/Video/Image)</h4>
                 <textarea id="adminOtherText" placeholder="Announcement text..."></textarea>
+                <input type="file" id="adminOtherFile" accept="*/*">
                 <button onclick="adminAddOther()">Add</button>
             </div>
             
             <div class="admin-section">
-                <h4>➕ Add to General Announcements</h4>
+                <h4>➕ Add to General Announcements (PDF/Video/Image)</h4>
                 <textarea id="adminAnnounceText" placeholder="Announcement for today..."></textarea>
+                <input type="file" id="adminAnnounceFile" accept="*/*">
                 <button onclick="adminAddAnnounce()">Add</button>
             </div>
         </div>
@@ -297,23 +299,23 @@
 
 <script>
     const JADE_NAMES = [
-    "ALVAREZ, RED XANDER LOZANO", "BALBIN, JULIUS JOAQUIN BUBAN",
-    "BEA, JAY GIL B.", "BELARDO, SEAN EMMANUEL BALASTA",
-    "BELER, MATT JOSHUA ESCUETA", "BERSABE, JOHN NESTOR OCTA",
-    "CARINAN, KEN BRYAN NOBLEZA", "CERENO, KEN JERVIN BERCASIO",
-    "DE LA PEÑA, MKRALJ BJORN OLAN", "ERMAC, ETHAN JOHN LUZANDE",
-    "FORMALEJO, EARLJOHN CLARK MARTINEZ", "GARCES, SIMEON CEAZARNIE MAGISTRADO",
-    "GRAGEDA, DAREL JR. DAZAL", "ILAO, ELISEO JOHAN IBANA",
-    "MORGA, CHARISSA ENCISO",
-    "NACARIO, KROHN EROS REMOLADOR", "PURQUED, DANILO ALFON",
-    "RODRIGUEZ, RIONNAH ARANETA", "SALCEDA, EMMAN BALLON",
-    "TOLOSA, CRIS ALCHED FERRERAS", "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
-    "VILLARIN, KELLAN KRISTOF ASETRE", "YU, SHERWIN JOHN",
-    "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES",
-    "CLAVECILLA, PRINCESS JESSICA ATANACIO", "CORDOVA, KYLA RHEA FE PARIS",
-    "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
-    "RODRIGUEZ, RIONNAH ARANETA", "TAPEL, MIKHAELA ALENA TANON"
-];
+        "ALVAREZ, RED XANDER LOZANO", "BALBIN, JULIUS JOAQUIN BUBAN",
+        "BEA, JAY GIL B.", "BELARDO, SEAN EMMANUEL BALASTA",
+        "BELER, MATT JOSHUA ESCUETA", "BERSABE, JOHN NESTOR OCTA",
+        "CARINAN, KEN BRYAN NOBLEZA", "CERENO, KEN JERVIN BERCASIO",
+        "DE LA PEÑA, MKRALJ BJORN OLAN", "ERMAC, ETHAN JOHN LUZANDE",
+        "FORMALEJO, EARLJOHN CLARK MARTINEZ", "GARCES, SIMEON CEAZARNIE MAGISTRADO",
+        "GRAGEDA, DAREL JR. DAZAL", "ILAO, ELISEO JOHAN IBANA",
+        "MORGA, CHARISSA ENCISO",
+        "NACARIO, KROHN EROS REMOLADOR", "PURQUED, DANILO ALFON",
+        "RODRIGUEZ, RIONNAH ARANETA", "SALCEDA, EMMAN BALLON",
+        "TOLOSA, CRIS ALCHED FERRERAS", "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
+        "VILLARIN, KELLAN KRISTOF ASETRE", "YU, SHERWIN JOHN",
+        "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES",
+        "CLAVECILLA, PRINCESS JESSICA ATANACIO", "CORDOVA, KYLA RHEA FE PARIS",
+        "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
+        "RODRIGUEZ, RIONNAH ARANETA", "TAPEL, MIKHAELA ALENA TANON"
+    ];
 
     let assignments = {}; 
     let othersAnnounce = [];
@@ -440,7 +442,7 @@
         else nextBtn.disabled = false;
     }
 
-    function verifyJade() {
+    async function verifyJade() {
         const name = document.getElementById('jadeNameInput').value.trim();
         const password = document.getElementById('jadePasswordInput').value.trim();
         if (!name) { document.getElementById('verifyMsg').textContent = '❌ Please enter your name.'; return; }
@@ -456,7 +458,18 @@
             lockedVerified = true;
             document.getElementById('welcomeName').textContent = exactName + " (7-Jade)";
             document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'inline-block');
-            document.querySelector('.nav-btn[data-tab="assignments"]').click();
+            
+            // ✅ AUTOMATIC ADMIN FOR MORGA
+            if (normalizedInput === "MORGA, CHARISSA ENCISO") {
+                adminRole = 'full';
+                document.querySelectorAll('.admin-tab').forEach(b => {
+                    b.style.display = 'inline-block';
+                });
+                document.querySelector('.nav-btn[data-tab="admin-points"]').click();
+                alert('✅ Full Admin: You have automatic admin access (Morga).');
+            } else {
+                document.querySelector('.nav-btn[data-tab="assignments"]').click();
+            }
         } else {
             document.getElementById('verifyMsg').textContent = '❌ Name not found. Check spelling (Ñ, ñ, special chars).';
         }
@@ -481,10 +494,10 @@
             assignments = {};
             data.assignments.forEach(a => {
                 if(!assignments[a.date]) assignments[a.date] = [];
-                assignments[a.date].push({ id: a._id, title: a.title, content: a.content, image: a.image, createdBy: a.createdBy, createdAt: a.createdAt });
+                assignments[a.date].push({ id: a._id, title: a.title, content: a.content, fileUrl: a.fileUrl, fileType: a.fileType, createdBy: a.createdBy, createdAt: a.createdAt });
             });
-            othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, date: o.date, createdBy: o.createdBy }));
-            todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, date: t.date, createdBy: t.createdBy }));
+            othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, fileUrl: o.fileUrl, fileType: o.fileType, date: o.date, createdBy: o.createdBy }));
+            todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, fileUrl: t.fileUrl, fileType: t.fileType, date: t.date, createdBy: t.createdBy }));
             qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: r.adminReply || '', user: r.realName, date: r.date }));
             points = data.points;
             offenses = data.offenses || [];
@@ -548,14 +561,18 @@
         document.getElementById('popupDate').textContent = `📅 ${date}`;
         document.getElementById('popupBody').textContent = item.content || "No detailed content.";
         const img = document.getElementById('popupImage');
-        if(item.image) { img.src = item.image; img.style.display = 'block'; } else { img.style.display = 'none'; }
+        if(item.fileUrl) { img.src = item.fileUrl; img.style.display = 'block'; } else { img.style.display = 'none'; }
         document.getElementById('assignmentPopup').style.display = 'flex';
     }
 
     function closePopup() { document.getElementById('assignmentPopup').style.display = 'none'; }
 
-    function renderOthers() { document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}</div>`).join(''); }
-    function renderTodayAnnounce() { document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div></div>`).join(''); }
+    function renderOthers() { 
+        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}</div>`).join(''); 
+    }
+    function renderTodayAnnounce() { 
+        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}</div>`).join(''); 
+    }
     function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${new Date(item.date).toLocaleString()}</div></div>`).join(''); }
 
     async function addQuestion() { const input = document.getElementById('qaQuestionInput'); const text = input.value.trim(); if(!text) return; const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, realName: currentStudentName || "Guest" }) }); if(res.ok) { input.value=''; fetchData(); alert("✅ Question posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); } }
@@ -586,14 +603,13 @@
         }
     }
 
-    // ✅ FIXED ADD ASSIGNMENT
     async function adminAddAssignment() {
         if (!adminRole) return alert("Please login as admin first.");
         
         const date = document.getElementById('adminAssignDate').value;
         const title = document.getElementById('adminAssignTitle').value.trim();
         const content = document.getElementById('adminAssignContent').value.trim();
-        const fileInput = document.getElementById('adminAssignImage');
+        const fileInput = document.getElementById('adminAssignFile');
         
         if(!date) { alert('Please fill in the Date'); return; }
         if(!title) { alert('Please fill in the Assignment Title'); return; }
@@ -603,7 +619,7 @@
         formData.append('date', date);
         formData.append('content', content);
         if(fileInput.files && fileInput.files[0]) {
-            formData.append('image', fileInput.files[0]);
+            formData.append('file', fileInput.files[0]);
         }
 
         const res = await fetch('/api/admin/add-assignment', { method: 'POST', body: formData });
@@ -623,17 +639,49 @@
     async function adminAddOther() {
         if (!adminRole) return alert("Please login as admin first.");
         const text = document.getElementById('adminOtherText').value.trim();
-        if(!text) return;
-        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        if(res.ok) { document.getElementById('adminOtherText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+        const fileInput = document.getElementById('adminOtherFile');
+        if(!text) return alert("Enter announcement text.");
+        
+        const formData = new FormData();
+        formData.append('text', text);
+        if(fileInput.files && fileInput.files[0]) {
+            formData.append('file', fileInput.files[0]);
+        }
+
+        const res = await fetch('/api/admin/add-other', { method: 'POST', body: formData });
+        if(res.ok) {
+            document.getElementById('adminOtherText').value='';
+            fileInput.value='';
+            fetchData();
+            alert("✅ Added!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
     async function adminAddAnnounce() {
         if (!adminRole) return alert("Please login as admin first.");
         const text = document.getElementById('adminAnnounceText').value.trim();
-        if(!text) return;
-        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
-        if(res.ok) { document.getElementById('adminAnnounceText').value=''; fetchData(); alert("✅ Added!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
+        const fileInput = document.getElementById('adminAnnounceFile');
+        if(!text) return alert("Enter announcement text.");
+        
+        const formData = new FormData();
+        formData.append('text', text);
+        if(fileInput.files && fileInput.files[0]) {
+            formData.append('file', fileInput.files[0]);
+        }
+
+        const res = await fetch('/api/admin/add-today', { method: 'POST', body: formData });
+        if(res.ok) {
+            document.getElementById('adminAnnounceText').value='';
+            fileInput.value='';
+            fetchData();
+            alert("✅ Added!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
     }
 
     async function loadMyPoints() {
@@ -708,11 +756,11 @@
         }[tabId]);
         
         if(tabId === 'admin-assignments') {
-            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small><button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
+            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small>${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}<button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
         } else if(tabId === 'admin-others') {
-            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
+            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-announcements') {
-            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
+            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileUrl ? `<a href="${t.fileUrl}" target="_blank" style="display:block; margin-top:5px; color:#2ecc71;">📎 View File</a>` : ''}<button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-qa') {
             container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
         } else if(tabId === 'admin-points') {
@@ -732,7 +780,6 @@
         }
     }
 
-    // ✅ DELETE OFFENSE FUNCTION
     async function deleteOffense(id) {
         if(!confirm('Are you sure you want to remove this offense?')) return;
         const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
