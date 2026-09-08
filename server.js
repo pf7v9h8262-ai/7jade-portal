@@ -157,17 +157,14 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// ✅ FIXED: ADD ASSIGNMENT (with file upload)
+// ✅ FIXED ROUTES WITH upload.single('file')
 app.post('/api/admin/add-assignment', upload.single('file'), async (req, res) => {
     try {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
-        
         const title = req.body.title;
         const date = req.body.date;
         const content = req.body.content || "No details";
-        
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
-        
         const newAssignment = new Assignment({ 
             title, 
             date, 
@@ -190,7 +187,13 @@ app.post('/api/admin/add-other', upload.single('file'), async (req, res) => {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
         const text = req.body.text;
         if (!text) return res.status(400).json({ error: "Text required" });
-        const newOther = new Other({ text, fileUrl: req.file ? `/uploads/${req.file.filename}` : null, fileType: req.file ? req.file.mimetype : null, createdBy: req.body.createdBy || "Admin", date: new Date() });
+        const newOther = new Other({ 
+            text, 
+            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+            fileType: req.file ? req.file.mimetype : null,
+            createdBy: req.body.createdBy || "Admin",
+            date: new Date() 
+        });
         await newOther.save();
         res.json({ success: true });
     } catch (error) {
@@ -203,7 +206,13 @@ app.post('/api/admin/add-today', upload.single('file'), async (req, res) => {
         if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
         const text = req.body.text;
         if (!text) return res.status(400).json({ error: "Text required" });
-        const newToday = new Today({ text, fileUrl: req.file ? `/uploads/${req.file.filename}` : null, fileType: req.file ? req.file.mimetype : null, createdBy: req.body.createdBy || "Admin", date: new Date() });
+        const newToday = new Today({ 
+            text, 
+            fileUrl: req.file ? `/uploads/${req.file.filename}` : null,
+            fileType: req.file ? req.file.mimetype : null,
+            createdBy: req.body.createdBy || "Admin",
+            date: new Date() 
+        });
         await newToday.save();
         res.json({ success: true });
     } catch (error) {
