@@ -4,354 +4,554 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7-Jade · Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        :root {
+            --forest-900: #05190c;
+            --forest-800: #0b2a15;
+            --forest-700: #113a1e;
+            --jade: #2ecc71;
+            --jade-dark: #27ae60;
+            --mint: #a8e6cf;
+            --gold: #f1c40f;
+            --danger: #e74c3c;
+            --ink: #eef7f1;
+            --muted: rgba(238, 247, 241, 0.62);
+            --line: rgba(255, 255, 255, 0.1);
+            --panel: rgba(255, 255, 255, 0.05);
+            --panel-strong: rgba(6, 30, 15, 0.55);
+            --radius-lg: 28px;
+            --radius-md: 18px;
+            --radius-pill: 999px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        html { scroll-behavior: smooth; }
         body {
-            background: linear-gradient(145deg, #0d3b1f 0%, #1a6b3a 45%, #2ecc71 100%);
-            min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px;
+            min-height: 100vh; padding: 18px; color: var(--ink);
+            background:
+                radial-gradient(1100px 700px at 12% -10%, rgba(46, 204, 113, 0.35), transparent 60%),
+                radial-gradient(900px 600px at 105% 8%, rgba(168, 230, 207, 0.22), transparent 55%),
+                linear-gradient(170deg, var(--forest-900) 0%, var(--forest-800) 45%, #0f4423 100%);
+            background-attachment: fixed;
+            display: flex; justify-content: center;
         }
+        ::selection { background: var(--jade); color: #04210f; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(46, 204, 113, 0.35); border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(46, 204, 113, 0.6); background-clip: content-box; }
+        :focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
         .app {
-            width: 100%; max-width: 1320px;
-            background: rgba(255, 255, 255, 0.07);
-            backdrop-filter: blur(8px); border-radius: 48px;
-            padding: 24px 28px 32px; box-shadow: 0 20px 40px rgba(0, 40, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 100%; max-width: 1280px; align-self: flex-start;
+            background: rgba(255, 255, 255, 0.045);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border-radius: 34px; border: 1px solid var(--line);
+            padding: 20px 22px 28px;
+            box-shadow: 0 30px 60px rgba(0, 20, 8, 0.55);
         }
-        .nav-bar { display: flex; flex-wrap: wrap; gap: 12px 10px; margin-bottom: 28px; border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding-bottom: 18px; }
+
+        .brand { display: flex; align-items: center; gap: 14px; padding: 4px 4px 16px; }
+        .brand img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
+        .brand .brand-text h1 { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.5px; line-height: 1.1; }
+        .brand .brand-text span { font-size: 0.75rem; color: var(--muted); letter-spacing: 2px; }
+
+        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
         .nav-btn {
-            background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #eaf0e5; padding: 10px 22px; border-radius: 40px; font-weight: 500;
-            font-size: 0.95rem; cursor: pointer; transition: 0.25s; backdrop-filter: blur(4px);
-            box-shadow: 0 4px 8px rgba(0, 40, 0, 0.2); flex: 0 1 auto;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid transparent;
+            color: rgba(238, 247, 241, 0.8); padding: 9px 18px; border-radius: var(--radius-pill);
+            font-weight: 500; font-size: 0.88rem; cursor: pointer; transition: 0.2s ease; white-space: nowrap;
         }
-        .nav-btn:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.4); }
-        .nav-btn.active { background: rgba(255, 255, 255, 0.2); border-color: #2ecc71; box-shadow: 0 0 20px rgba(46, 204, 113, 0.15); }
-        .nav-btn.hidden-tab { display: none; }
-        .nav-btn.admin-tab { display: none; }
-        .content-area { min-height: 480px; background: rgba(255, 255, 255, 0.04); border-radius: 32px; padding: 24px 28px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.06); color: #f0f6fc; }
-        .tab-content { display: none; animation: fade 0.3s ease; }
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+        .nav-btn.active { background: linear-gradient(135deg, var(--jade), var(--jade-dark)); color: #04210f; font-weight: 700; box-shadow: 0 6px 18px rgba(46, 204, 113, 0.3); }
+        .nav-btn.hidden-tab, .nav-btn.admin-tab { display: none; }
+
+        .content-area { min-height: 470px; }
+        .tab-content { display: none; animation: fade 0.35s ease; }
         .tab-content.active { display: block; }
-        @keyframes fade { from { opacity: 0.3; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
-        .verify-box { max-width: 500px; margin: 20px auto; background: rgba(0, 0, 0, 0.25); padding: 28px 24px; border-radius: 28px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; }
-        .verify-box input { width: 100%; padding: 14px 18px; border-radius: 60px; border: none; background: rgba(255, 255, 255, 0.1); color: white; font-size: 1rem; margin: 10px 0 16px; outline: 2px solid transparent; transition: 0.2s; }
-        .verify-box input:focus { outline: 2px solid #2ecc71; background: rgba(255, 255, 255, 0.15); }
-        .verify-box button { background: #2ecc71; border: none; padding: 12px 32px; border-radius: 60px; font-weight: 600; color: white; cursor: pointer; transition: 0.2s; font-size: 1rem; }
-        .verify-box button:hover { background: #27ae60; transform: scale(1.02); }
-        .verify-msg { margin-top: 12px; color: #ffb3b3; font-weight: 500; }
-        .locked-content { display: none; text-align: center; padding: 20px 0; }
-        .locked-content h2 { font-size: 2.2rem; font-weight: 300; letter-spacing: 1px; color: #2ecc71; }
-        .locked-content p { opacity: 0.8; margin-top: 8px; }
-        .locked-exit { margin-top: 24px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 10px 28px; border-radius: 40px; cursor: pointer; transition: 0.2s; }
-        .locked-exit:hover { background: rgba(255, 255, 255, 0.18); }
+        h3.page-title { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+        .page-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 18px; }
 
-        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .calendar-nav button { background: #2ecc71; border: none; color: white; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 1rem; }
-        .calendar-nav button:hover { background: #27ae60; transform: scale(1.05); }
-        .calendar-nav button:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); cursor: not-allowed; transform: none; }
-        .calendar-nav .month-label { font-size: 1.4rem; font-weight: 700; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; }
+        /* ---------- Locked / hero ---------- */
+        .hero {
+            position: relative; border-radius: var(--radius-lg); overflow: hidden;
+            border: 1px solid var(--line); min-height: 430px;
+            display: flex; align-items: center; justify-content: center; padding: 34px 20px;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: url('PP.png') center/cover no-repeat;
+            transform: scale(1.04); filter: saturate(1.05);
+        }
+        .hero::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(3, 20, 9, 0.35) 0%, rgba(3, 20, 9, 0.72) 100%);
+        }
+        .verify-box {
+            position: relative; z-index: 2; width: 100%; max-width: 460px;
+            background: rgba(4, 22, 11, 0.72); backdrop-filter: blur(10px);
+            border: 1px solid rgba(46, 204, 113, 0.4); border-radius: var(--radius-lg);
+            padding: 30px 26px 26px; text-align: left;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+        }
+        .verify-box .box-logo {
+            position: absolute; top: -34px; right: -18px; width: 108px; height: auto;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.6));
+        }
+        .verify-box h3 { font-family: 'Outfit', sans-serif; font-size: 1.45rem; font-weight: 700; padding-right: 76px; }
+        .verify-box .sub { color: var(--muted); font-size: 0.85rem; margin: 4px 0 16px; padding-right: 70px; }
+        .format-hint { background: rgba(46, 204, 113, 0.12); border-left: 3px solid var(--jade); border-radius: 12px; padding: 10px 14px; font-size: 0.78rem; color: var(--mint); margin-bottom: 16px; }
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 0.72rem; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 6px; }
+        input, textarea, select {
+            width: 100%; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.07); color: var(--ink); font-size: 0.95rem; transition: 0.2s;
+        }
+        input::placeholder, textarea::placeholder { color: rgba(238, 247, 241, 0.38); }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--jade); background: rgba(255, 255, 255, 0.11); box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18); }
+        select option { background: var(--forest-800); color: var(--ink); }
+        textarea { min-height: 88px; resize: vertical; }
+        input[type="file"] { padding: 10px 12px; font-size: 0.85rem; }
+        input[type="date"] { color-scheme: dark; }
 
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin: 20px 0 16px; }
-        .cal-day { background: rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 14px 6px; text-align: center; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .cal-day:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.2); }
-        .cal-day .day-num { font-size: 1.6rem; font-weight: 500; }
-        .cal-day .day-label { font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; }
-        .cal-day.has-event { background: rgba(46, 204, 113, 0.15); border-color: #2ecc71; }
-        .cal-day .event-dot { display: inline-block; width: 6px; height: 6px; background: #2ecc71; border-radius: 50%; margin-top: 4px; }
+        .btn { background: linear-gradient(135deg, var(--jade), var(--jade-dark)); color: #04210f; border: none; padding: 12px 26px; border-radius: var(--radius-pill); font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: 0.2s; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(46, 204, 113, 0.32); }
+        .btn:active { transform: none; }
+        .btn.full { width: 100%; }
+        .btn.ghost { background: rgba(255, 255, 255, 0.08); color: var(--ink); border: 1px solid var(--line); }
+        .btn.ghost:hover { background: rgba(255, 255, 255, 0.16); box-shadow: none; }
+        .btn.gold { background: linear-gradient(135deg, #f7dc6f, var(--gold)); color: #3a2c00; }
+        .btn.red { background: linear-gradient(135deg, #e86b60, #b34f4f); color: #fff; }
+        .btn.sm { padding: 8px 16px; font-size: 0.8rem; }
+        .verify-msg { margin-top: 12px; color: #ffb3b3; font-size: 0.85rem; min-height: 18px; }
 
-        .date-detail-box { background: rgba(0, 0, 0, 0.3); border-radius: 24px; padding: 20px 24px; margin-top: 16px; display: none; border: 1px solid rgba(255, 255, 255, 0.08); max-height: 400px; overflow-y: auto; }
+        .welcome-card { position: relative; z-index: 2; max-width: 520px; text-align: center; background: rgba(4, 22, 11, 0.72); border: 1px solid rgba(46, 204, 113, 0.4); border-radius: var(--radius-lg); padding: 40px 30px; backdrop-filter: blur(10px); display: none; }
+        .welcome-card img { width: 96px; margin-bottom: 14px; }
+        .welcome-card h2 { font-family: 'Outfit', sans-serif; font-size: 2rem; color: var(--jade); }
+        .welcome-card p { color: var(--muted); margin-top: 6px; }
+
+        /* ---------- Cards / panels ---------- */
+        .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px 22px; margin-bottom: 16px; }
+        .panel h4 { font-family: 'Outfit', sans-serif; font-size: 1.05rem; margin-bottom: 4px; }
+        .panel .hint { color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; }
+        .panel > input, .panel > textarea, .panel > select { margin-bottom: 10px; }
+        .empty { padding: 26px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: var(--radius-lg); font-size: 0.9rem; }
+
+        .list-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--jade); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 12px; }
+        .list-card .body-text { font-size: 0.97rem; line-height: 1.55; white-space: pre-wrap; }
+        .list-card .meta { font-size: 0.74rem; color: var(--muted); margin-top: 8px; }
+        .list-card .file-link { display: inline-block; margin-top: 10px; color: var(--jade); font-weight: 600; font-size: 0.85rem; text-decoration: none; }
+        .list-card .file-link:hover { text-decoration: underline; }
+        .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+
+        /* ---------- Calendar ---------- */
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-pill); }
+        .calendar-nav button { background: rgba(255,255,255,0.08); border: 1px solid var(--line); color: var(--ink); padding: 8px 18px; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+        .calendar-nav button:hover:not(:disabled) { background: var(--jade); color: #04210f; }
+        .calendar-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .calendar-nav .month-label { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 14px; }
+        .cal-head { text-align: center; font-size: 0.68rem; letter-spacing: 1px; color: var(--muted); padding-bottom: 4px; }
+        .cal-day { position: relative; aspect-ratio: 1 / 1; background: rgba(255,255,255,0.045); border: 1px solid transparent; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.18s; }
+        .cal-day:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+        .cal-day .day-num { font-size: 1.1rem; font-weight: 600; }
+        .cal-day.has-event { background: rgba(46, 204, 113, 0.16); border-color: rgba(46, 204, 113, 0.55); }
+        .cal-day .event-dot { width: 5px; height: 5px; background: var(--jade); border-radius: 50%; margin-top: 5px; }
+        .cal-day.empty-cell { background: none; cursor: default; }
+        .cal-day.empty-cell:hover { background: none; transform: none; }
+
+        .date-detail-box { background: var(--panel-strong); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px 22px; display: none; max-height: 420px; overflow-y: auto; }
         .date-detail-box.active { display: block; }
-        .date-detail-box h3 { font-size: 1.8rem; font-weight: 400; margin-bottom: 12px; color: #2ecc71; }
-        .date-detail-box .title-item { background: rgba(255, 255, 255, 0.05); padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; border-left: 3px solid #2ecc71; font-size: 1.05rem; }
-        .date-detail-box .title-item:hover { background: rgba(46, 204, 113, 0.2); transform: translateX(4px); }
-        .return-btn { margin-top: 15px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: white; padding: 8px 28px; border-radius: 60px; cursor: pointer; transition: 0.2s; font-weight: 500; width: 100%; }
-        .return-btn:hover { background: rgba(255, 255, 255, 0.18); }
+        .date-detail-box h3 { font-family: 'Outfit', sans-serif; font-size: 1.15rem; margin-bottom: 12px; color: var(--jade); }
+        .title-item { background: rgba(255,255,255,0.05); border-left: 3px solid var(--jade); padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+        .title-item:hover { background: rgba(46, 204, 113, 0.18); transform: translateX(4px); }
 
-        .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 9999; justify-content: center; align-items: center; }
-        .popup-content { background: #1a2e1f; color: #f0f6fc; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 30px; border-radius: 24px; border: 1px solid #2ecc71; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; }
-        .popup-content h2 { color: #2ecc71; margin-bottom: 10px; }
-        .popup-content .date { opacity: 0.6; font-size: 0.9rem; margin-bottom: 15px; display: block; }
-        .popup-content .body { font-size: 1.1rem; line-height: 1.6; margin: 15px 0; white-space: pre-wrap; }
-        .popup-content img { max-width: 100%; height: auto; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .popup-close { margin-top: 20px; background: #b34f4f; border: none; padding: 10px 24px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; width: 100%; }
+        /* ---------- Popups ---------- */
+        .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(2, 12, 6, 0.86); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+        .popup-overlay.open { display: flex; }
+        .popup-content { background: linear-gradient(160deg, #0d2e18, #071c0f); max-width: 620px; width: 100%; max-height: 86vh; overflow-y: auto; padding: 28px; border-radius: var(--radius-lg); border: 1px solid rgba(46, 204, 113, 0.45); box-shadow: 0 30px 60px rgba(0,0,0,0.7); }
+        .popup-content h2 { font-family: 'Outfit', sans-serif; color: var(--jade); font-size: 1.4rem; }
+        .popup-content .date { color: var(--muted); font-size: 0.8rem; margin: 4px 0 14px; display: block; }
+        .popup-content .body { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
+        .popup-content img, .popup-content video, .popup-content iframe { max-width: 100%; border-radius: 14px; margin-top: 14px; border: 1px solid var(--line); }
+        .popup-close { margin-top: 20px; }
+        .lightbox img { max-width: min(92vw, 520px); max-height: 82vh; border-radius: 20px; border: 2px solid rgba(46,204,113,0.5); box-shadow: 0 30px 60px rgba(0,0,0,0.7); }
+        .lightbox { flex-direction: column; gap: 16px; }
+        .lightbox .cap { font-family: 'Outfit', sans-serif; font-size: 1rem; }
 
-        .points-container { background: rgba(255,255,255,0.04); border-radius: 20px; padding: 20px; }
-        .point-item { background: rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; border-left: 4px solid #f1c40f; }
-        .point-item h4 { color: #f1c40f; margin-bottom: 5px; }
-        .point-item .point-text { font-size: 1rem; margin: 8px 0; }
-        .point-item .point-file { margin-top: 8px; }
-        .point-item .point-file a { color: #2ecc71; text-decoration: none; font-weight: 600; }
-        .point-item .point-date { font-size: 0.75rem; opacity: 0.6; margin-top: 5px; }
-        .admin-point-section { background: rgba(255,255,255,0.04); border-radius: 20px; padding: 16px 20px; margin-bottom: 16px; }
-        .admin-point-section input, .admin-point-section textarea, .admin-point-section select { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; resize: vertical; margin: 8px 0; }
-        .admin-point-section input:focus, .admin-point-section textarea:focus, .admin-point-section select:focus { outline: 2px solid #2ecc71; }
-        .admin-point-section button { background: #2ecc71; border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; margin-top: 6px; }
-        .admin-delete-btn { background: #b34f4f; border: none; padding: 4px 14px; border-radius: 40px; color: white; cursor: pointer; font-size: 0.75rem; float: right; transition: 0.2s; }
-        .admin-delete-btn:hover { background: #7f1d1d; transform: scale(1.05); }
+        /* ---------- Officers ---------- */
+        .officer-hero { display: block; width: 100%; max-width: 440px; margin: 0 auto 26px; border-radius: var(--radius-lg); border: 1px solid rgba(46,204,113,0.4); box-shadow: 0 20px 45px rgba(0,0,0,0.5); cursor: zoom-in; }
+        .officer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+        .officer-card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; cursor: zoom-in; transition: 0.22s; }
+        .officer-card:hover { transform: translateY(-5px); border-color: rgba(46,204,113,0.6); box-shadow: 0 18px 32px rgba(0,0,0,0.42); }
+        .officer-card img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; }
+        .officer-card .cap { padding: 12px 14px 14px; }
+        .officer-card .cap .nm { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.95rem; }
+        .officer-card .cap .rl { font-size: 0.76rem; color: var(--jade); letter-spacing: 0.4px; margin-top: 2px; }
 
-        .admin-section { background: rgba(255, 255, 255, 0.04); border-radius: 20px; padding: 16px 20px; margin-bottom: 16px; }
-        .admin-section input, .admin-section textarea, .admin-section input[type="file"] { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255, 255, 255, 0.08); color: white; resize: vertical; margin: 8px 0; }
-        .admin-section input:focus, .admin-section textarea:focus, .admin-section input[type="file"]:focus { outline: 2px solid #2ecc71; }
-        .admin-section button { background: #2ecc71; border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; margin-top: 6px; }
+        /* ---------- Points ---------- */
+        .score-hero { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; background: linear-gradient(135deg, rgba(46,204,113,0.16), rgba(241,196,15,0.08)); border: 1px solid rgba(46,204,113,0.35); border-radius: var(--radius-lg); padding: 22px 26px; margin-bottom: 18px; }
+        .score-hero .score { font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 800; line-height: 1; color: var(--jade); }
+        .score-hero .score small { font-size: 1.1rem; color: var(--muted); font-weight: 600; }
+        .score-hero .who { font-family: 'Outfit', sans-serif; font-size: 1.05rem; }
+        .score-hero .label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.5px; }
+        .history-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--danger); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 10px; }
+        .history-card.up { border-left-color: var(--jade); }
+        .history-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .delta { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #ff9b9b; }
+        .history-card.up .delta { color: var(--jade); }
+        .offense-badge { display: inline-block; background: rgba(231,76,60,0.18); color: #ff9b9b; border: 1px solid rgba(231,76,60,0.45); padding: 4px 12px; border-radius: var(--radius-pill); font-size: 0.76rem; font-weight: 600; }
+        .offense-badge.reward { background: rgba(46,204,113,0.16); color: #86e6ad; border-color: rgba(46,204,113,0.45); }
+        .history-card .note { font-size: 0.92rem; margin-top: 8px; line-height: 1.5; }
+        .history-card .when { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
 
-        .point-select { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; margin: 8px 0; font-size: 1rem; }
-        .point-select option { background: #1a2e1f; color: white; }
-
-        /* ✅ Multi-student picker */
-        .student-picker-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 4px; }
-        .student-picker-head .mini-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #eaf0e5; padding: 6px 16px; border-radius: 40px; font-size: 0.8rem; cursor: pointer; margin: 0; }
-        .student-picker-head .mini-btn:hover { background: rgba(255,255,255,0.2); }
-        .student-picker-head .selected-count { font-size: 0.85rem; opacity: 0.75; margin-left: auto; }
-        .student-search { margin: 8px 0 !important; }
-        .student-checklist { max-height: 260px; overflow-y: auto; background: rgba(0,0,0,0.22); border-radius: 18px; padding: 8px; margin: 8px 0 4px; border: 1px solid rgba(255,255,255,0.08); }
-        .student-checklist label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; transition: 0.15s; }
-        .student-checklist label:hover { background: rgba(46,204,113,0.15); }
+        .student-picker-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 8px; }
+        .selected-count { font-size: 0.8rem; color: var(--muted); margin-left: auto; }
+        .student-checklist { max-height: 250px; overflow-y: auto; background: rgba(2, 14, 7, 0.45); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 8px; margin-bottom: 12px; }
+        .student-checklist label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 0.87rem; transition: 0.15s; }
+        .student-checklist label:hover { background: rgba(46,204,113,0.14); }
         .student-checklist label.checked { background: rgba(46,204,113,0.2); }
-        .student-checklist input[type="checkbox"] { width: 18px; height: 18px; flex: 0 0 auto; margin: 0; padding: 0; accent-color: #2ecc71; border-radius: 4px; }
+        .student-checklist input[type="checkbox"] { width: 17px; height: 17px; flex: 0 0 auto; accent-color: var(--jade); padding: 0; }
 
-        .offense-badge { display: inline-block; background: rgba(231,76,60,0.2); color: #ff8f8f; border: 1px solid rgba(231,76,60,0.45); padding: 4px 12px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; }
-        .offense-badge.reward { background: rgba(46,204,113,0.18); color: #7ee2a8; border-color: rgba(46,204,113,0.45); }
+        table.data-table { width: 100%; border-collapse: collapse; background: rgba(2, 14, 7, 0.4); min-width: 460px; }
+        .table-scroll { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--line); }
+        table.data-table th { padding: 12px 16px; text-align: left; font-size: 0.74rem; letter-spacing: 1px; font-weight: 700; color: var(--jade); background: rgba(46,204,113,0.14); }
+        table.data-table td { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 0.92rem; }
+        table.data-table tr:hover td { background: rgba(255,255,255,0.04); }
+        .rank { width: 54px; font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--gold); }
+        .board.low table.data-table th { color: var(--danger); background: rgba(231,76,60,0.14); }
+        .board.low .rank { color: var(--danger); }
+        .board { margin-bottom: 28px; }
+        .board h4 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; }
+        .board.high h4 { color: var(--gold); }
+        .board.low h4 { color: var(--danger); }
+        .board .hint { color: var(--muted); font-size: 0.8rem; margin: 2px 0 10px; }
 
-        .offense-reason-item { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #e74c3c; cursor: pointer; transition: 0.2s; }
-        .offense-reason-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
-        .offense-reason-item h4 { color: #e74c3c; margin-bottom: 5px; }
-        .offense-history { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 12px; margin-top: 10px; max-height: 300px; overflow-y: auto; }
+        .qa-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 12px; }
+        .qa-card .q { font-weight: 600; }
+        .qa-card .a { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--jade); color: var(--mint); font-size: 0.93rem; }
+        .qa-card .a.pending { border-left-color: var(--line); color: var(--muted); font-style: italic; }
+        .qa-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+        .qa-bar input { flex: 1; min-width: 200px; }
 
-        /* ✅ Walk Of Fame boards */
-        .wof-board { margin-bottom: 30px; }
-        .wof-board h4 { font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
-        .wof-board .board-note { font-size: 0.85rem; opacity: 0.65; margin-bottom: 10px; }
-        .wof-board.highest h4 { color: #f1c40f; }
-        .wof-board.lowest h4 { color: #e74c3c; }
-        .wof-scroll { overflow-x: auto; border-radius: 20px; }
-        .wof-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.22); min-width: 480px; }
-        .wof-table th { padding: 12px 14px; text-align: left; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; }
-        .wof-table td { padding: 12px 14px; border-top: 1px solid rgba(255,255,255,0.07); font-size: 0.95rem; vertical-align: top; }
-        .wof-table tr:hover td { background: rgba(255,255,255,0.05); }
-        .wof-board.highest th { background: rgba(241,196,15,0.18); color: #f1c40f; }
-        .wof-board.lowest th { background: rgba(231,76,60,0.18); color: #e74c3c; }
-        .wof-rank { width: 56px; font-weight: 800; }
-        .wof-board.highest .wof-rank { color: #f1c40f; }
-        .wof-board.lowest .wof-rank { color: #e74c3c; }
-        .wof-score { font-weight: 700; white-space: nowrap; }
-        .wof-empty { padding: 18px; opacity: 0.6; background: rgba(0,0,0,0.2); border-radius: 20px; font-size: 0.95rem; }
+        .offense-row { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--danger); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .offense-row:hover { background: rgba(255,255,255,0.09); }
+        .offense-row h4 { color: var(--danger); font-family: 'Outfit', sans-serif; font-size: 1rem; }
+        .sub-entry { border-left: 2px solid var(--line); padding: 8px 12px; margin: 6px 0; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.85rem; }
+        .sub-entry.up { border-left-color: var(--jade); }
+        .sub-entry.down { border-left-color: var(--danger); }
 
-        @media (max-width: 700px) { .nav-bar { gap: 8px; } .nav-btn { padding: 8px 14px; font-size: 0.8rem; } .calendar-grid { gap: 6px; } .cal-day { padding: 8px 2px; } .cal-day .day-num { font-size: 1.2rem; } }
+        .toast-wrap { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+        .toast { background: rgba(6, 32, 16, 0.95); border: 1px solid rgba(46,204,113,0.5); color: var(--ink); padding: 12px 22px; border-radius: var(--radius-pill); font-size: 0.88rem; font-weight: 500; box-shadow: 0 12px 30px rgba(0,0,0,0.5); animation: drop 0.25s ease; max-width: 90vw; }
+        .toast.bad { border-color: rgba(231,76,60,0.6); }
+        @keyframes drop { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+
+        @media (max-width: 720px) {
+            body { padding: 10px; }
+            .app { padding: 16px 14px 22px; border-radius: 26px; }
+            .nav-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; }
+            .nav-bar::-webkit-scrollbar { display: none; }
+            .nav-btn { font-size: 0.8rem; padding: 8px 14px; }
+            .verify-box .box-logo { width: 74px; top: -26px; right: -6px; }
+            .verify-box h3 { padding-right: 56px; }
+            .calendar-grid { gap: 5px; }
+            .cal-day { border-radius: 10px; }
+            .cal-day .day-num { font-size: 0.9rem; }
+            .officer-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+            .score-hero .score { font-size: 2.4rem; }
+        }
     </style>
 </head>
 <body>
 <div class="app">
+    <div class="brand">
+        <img src="logo.png" alt="7-Jade logo">
+        <div class="brand-text">
+            <h1>7-Jade Portal</h1>
+            <span>A.Y. 26-27</span>
+        </div>
+    </div>
+
     <div class="nav-bar" id="navBar">
         <button class="nav-btn active" data-tab="locked">🔒 Locked</button>
         <button class="nav-btn hidden-tab" data-tab="assignments">📅 Assignments</button>
+        <button class="nav-btn hidden-tab" data-tab="officers">🎖️ Officers</button>
         <button class="nav-btn hidden-tab" data-tab="others">📌 Others</button>
         <button class="nav-btn hidden-tab" data-tab="announcements">📢 Announcements</button>
         <button class="nav-btn hidden-tab" data-tab="qa">💬 Q&A</button>
         <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
-        <button class="nav-btn hidden-tab" data-tab="walkoffame">🌟 Points Walk Of Fame</button>
+        <button class="nav-btn hidden-tab" data-tab="walkoffame">🌟 Walk Of Fame</button>
         <button class="nav-btn admin-tab" data-tab="admin-add">➕ Admin Add</button>
-        <button class="nav-btn admin-tab" data-tab="admin-assignments">🗑️ Admin Assign</button>
-        <button class="nav-btn admin-tab" data-tab="admin-others">🗑️ Admin Others</button>
-        <button class="nav-btn admin-tab" data-tab="admin-announcements">🗑️ Admin Ann</button>
-        <button class="nav-btn admin-tab" data-tab="admin-qa">🗑️ Admin Q&A</button>
-        <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Admin Points</button>
+        <button class="nav-btn admin-tab" data-tab="admin-assignments">🗑️ Assignments</button>
+        <button class="nav-btn admin-tab" data-tab="admin-others">🗑️ Others</button>
+        <button class="nav-btn admin-tab" data-tab="admin-announcements">🗑️ Announcements</button>
+        <button class="nav-btn admin-tab" data-tab="admin-qa">🗑️ Q&A</button>
+        <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Points</button>
         <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
         <button class="nav-btn admin-tab" data-tab="admin-offenses">⚠️ Offenses</button>
         <button class="nav-btn hidden-tab" data-tab="admin">⚙️ Admin Panel</button>
     </div>
 
     <div class="content-area">
+        <!-- LOCKED -->
         <div id="locked" class="tab-content active">
-            <div id="verifyBox" class="verify-box">
-                <h3 style="font-weight:300; margin-bottom:8px;">🔐 Verify & Enter</h3>
-                <p style="opacity:0.6; font-size:0.9rem;">Enter your exact 7-Jade name</p>
-                <div style="background: rgba(46, 204, 113, 0.15); padding: 10px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #2ecc71; text-align: left; font-size: 0.8rem; color: #a8e6cf;">
-                    <strong>Format:</strong> Last Name, First Name Middle Name<br>
-                    <em>Example: DELA CRUZ, JUAN LOZANO</em>
+            <div class="hero">
+                <div id="verifyBox" class="verify-box">
+                    <img src="logo.png" class="box-logo" alt="7-Jade logo">
+                    <h3>Verify & enter</h3>
+                    <p class="sub">Type your exact 7-Jade name.</p>
+                    <div class="format-hint">
+                        <strong>Format:</strong> Last Name, First Name Middle Name<br>
+                        <em>Example: DELA CRUZ, JUAN LOZANO</em>
+                    </div>
+                    <div class="field">
+                        <label for="jadeNameInput">Full name</label>
+                        <input type="text" id="jadeNameInput" placeholder="DELA CRUZ, JUAN LOZANO" autocomplete="off" onkeydown="if(event.key==='Enter') verifyJade()">
+                    </div>
+                    <div class="field">
+                        <label for="jadePasswordInput">Class password</label>
+                        <input type="password" id="jadePasswordInput" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter') verifyJade()">
+                    </div>
+                    <button class="btn full" onclick="verifyJade()">Enter</button>
+                    <div id="verifyMsg" class="verify-msg"></div>
                 </div>
-                <input type="text" id="jadeNameInput" placeholder="e.g. DELA CRUZ, JUAN LOZANO" autocomplete="off">
-                <input type="password" id="jadePasswordInput" placeholder="Enter password" autocomplete="off">
-                <button onclick="verifyJade()">Enter</button>
-                <div id="verifyMsg" class="verify-msg"></div>
-            </div>
-            <div id="lockedContent" class="locked-content">
-                <h2>✨ Welcome, Jade</h2>
-                <p id="welcomeName">Student</p>
-                <button class="locked-exit" onclick="exitLocked()">← Return to verify</button>
+
+                <div id="lockedContent" class="welcome-card">
+                    <img src="logo.png" alt="7-Jade logo">
+                    <h2>Welcome, Jade</h2>
+                    <p id="welcomeName">Student</p>
+                    <button class="btn ghost" style="margin-top:22px;" onclick="exitLocked()">← Sign out</button>
+                </div>
             </div>
         </div>
 
+        <!-- ASSIGNMENTS -->
         <div id="assignments" class="tab-content">
-            <h3 style="font-weight:300; margin-bottom:8px;">📅 Assignments & Projects</h3>
+            <h3 class="page-title">Assignments & projects</h3>
+            <p class="page-sub">Green dates have something due. Tap one to open it.</p>
             <div class="calendar-nav">
-                <button id="prevMonthBtn" onclick="changeMonth(-1)">◀ Previous</button>
+                <button id="prevMonthBtn" onclick="changeMonth(-1)">◀ Prev</button>
                 <span class="month-label" id="monthLabel">June 2026</span>
                 <button id="nextMonthBtn" onclick="changeMonth(1)">Next ▶</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
             <div class="date-detail-box" id="dateDetailBox">
-                <h3 id="detailDateTitle">📌 Assignments on this date</h3>
+                <h3 id="detailDateTitle">Assignments on this date</h3>
                 <div id="detailContent"></div>
-                <button class="return-btn" onclick="closeDetail()">← Return to Calendar</button>
+                <button class="btn ghost full" style="margin-top:14px;" onclick="closeDetail()">← Back to calendar</button>
             </div>
-            <div id="calendarDefaultMsg" style="opacity:0.6; margin-top:10px;">Click a date to see assignment titles</div>
+            <div id="calendarDefaultMsg" class="empty">Pick a date to see what's due.</div>
         </div>
 
-        <div id="others" class="tab-content"><h3 style="font-weight:300;">📌 Others</h3><div id="othersList"></div></div>
-        <div id="announcements" class="tab-content"><h3 style="font-weight:300;">📢 Today's announcements</h3><div id="todayAnnounceList"></div></div>
+        <!-- OFFICERS -->
+        <div id="officers" class="tab-content">
+            <h3 class="page-title">Class officers</h3>
+            <p class="page-sub">7-Jade, A.Y. 26-27 — revised and final. Tap any card to enlarge.</p>
+            <img src="31.png" class="officer-hero" alt="7-Jade class officers" onclick="openLightbox('31.png','7-Jade Class Officers')">
+            <div class="officer-grid" id="officerGrid"></div>
+        </div>
+
+        <!-- OTHERS -->
+        <div id="others" class="tab-content">
+            <h3 class="page-title">Others</h3>
+            <p class="page-sub">Reminders and posts that aren't tied to a date.</p>
+            <div id="othersList"></div>
+        </div>
+
+        <!-- ANNOUNCEMENTS -->
+        <div id="announcements" class="tab-content">
+            <h3 class="page-title">Announcements</h3>
+            <p class="page-sub">Latest news for the class.</p>
+            <div id="todayAnnounceList"></div>
+        </div>
+
+        <!-- Q&A -->
         <div id="qa" class="tab-content">
-            <h3 style="font-weight:300;">💬 Questions & Responses</h3>
+            <h3 class="page-title">Questions & answers</h3>
+            <p class="page-sub">Ask anything about class. An admin replies here.</p>
             <div id="qaList"></div>
-            <div class="qa-input-area" style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-                <input type="text" id="qaQuestionInput" placeholder="Ask a question..." style="flex:1; min-width:200px; padding:12px 16px; border-radius:60px; border:none; background:rgba(255,255,255,0.08); color:white; outline:2px solid transparent;">
-                <button onclick="addQuestion()" style="padding:12px 28px; border:none; border-radius:60px; background:#2ecc71; color:white; font-weight:600; cursor:pointer;">Post</button>
+            <div class="qa-bar">
+                <input type="text" id="qaQuestionInput" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') addQuestion()">
+                <button class="btn" onclick="addQuestion()">Post</button>
             </div>
         </div>
 
+        <!-- MY POINTS -->
         <div id="points" class="tab-content">
-            <h3 style="font-weight:300;">🏆 My Points</h3>
-            <div class="points-container" id="myPointsContainer"></div>
+            <h3 class="page-title">My points</h3>
+            <p class="page-sub">Every change to your score, and what caused it.</p>
+            <div id="myPointsContainer"></div>
         </div>
 
-        <!-- ✅ NEW TAB: Points Walk Of Fame -->
+        <!-- WALK OF FAME -->
         <div id="walkoffame" class="tab-content">
-            <h3 style="font-weight:300; margin-bottom:14px;">🌟 Points Walk Of Fame</h3>
+            <h3 class="page-title">Points Walk Of Fame</h3>
+            <p class="page-sub">Highest scorers on top, lowest below.</p>
 
-            <div class="admin-point-section" id="wofAdminBox" style="display:none;">
-                <h4 style="color:#2ecc71; margin-bottom:6px;">Add someone to a board</h4>
-                <p style="opacity:0.6; font-size:0.85rem;">Only the full admin sees this.</p>
-                <select id="wofStudent" class="point-select">
-                    <option value="">-- Select student --</option>
-                </select>
-                <select id="wofCategory" class="point-select">
+            <div class="panel" id="wofAdminBox" style="display:none;">
+                <h4>Add someone to a board</h4>
+                <p class="hint">Only the full admin sees this.</p>
+                <select id="wofStudent"><option value="">Select student</option></select>
+                <select id="wofCategory">
                     <option value="highest">🥇 Highest points board</option>
                     <option value="lowest">🥉 Lowest points board</option>
                 </select>
                 <input type="number" id="wofPoints" placeholder="Points (e.g. 15)" step="0.1">
                 <input type="text" id="wofNote" placeholder="Short note (optional)">
-                <button onclick="addWalkOfFame()">Add to board</button>
-                <button onclick="autoFillWalkOfFame()" style="background:#f1c40f; color:#1a2e1f;">✨ Fill from current points</button>
-                <button onclick="clearWalkOfFame('highest')" style="background:#b34f4f;">Clear highest board</button>
-                <button onclick="clearWalkOfFame('lowest')" style="background:#b34f4f;">Clear lowest board</button>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn" onclick="addWalkOfFame()">Add to board</button>
+                    <button class="btn gold" onclick="autoFillWalkOfFame()">Fill from current points</button>
+                    <button class="btn red sm" onclick="clearWalkOfFame('highest')">Clear highest</button>
+                    <button class="btn red sm" onclick="clearWalkOfFame('lowest')">Clear lowest</button>
+                </div>
             </div>
 
-            <div class="wof-board highest">
+            <div class="board high">
                 <h4>🥇 Highest points</h4>
-                <div class="board-note">Ranked from the most points down.</div>
+                <div class="hint">Ranked from the most points down.</div>
                 <div id="wofHighest"></div>
             </div>
-
-            <div class="wof-board lowest">
+            <div class="board low">
                 <h4>🥉 Lowest points</h4>
-                <div class="board-note">Ranked from the fewest points up.</div>
+                <div class="hint">Ranked from the fewest points up.</div>
                 <div id="wofLowest"></div>
             </div>
         </div>
 
+        <!-- ADMIN PANEL -->
         <div id="admin" class="tab-content">
-            <h3 style="font-weight:300;">⚙️ Admin Panel</h3>
-            <div class="admin-pass-box" id="adminPassBox">
-                <p style="opacity:0.6;">Enter admin passcode</p>
-                <input type="password" id="adminPassInput" placeholder="passcode">
-                <button onclick="adminLogin()">Unlock</button>
-                <div id="adminPassMsg" style="color:#ffb3b3; margin-top:6px;"></div>
+            <h3 class="page-title">Admin panel</h3>
+            <p class="page-sub">Enter the passcode to unlock admin tabs.</p>
+            <div class="panel" id="adminPassBox" style="max-width:420px;">
+                <input type="password" id="adminPassInput" placeholder="Passcode" onkeydown="if(event.key==='Enter') adminLogin()">
+                <button class="btn full" onclick="adminLogin()">Unlock</button>
+                <div id="adminPassMsg" style="color:#ffb3b3; margin-top:10px; font-size:0.85rem;"></div>
             </div>
         </div>
 
+        <!-- ADMIN ADD -->
         <div id="admin-add" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">➕ Admin: Add Content</h3>
+            <h3 class="page-title">Add content</h3>
+            <p class="page-sub">Files are stored with the post — images, video and PDFs preview inline.</p>
 
-            <div class="admin-section">
-                <h4>➕ Add to Assignments (PDF/Video/Image)</h4>
-                <input type="date" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
+            <div class="panel">
+                <h4>New assignment</h4>
+                <p class="hint">Shows up on the calendar for the date you pick.</p>
+                <input type="date" id="adminAssignDate">
                 <input type="text" id="adminAssignTitle" placeholder="Assignment title">
-                <textarea id="adminAssignContent" placeholder="Assignment content/details..."></textarea>
+                <textarea id="adminAssignContent" placeholder="Details..."></textarea>
                 <input type="file" id="adminAssignFile" accept="*/*">
-                <button onclick="adminAddAssignment()">Add Assignment</button>
+                <button class="btn" onclick="adminAddAssignment()">Add assignment</button>
             </div>
 
-            <div class="admin-section">
-                <h4>➕ Add to Others (PDF/Video/Image)</h4>
-                <textarea id="adminOtherText" placeholder="Announcement text..."></textarea>
+            <div class="panel">
+                <h4>New post in Others</h4>
+                <textarea id="adminOtherText" placeholder="Text..."></textarea>
                 <input type="file" id="adminOtherFile" accept="*/*">
-                <button onclick="adminAddOther()">Add</button>
+                <button class="btn" onclick="adminAddOther()">Add post</button>
             </div>
 
-            <div class="admin-section">
-                <h4>➕ Add to General Announcements (PDF/Video/Image)</h4>
-                <textarea id="adminAnnounceText" placeholder="Announcement for today..."></textarea>
+            <div class="panel">
+                <h4>New announcement</h4>
+                <textarea id="adminAnnounceText" placeholder="Announcement..."></textarea>
                 <input type="file" id="adminAnnounceFile" accept="*/*">
-                <button onclick="adminAddAnnounce()">Add</button>
+                <button class="btn" onclick="adminAddAnnounce()">Add announcement</button>
             </div>
         </div>
 
         <div id="admin-assignments" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Assignments</h3>
+            <h3 class="page-title">Manage assignments</h3>
+            <p class="page-sub">Remove anything that's no longer needed.</p>
             <div id="adminAssignList"></div>
         </div>
         <div id="admin-others" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Others</h3>
+            <h3 class="page-title">Manage Others</h3>
+            <p class="page-sub">Remove anything that's no longer needed.</p>
             <div id="adminOthersList"></div>
         </div>
         <div id="admin-announcements" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Delete Announcements</h3>
+            <h3 class="page-title">Manage announcements</h3>
+            <p class="page-sub">Remove anything that's no longer needed.</p>
             <div id="adminAnnList"></div>
         </div>
         <div id="admin-qa" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">🗑️ Admin: Q&A</h3>
+            <h3 class="page-title">Manage Q&A</h3>
+            <p class="page-sub">Answer or delete student questions.</p>
             <div id="adminQAList"></div>
         </div>
 
+        <!-- ADMIN POINTS -->
         <div id="admin-points" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
-            <div class="admin-point-section">
-                <h4>➕ Add / Deduct Points</h4>
-                <p style="opacity:0.65; font-size:0.85rem;">Tick every student who gets this offense or reward, then update once. The offense you pick below is shown to them in My Points, so choose one instead of leaving it blank.</p>
+            <h3 class="page-title">Points</h3>
+            <p class="page-sub">Tick everyone who gets the same offense or reward, then update once.</p>
 
-                <input type="text" id="studentSearch" class="student-search" placeholder="Search a name..." oninput="filterStudentList()">
+            <div class="panel">
+                <h4>Add or deduct points</h4>
+                <p class="hint">The offense you pick is shown to each student in My Points, so choose one instead of leaving it blank.</p>
+                <input type="text" id="studentSearch" placeholder="Search a name..." oninput="filterStudentList()">
                 <div class="student-picker-head">
-                    <button type="button" class="mini-btn" onclick="toggleAllStudents(true)">Select all</button>
-                    <button type="button" class="mini-btn" onclick="toggleAllStudents(false)">Clear</button>
+                    <button type="button" class="btn ghost sm" onclick="toggleAllStudents(true)">Select all</button>
+                    <button type="button" class="btn ghost sm" onclick="toggleAllStudents(false)">Clear</button>
                     <span class="selected-count" id="selectedCount">0 selected</span>
                 </div>
                 <div class="student-checklist" id="adminPointStudents"></div>
-
-                <input type="number" id="adminPointChange" placeholder="+ or - (e.g. 0.5 or -1.5)" step="0.1">
-                <select id="adminPointReason" class="point-select">
-                    <option value="">-- Select Offense (Optional) --</option>
-                </select>
-                <textarea id="adminPointMessage" placeholder="Message / Reason..."></textarea>
-                <button onclick="adminUpdatePoint()">Update points for selected</button>
-                <input type="text" id="newOffenseName" placeholder="Add new offense type...">
-                <button onclick="addNewOffense()" style="background:#f1c40f; color:#1a2e1f;">➕ Add Offense</button>
-                <input type="number" id="resetPointsValue" placeholder="Reset all to (e.g. 15)">
-                <button onclick="resetAllPoints()" style="background:#b34f4f; color:white; padding:10px 20px; border:none; border-radius:20px; font-weight:600; cursor:pointer; margin-top:10px; width:100%;">🔄 Reset All</button>
+                <input type="number" id="adminPointChange" placeholder="+ or − (e.g. 0.5 or -1.5)" step="0.1">
+                <select id="adminPointReason"><option value="">Select offense (optional)</option></select>
+                <textarea id="adminPointMessage" placeholder="Message shown to the student..."></textarea>
+                <button class="btn full" onclick="adminUpdatePoint()">Update points for selected</button>
             </div>
+
+            <div class="panel">
+                <h4>Offense types</h4>
+                <p class="hint">These fill the dropdown above.</p>
+                <input type="text" id="newOffenseName" placeholder="New offense name...">
+                <button class="btn gold" onclick="addNewOffense()">Add offense</button>
+            </div>
+
+            <div class="panel">
+                <h4>Reset everyone</h4>
+                <p class="hint">Wipes all history and sets every score to the same value.</p>
+                <input type="number" id="resetPointsValue" placeholder="Reset all to (e.g. 15)">
+                <button class="btn red full" onclick="resetAllPoints()">Reset all scores</button>
+            </div>
+
             <div id="adminPointsList"></div>
         </div>
 
         <div id="admin-monitor" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">📊 Points Monitor</h3>
+            <h3 class="page-title">Points monitor</h3>
+            <p class="page-sub">Tap a student to see their full history.</p>
             <div id="monitorList"></div>
         </div>
 
         <div id="admin-offenses" class="tab-content">
-            <h3 style="font-weight:300; color:#b34f4f;">⚠️ Offense Reasons</h3>
+            <h3 class="page-title">Offenses</h3>
+            <p class="page-sub">Tap one to see who committed it.</p>
             <div id="offenseList"></div>
         </div>
     </div>
 </div>
 
-<div class="popup-overlay" id="assignmentPopup">
+<div class="popup-overlay" id="assignmentPopup" onclick="if(event.target===this) closePopup()">
     <div class="popup-content">
-        <h2 id="popupTitle">Assignment Title</h2>
+        <h2 id="popupTitle">Assignment</h2>
         <span class="date" id="popupDate">Date</span>
-        <div class="body" id="popupBody">Content goes here...</div>
-        <img id="popupImage" src="" style="display:none;" alt="Assignment Image">
-        <button class="popup-close" onclick="closePopup()">Close</button>
+        <div class="body" id="popupBody"></div>
+        <img id="popupImage" src="" style="display:none;" alt="">
+        <button class="btn ghost full popup-close" onclick="closePopup()">Close</button>
     </div>
 </div>
+
+<div class="popup-overlay lightbox" id="imgPopup" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="">
+    <div class="cap" id="lightboxCap"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
 
 <script>
     const JADE_NAMES = [
@@ -372,8 +572,25 @@
         "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
         "TAPEL, MIKHAELA ALENA TANON"
     ];
-    // One entry per student, alphabetical, for the pickers.
     const ROSTER = [...new Set(JADE_NAMES)].sort((a, b) => a.localeCompare(b));
+
+    // Officer posters, in the order they appear on the tab.
+    const OFFICERS = [
+        { img: '32.png', name: 'Athena Mirasol', role: 'President' },
+        { img: '33.png', name: 'Red Alvarez', role: 'Vice-President' },
+        { img: '34.png', name: 'Joaquin Balbin', role: 'Secretary' },
+        { img: '35.png', name: 'Jay Bea', role: 'Treasurer' },
+        { img: '36.png', name: 'Darel Grageda', role: 'Auditor' },
+        { img: '37.png', name: 'Kylie Cordova', role: 'P.I.O.' },
+        { img: '38.png', name: 'Princess Clavecilla', role: 'Business Manager' },
+        { img: '39.png', name: 'Ethan Ermac', role: 'Business Manager' },
+        { img: '40.png', name: 'Sophia Alpe', role: 'Peace Officer' },
+        { img: '41.png', name: 'Ken Carinan', role: 'Peace Officer' },
+        { img: '42.png', name: 'Mkralj De La Peña', role: 'Escort' },
+        { img: '43.png', name: 'Jasmine Acuña', role: 'Muse' },
+        { img: '44.png', name: 'Sophia Alpe', role: 'Class Beadle' },
+        { img: '45.png', name: 'Ken Cereno', role: 'Assistant Class Beadle' }
+    ];
 
     let assignments = {};
     let othersAnnounce = [];
@@ -387,13 +604,12 @@
     let currentStudentName = null;
     let currentMonth = 5;
     let currentYear = 2026;
-    const MIN_MONTH = 5;
-    const MIN_YEAR = 2026;
-    const MAX_MONTH = 4;
-    const MAX_YEAR = 2027;
+    const MIN_MONTH = 5, MIN_YEAR = 2026, MAX_MONTH = 4, MAX_YEAR = 2027;
+    const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
     function normalizeName(name) {
-        return name.trim().toUpperCase()
+        return String(name || '').trim().toUpperCase()
             .replace(/Ñ/g, 'Ñ').replace(/ñ/g, 'Ñ')
             .replace(/É/g, 'É').replace(/é/g, 'É')
             .replace(/Á/g, 'Á').replace(/á/g, 'Á')
@@ -408,26 +624,59 @@
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    function toast(msg, bad) {
+        const el = document.createElement('div');
+        el.className = 'toast' + (bad ? ' bad' : '');
+        el.textContent = msg;
+        document.getElementById('toastWrap').appendChild(el);
+        setTimeout(() => el.remove(), 3200);
+    }
 
+    function fmtDate(d) {
+        return new Date(d).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    // ---------- Navigation ----------
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            if(document.getElementById('verifyBox').style.display !== 'none' && this.dataset.tab !== 'locked') return alert("Verify first.");
-            if(this.dataset.tab === 'locked' && lockedVerified) exitLocked();
+            const tab = this.dataset.tab;
+            if (document.getElementById('verifyBox').style.display !== 'none' && tab !== 'locked') return toast('Verify first.', true);
+            if (tab === 'locked' && lockedVerified) exitLocked();
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(this.dataset.tab).classList.add('active');
-            if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor','admin-offenses'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
-            if(this.dataset.tab === 'points') loadMyPoints();
-            if(this.dataset.tab === 'assignments') renderCalendar();
-            if(this.dataset.tab === 'admin-points' && adminRole === 'full') populateStudentChecklist();
-            if(this.dataset.tab === 'admin-monitor' && adminRole === 'full') renderMonitor();
-            if(this.dataset.tab === 'admin-offenses' && adminRole === 'full') renderOffenses();
-            if(this.dataset.tab === 'walkoffame') { populateWofDropdown(); renderWalkOfFame(); }
+            document.getElementById(tab).classList.add('active');
+            if (['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor','admin-offenses'].includes(tab)) renderAdminList(tab);
+            if (tab === 'points') loadMyPoints();
+            if (tab === 'assignments') renderCalendar();
+            if (tab === 'admin-points' && adminRole === 'full') populateStudentChecklist();
+            if (tab === 'walkoffame') { populateWofDropdown(); renderWalkOfFame(); }
         });
     });
 
+    function goTab(tab) { document.querySelector(`.nav-btn[data-tab="${tab}"]`).click(); }
+
+    // ---------- Officers ----------
+    function renderOfficers() {
+        document.getElementById('officerGrid').innerHTML = OFFICERS.map(o => `
+            <div class="officer-card" onclick="openLightbox('${o.img}', '${escapeHtml(o.name)} — ${escapeHtml(o.role)}')">
+                <img src="${o.img}" alt="${escapeHtml(o.name)}, ${escapeHtml(o.role)}" loading="lazy">
+                <div class="cap"><div class="nm">${escapeHtml(o.name)}</div><div class="rl">${escapeHtml(o.role)}</div></div>
+            </div>`).join('');
+    }
+
+    function openLightbox(src, caption) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightboxCap').textContent = caption || '';
+        document.getElementById('imgPopup').classList.add('open');
+    }
+    function closeLightbox() { document.getElementById('imgPopup').classList.remove('open'); }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeLightbox(); closePopup(); }
+    });
+
+    // ---------- Auth ----------
     async function adminLogin() {
         const pass = document.getElementById('adminPassInput').value;
         const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
@@ -437,27 +686,324 @@
             document.getElementById('adminPassBox').style.display = 'none';
             if (data.role === 'content') {
                 document.querySelectorAll('.admin-tab').forEach(b => {
-                    if (b.dataset.tab === 'admin-qa' || b.dataset.tab === 'admin-points' || b.dataset.tab === 'admin-monitor' || b.dataset.tab === 'admin-offenses') {
-                        b.style.display = 'none';
-                    } else {
-                        b.style.display = 'inline-block';
-                    }
+                    const restricted = ['admin-qa','admin-points','admin-monitor','admin-offenses'].includes(b.dataset.tab);
+                    b.style.display = restricted ? 'none' : 'inline-block';
                 });
-                document.querySelector('.nav-btn[data-tab="admin-add"]').click();
-                alert('✅ Content Admin');
-            } else if (data.role === 'full') {
+                goTab('admin-add');
+                toast('Content admin unlocked');
+            } else {
                 document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
                 document.querySelector('.nav-btn[data-tab="walkoffame"]').style.display = 'inline-block';
                 document.getElementById('wofAdminBox').style.display = 'block';
-                document.querySelector('.nav-btn[data-tab="admin-points"]').click();
-                alert('✅ Full Admin');
+                goTab('admin-points');
+                toast('Full admin unlocked');
             }
         } else {
-            document.getElementById('adminPassMsg').textContent = '❌ Invalid password';
+            document.getElementById('adminPassMsg').textContent = 'Invalid password.';
         }
     }
 
-    // ✅ Multi-student picker
+    async function verifyJade() {
+        const name = document.getElementById('jadeNameInput').value.trim();
+        const password = document.getElementById('jadePasswordInput').value.trim();
+        const msg = document.getElementById('verifyMsg');
+        if (!name) { msg.textContent = 'Enter your name first.'; return; }
+        if (password !== 'Jade lang ang Malakas') { msg.textContent = 'Wrong class password.'; return; }
+        const normalizedInput = normalizeName(name);
+        const exactName = ROSTER.find(n => normalizeName(n) === normalizedInput);
+        if (exactName) {
+            currentStudentName = exactName;
+            document.getElementById('verifyBox').style.display = 'none';
+            document.getElementById('lockedContent').style.display = 'block';
+            lockedVerified = true;
+            document.getElementById('welcomeName').textContent = exactName + ' · 7-Jade';
+            document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'inline-block');
+            if (normalizedInput === 'MORGA, CHARISSA ENCISO') {
+                adminRole = 'full';
+                document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
+                document.getElementById('wofAdminBox').style.display = 'block';
+                goTab('admin-points');
+                toast('Full admin unlocked');
+            } else {
+                goTab('assignments');
+            }
+        } else {
+            msg.textContent = 'Name not found. Check the spelling, including Ñ.';
+        }
+    }
+
+    function exitLocked() {
+        lockedVerified = false; adminRole = null; currentStudentName = null;
+        document.getElementById('verifyBox').style.display = 'block';
+        document.getElementById('lockedContent').style.display = 'none';
+        document.getElementById('jadeNameInput').value = '';
+        document.getElementById('jadePasswordInput').value = '';
+        document.getElementById('verifyMsg').textContent = '';
+        document.getElementById('adminPassBox').style.display = 'block';
+        document.getElementById('wofAdminBox').style.display = 'none';
+        document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'none');
+        document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'none');
+        document.querySelector('[data-tab="locked"]').click();
+    }
+
+    // ---------- Data ----------
+    async function fetchData() {
+        try {
+            const res = await fetch('/api/data');
+            const data = await res.json();
+            assignments = {};
+            data.assignments.forEach(a => {
+                if (!assignments[a.date]) assignments[a.date] = [];
+                assignments[a.date].push({ id: a._id, title: a.title, content: a.content, fileData: a.fileData, fileName: a.fileName, fileType: a.fileType, createdBy: a.createdBy, createdAt: a.createdAt });
+            });
+            othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, fileData: o.fileData, fileName: o.fileName, fileType: o.fileType, date: o.date, createdBy: o.createdBy }));
+            todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, fileData: t.fileData, fileName: t.fileName, fileType: t.fileType, date: t.date, createdBy: t.createdBy }));
+            qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: r.adminReply || '', user: r.realName, date: r.date }));
+            points = data.points || [];
+            offenses = data.offenses || [];
+            walkOfFame = data.walkoffame || [];
+            renderCalendar();
+            renderOthers();
+            renderTodayAnnounce();
+            renderQA();
+            renderWalkOfFame();
+            populateOffenseDropdown();
+            if (document.getElementById('points').classList.contains('active')) loadMyPoints();
+        } catch (error) {
+            console.error('Fetch error', error);
+        }
+    }
+
+    // ---------- Calendar ----------
+    function changeMonth(delta) {
+        let m = currentMonth + delta, y = currentYear;
+        if (m > 11) { m = 0; y++; }
+        if (m < 0) { m = 11; y--; }
+        if (y === MIN_YEAR && m < MIN_MONTH) return;
+        if (y === MAX_YEAR && m > MAX_MONTH) return;
+        currentMonth = m; currentYear = y;
+        renderCalendar();
+    }
+
+    function updateMonthNavButtons() {
+        document.getElementById('monthLabel').textContent = MONTH_NAMES[currentMonth] + ' ' + currentYear;
+        document.getElementById('prevMonthBtn').disabled = (currentYear === MIN_YEAR && currentMonth === MIN_MONTH);
+        document.getElementById('nextMonthBtn').disabled = (currentYear === MAX_YEAR && currentMonth === MAX_MONTH);
+    }
+
+    function renderCalendar() {
+        updateMonthNavButtons();
+        const grid = document.getElementById('calendarGrid');
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        let html = DAYS.map(l => `<div class="cal-head">${l}</div>`).join('');
+        for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty-cell"></div>';
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const has = assignments[dateStr] && assignments[dateStr].length > 0;
+            html += `<div class="cal-day${has ? ' has-event' : ''}" onclick="showDateDetails('${dateStr}')">
+                <div class="day-num">${d}</div>${has ? '<div class="event-dot"></div>' : ''}</div>`;
+        }
+        grid.innerHTML = html;
+    }
+
+    function showDateDetails(dateStr) {
+        const box = document.getElementById('dateDetailBox');
+        const list = assignments[dateStr] || [];
+        document.getElementById('detailDateTitle').textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+        document.getElementById('detailContent').innerHTML = list.length
+            ? list.map((item, idx) => `<div class="title-item" onclick="openAssignmentPopup('${dateStr}', ${idx})">📋 ${escapeHtml(item.title)}</div>`).join('')
+            : '<p style="color:var(--muted);">Nothing due on this date.</p>';
+        box.classList.add('active');
+        document.getElementById('calendarDefaultMsg').style.display = 'none';
+    }
+
+    function closeDetail() {
+        document.getElementById('dateDetailBox').classList.remove('active');
+        document.getElementById('calendarDefaultMsg').style.display = 'block';
+    }
+
+    function openAssignmentPopup(date, idx) {
+        const item = assignments[date][idx];
+        document.getElementById('popupTitle').textContent = item.title;
+        document.getElementById('popupDate').textContent = date;
+        const body = document.getElementById('popupBody');
+        const img = document.getElementById('popupImage');
+        img.style.display = 'none'; img.src = '';
+        body.textContent = item.content || 'No details.';
+        if (item.fileData) {
+            const type = item.fileType || '';
+            if (type.startsWith('image/')) { img.src = item.fileData; img.style.display = 'block'; }
+            else if (type.startsWith('video/')) body.innerHTML += `<video src="${item.fileData}" controls style="width:100%; max-height:400px;"></video>`;
+            else if (type.includes('pdf')) body.innerHTML += `<iframe src="${item.fileData}" style="width:100%; height:480px;"></iframe>`;
+            else body.innerHTML += `<a class="file-link" href="${item.fileData}" download="${escapeHtml(item.fileName)}" style="display:block; margin-top:14px; color:var(--jade); font-weight:600;">📎 Download ${escapeHtml(item.fileName)}</a>`;
+        }
+        document.getElementById('assignmentPopup').classList.add('open');
+    }
+    function closePopup() { document.getElementById('assignmentPopup').classList.remove('open'); }
+
+    // ---------- Lists ----------
+    function fileLink(item) {
+        return item.fileData ? `<a class="file-link" href="${item.fileData}" download="${escapeHtml(item.fileName)}">📎 ${escapeHtml(item.fileName)}</a>` : '';
+    }
+
+    function renderOthers() {
+        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0
+            ? '<div class="empty">Nothing here yet.</div>'
+            : othersAnnounce.map(t => `<div class="list-card"><div class="body-text">${escapeHtml(t.text)}</div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
+    }
+
+    function renderTodayAnnounce() {
+        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0
+            ? '<div class="empty">No announcements yet.</div>'
+            : todayAnnounce.map(t => `<div class="list-card"><div class="body-text">${escapeHtml(t.text)}</div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
+    }
+
+    function renderQA() {
+        document.getElementById('qaList').innerHTML = qaData.length === 0
+            ? '<div class="empty">No questions yet. Ask the first one.</div>'
+            : qaData.map(item => `<div class="qa-card">
+                <div class="q">${escapeHtml(item.q)}</div>
+                <div class="a${item.a ? '' : ' pending'}">${item.a ? escapeHtml(item.a) : 'Waiting for an admin reply...'}</div>
+                <div class="meta" style="font-size:0.74rem; color:var(--muted); margin-top:8px;">${escapeHtml(item.user || 'anonymous')} · ${fmtDate(item.date)}</div>
+            </div>`).join('');
+    }
+
+    async function addQuestion() {
+        const input = document.getElementById('qaQuestionInput');
+        const text = input.value.trim();
+        if (!text) return;
+        const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, realName: currentStudentName || 'Guest' }) });
+        if (res.ok) { input.value = ''; await fetchData(); toast('Question posted'); }
+        else toast('Could not post that question', true);
+    }
+
+    // ---------- Walk Of Fame ----------
+    function renderWalkOfFame() {
+        const high = walkOfFame.filter(e => e.category === 'highest').sort((a, b) => b.points - a.points);
+        const low = walkOfFame.filter(e => e.category === 'lowest').sort((a, b) => a.points - b.points);
+        document.getElementById('wofHighest').innerHTML = buildWofTable(high);
+        document.getElementById('wofLowest').innerHTML = buildWofTable(low);
+    }
+
+    function buildWofTable(rows) {
+        if (rows.length === 0) return '<div class="empty">No one on this board yet.</div>';
+        const body = rows.map((e, i) => `<tr>
+            <td class="rank">${i + 1}</td>
+            <td>${escapeHtml(e.studentName)}${e.note ? `<div style="font-size:0.78rem; color:var(--muted); margin-top:4px;">${escapeHtml(e.note)}</div>` : ''}</td>
+            <td style="font-weight:700;">${e.points}</td>
+            <td style="width:100px; text-align:right;">${adminRole === 'full' ? `<button class="btn red sm" onclick="deleteWalkOfFame('${e._id}')">Remove</button>` : ''}</td>
+        </tr>`).join('');
+        return `<div class="table-scroll"><table class="data-table">
+            <thead><tr><th>Rank</th><th>Student</th><th>Points</th><th></th></tr></thead>
+            <tbody>${body}</tbody></table></div>`;
+    }
+
+    function populateWofDropdown() {
+        const select = document.getElementById('wofStudent');
+        const keep = select.value;
+        select.innerHTML = '<option value="">Select student</option>' + ROSTER.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+        if (keep) select.value = keep;
+    }
+
+    async function addWalkOfFame() {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        const studentName = document.getElementById('wofStudent').value;
+        const category = document.getElementById('wofCategory').value;
+        const pts = parseFloat(document.getElementById('wofPoints').value);
+        const note = document.getElementById('wofNote').value.trim();
+        if (!studentName) return toast('Select a student', true);
+        if (isNaN(pts)) return toast('Enter their points', true);
+        const res = await fetch('/api/admin/add-walkoffame', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, points: pts, category, note, createdBy: currentStudentName || 'Admin' }) });
+        if (res.ok) {
+            document.getElementById('wofPoints').value = '';
+            document.getElementById('wofNote').value = '';
+            await fetchData(); renderWalkOfFame(); toast('Added to the board');
+        } else {
+            const err = await res.json(); toast(err.error || 'Failed', true);
+        }
+    }
+
+    function autoFillWalkOfFame() {
+        if (points.length === 0) return toast('No point records yet', true);
+        const category = document.getElementById('wofCategory').value;
+        const listed = walkOfFame.filter(e => e.category === category).map(e => normalizeName(e.studentName));
+        const pool = points.filter(p => !listed.includes(normalizeName(p.studentName)));
+        if (pool.length === 0) return toast('Everyone is already on this board', true);
+        const pick = [...pool].sort((a, b) => category === 'highest' ? b.points - a.points : a.points - b.points)[0];
+        document.getElementById('wofStudent').value = ROSTER.find(n => normalizeName(n) === normalizeName(pick.studentName)) || '';
+        document.getElementById('wofPoints').value = pick.points;
+    }
+
+    async function deleteWalkOfFame(id) {
+        if (!confirm('Remove this entry from the board?')) return;
+        const res = await fetch(`/api/admin/delete-walkoffame/${id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); renderWalkOfFame(); toast('Removed'); } else toast('Failed', true);
+    }
+
+    async function clearWalkOfFame(category) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        if (!confirm(`Clear the ${category} board?`)) return;
+        const res = await fetch('/api/admin/clear-walkoffame', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category }) });
+        if (res.ok) { await fetchData(); renderWalkOfFame(); toast('Board cleared'); } else toast('Failed', true);
+    }
+
+    // ---------- Student points ----------
+    async function loadMyPoints() {
+        if (!currentStudentName) return;
+        const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
+        const data = await res.json();
+        const container = document.getElementById('myPointsContainer');
+        const p = data.points || { points: 15, history: [] };
+        const history = p.history || [];
+
+        let html = `<div class="score-hero">
+            <div class="score">${p.points}<small>/15</small></div>
+            <div>
+                <div class="label">Current score</div>
+                <div class="who">${escapeHtml(p.studentName || currentStudentName)}</div>
+            </div>
+        </div>`;
+
+        const tally = {};
+        history.forEach(h => {
+            if (h.reason && h.reason !== 'No reason') {
+                if (!tally[h.reason]) tally[h.reason] = { count: 0, total: 0 };
+                tally[h.reason].count++;
+                tally[h.reason].total += (h.change || 0);
+            }
+        });
+        const reasons = Object.keys(tally).sort((a, b) => tally[b].count - tally[a].count);
+        if (reasons.length) {
+            html += `<h4 style="font-family:'Outfit'; margin:22px 0 8px; color:var(--danger);">My offenses</h4>
+            <div class="table-scroll"><table class="data-table">
+                <thead><tr><th>Offense</th><th>Times</th><th>Points</th></tr></thead><tbody>` +
+                reasons.map(r => `<tr><td>${escapeHtml(r)}</td><td>${tally[r].count}</td>
+                    <td style="font-weight:700; color:${tally[r].total > 0 ? 'var(--jade)' : '#ff9b9b'}">${tally[r].total > 0 ? '+' : ''}${Math.round(tally[r].total * 10) / 10}</td></tr>`).join('') +
+                '</tbody></table></div>';
+        }
+
+        html += `<h4 style="font-family:'Outfit'; margin:22px 0 8px;">History</h4>`;
+        if (history.length) {
+            html += [...history].reverse().map(h => {
+                const up = h.change > 0;
+                const hasReason = h.reason && h.reason !== 'No reason';
+                return `<div class="history-card${up ? ' up' : ''}">
+                    <div class="history-row">
+                        <span class="delta">${up ? '+' : ''}${h.change}</span>
+                        ${hasReason ? `<span class="offense-badge${up ? ' reward' : ''}">${up ? '⭐' : '⚠️'} ${escapeHtml(h.reason)}</span>` : ''}
+                    </div>
+                    <div class="note">${escapeHtml(h.message)}</div>
+                    <div class="when">${fmtDate(h.timestamp)}</div>
+                </div>`;
+            }).join('');
+        } else {
+            html += '<div class="empty">No point changes yet. Keep it that way.</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    // ---------- Admin: points ----------
     function populateStudentChecklist() {
         const box = document.getElementById('adminPointStudents');
         const previously = new Set(getSelectedStudents());
@@ -479,13 +1025,12 @@
     }
 
     function updateSelectedCount() {
-        const n = getSelectedStudents().length;
-        document.getElementById('selectedCount').textContent = n + (n === 1 ? ' selected' : ' selected');
+        document.getElementById('selectedCount').textContent = getSelectedStudents().length + ' selected';
     }
 
     function toggleAllStudents(state) {
         document.querySelectorAll('#adminPointStudents label').forEach(label => {
-            if (label.style.display === 'none') return; // respect the search filter
+            if (label.style.display === 'none') return;
             const cb = label.querySelector('input[type="checkbox"]');
             cb.checked = state;
             label.classList.toggle('checked', state);
@@ -496,315 +1041,63 @@
     function filterStudentList() {
         const term = normalizeName(document.getElementById('studentSearch').value);
         document.querySelectorAll('#adminPointStudents label').forEach(label => {
-            const name = normalizeName(label.dataset.name || '');
-            label.style.display = (!term || name.includes(term)) ? 'flex' : 'none';
+            label.style.display = (!term || normalizeName(label.dataset.name).includes(term)) ? 'flex' : 'none';
         });
     }
 
     function populateOffenseDropdown() {
         const select = document.getElementById('adminPointReason');
         const keep = select.value;
-        select.innerHTML = '<option value="">-- Select Offense --</option>';
-        offenses.forEach(offense => {
-            const opt = document.createElement('option');
-            opt.value = offense.name;
-            opt.textContent = offense.name;
-            select.appendChild(opt);
-        });
+        select.innerHTML = '<option value="">Select offense (optional)</option>' + offenses.map(o => `<option value="${escapeHtml(o.name)}">${escapeHtml(o.name)}</option>`).join('');
         if (keep) select.value = keep;
     }
 
-    function populateWofDropdown() {
-        const select = document.getElementById('wofStudent');
-        if (!select) return;
-        const keep = select.value;
-        select.innerHTML = '<option value="">-- Select student --</option>';
-        ROSTER.forEach(name => {
-            const opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name;
-            select.appendChild(opt);
-        });
-        if (keep) select.value = keep;
-    }
+    async function adminUpdatePoint() {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        const studentNames = getSelectedStudents();
+        const change = parseFloat(document.getElementById('adminPointChange').value);
+        const message = document.getElementById('adminPointMessage').value.trim();
+        const reason = document.getElementById('adminPointReason').value;
+        if (studentNames.length === 0) return toast('Tick at least one student', true);
+        if (isNaN(change) || change === 0) return toast('Enter a valid +/− amount', true);
+        if (studentNames.length > 1 && !confirm(`Apply ${change > 0 ? '+' : ''}${change} to ${studentNames.length} students?`)) return;
 
-    function changeMonth(delta) {
-        let newMonth = currentMonth + delta;
-        let newYear = currentYear;
-        if (newMonth > 11) { newMonth = 0; newYear++; }
-        if (newMonth < 0) { newMonth = 11; newYear--; }
-        if (newYear === MIN_YEAR && newMonth < MIN_MONTH) return;
-        if (newYear === MAX_YEAR && newMonth > MAX_MONTH) return;
-        currentMonth = newMonth;
-        currentYear = newYear;
-        updateMonthNavButtons();
-        renderCalendar();
-    }
-
-    function updateMonthNavButtons() {
-        const prevBtn = document.getElementById('prevMonthBtn');
-        const nextBtn = document.getElementById('nextMonthBtn');
-        const label = document.getElementById('monthLabel');
-        label.textContent = MONTH_NAMES[currentMonth] + " " + currentYear;
-        if (currentYear === MIN_YEAR && currentMonth === MIN_MONTH) prevBtn.disabled = true;
-        else prevBtn.disabled = false;
-        if (currentYear === MAX_YEAR && currentMonth === MAX_MONTH) nextBtn.disabled = true;
-        else nextBtn.disabled = false;
-    }
-
-    async function verifyJade() {
-        const name = document.getElementById('jadeNameInput').value.trim();
-        const password = document.getElementById('jadePasswordInput').value.trim();
-        if (!name) { document.getElementById('verifyMsg').textContent = '❌ Please enter your name.'; return; }
-        if (password !== 'Jade lang ang Malakas') { document.getElementById('verifyMsg').textContent = '❌ Incorrect password. Try again.'; return; }
-        const normalizedInput = normalizeName(name);
-        const found = ROSTER.some(n => normalizeName(n) === normalizedInput);
-        if (found) {
-            const exactName = ROSTER.find(n => normalizeName(n) === normalizedInput);
-            currentStudentName = exactName;
-            document.getElementById('verifyBox').style.display = 'none';
-            document.getElementById('lockedContent').style.display = 'block';
-            lockedVerified = true;
-            document.getElementById('welcomeName').textContent = exactName + " (7-Jade)";
-            document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'inline-block');
-            if (normalizedInput === "MORGA, CHARISSA ENCISO") {
-                adminRole = 'full';
-                document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
-                document.getElementById('wofAdminBox').style.display = 'block';
-                document.querySelector('.nav-btn[data-tab="admin-points"]').click();
-                alert('✅ Full Admin (Morga)');
-            } else {
-                document.querySelector('.nav-btn[data-tab="assignments"]').click();
-            }
-        } else {
-            document.getElementById('verifyMsg').textContent = '❌ Name not found. Check spelling (Ñ, ñ, special chars).';
-        }
-    }
-
-    function exitLocked() {
-        lockedVerified = false; adminRole = null; currentStudentName = null;
-        document.getElementById('verifyBox').style.display = 'block';
-        document.getElementById('lockedContent').style.display = 'none';
-        document.getElementById('jadeNameInput').value = '';
-        document.getElementById('jadePasswordInput').value = '';
-        document.getElementById('verifyMsg').textContent = '';
-        document.getElementById('wofAdminBox').style.display = 'none';
-        document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'none');
-        document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'none');
-        document.querySelector('[data-tab="locked"]').click();
-    }
-
-    async function fetchData() {
-        try {
-            const res = await fetch('/api/data');
-            const data = await res.json();
-            assignments = {};
-            data.assignments.forEach(a => {
-                if(!assignments[a.date]) assignments[a.date] = [];
-                assignments[a.date].push({ id: a._id, title: a.title, content: a.content, fileData: a.fileData, fileName: a.fileName, fileType: a.fileType, createdBy: a.createdBy, createdAt: a.createdAt });
-            });
-            othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, fileData: o.fileData, fileName: o.fileName, fileType: o.fileType, date: o.date, createdBy: o.createdBy }));
-            todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, fileData: t.fileData, fileName: t.fileName, fileType: t.fileType, date: t.date, createdBy: t.createdBy }));
-            qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: r.adminReply || '', user: r.realName, date: r.date }));
-            points = data.points;
-            offenses = data.offenses || [];
-            walkOfFame = data.walkoffame || [];
-            renderCalendar();
-            renderOthers();
-            renderTodayAnnounce();
-            renderQA();
-            renderWalkOfFame();
-            populateOffenseDropdown();
-            // Keep the student's own list live while they're looking at it.
-            if (document.getElementById('points').classList.contains('active')) loadMyPoints();
-        } catch (error) {
-            console.error("Fetch error", error);
-        }
-    }
-
-    function renderCalendar() {
-        updateMonthNavButtons();
-        const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
-        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l => { let d = document.createElement('div'); d.textContent = l; d.style.textAlign='center'; d.style.opacity='0.5'; d.style.fontSize='0.7rem'; grid.appendChild(d); });
-        for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
-        for(let d=1; d<=daysInMonth; d++) {
-            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const div = document.createElement('div'); div.className = 'cal-day';
-            if(assignments[dateStr] && assignments[dateStr].length > 0) {
-                div.classList.add('has-event');
-                div.innerHTML = `<div class="day-num">${d}</div><div class="day-label">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][(firstDay+d-1)%7]}</div><div class="event-dot"></div>`;
-            }
-            else div.innerHTML = `<div class="day-num">${d}</div><div class="day-label">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][(firstDay+d-1)%7]}</div>`;
-            div.dataset.date = dateStr;
-            div.onclick = function() { showDateDetails(this.dataset.date); };
-            grid.appendChild(div);
-        }
-    }
-
-    function showDateDetails(dateStr) {
-        const box = document.getElementById('dateDetailBox');
-        const container = document.getElementById('detailContent');
-        const title = document.getElementById('detailDateTitle');
-        title.textContent = `📌 Assignments on ${dateStr}`;
-        let html = '';
-        if(assignments[dateStr] && assignments[dateStr].length > 0) {
-            assignments[dateStr].forEach((item, idx) => {
-                html += `<div class="title-item" onclick="openAssignmentPopup('${dateStr}', ${idx})">📋 ${item.title}</div>`;
-            });
-        } else {
-            html = `<p style="opacity:0.7;">No assignments on this date.</p>`;
-        }
-        container.innerHTML = html;
-        box.classList.add('active');
-        document.getElementById('calendarDefaultMsg').style.display = 'none';
-    }
-
-    function closeDetail() {
-        document.getElementById('dateDetailBox').classList.remove('active');
-        document.getElementById('calendarDefaultMsg').style.display = 'block';
-    }
-
-    // ✅ View images, PDFs, videos, files
-    function openAssignmentPopup(date, idx) {
-        const item = assignments[date][idx];
-        document.getElementById('popupTitle').textContent = item.title;
-        document.getElementById('popupDate').textContent = `📅 ${date}`;
-        const popupBody = document.getElementById('popupBody');
-        const popupImage = document.getElementById('popupImage');
-        popupImage.style.display = 'none';
-        popupImage.src = '';
-        popupBody.innerHTML = item.content || "No detailed content.";
-
-        if(item.fileData) {
-            if(item.fileType && item.fileType.startsWith('image/')) {
-                popupImage.src = item.fileData;
-                popupImage.style.display = 'block';
-            } else if(item.fileType && item.fileType.startsWith('video/')) {
-                popupBody.innerHTML += `<video src="${item.fileData}" controls style="width:100%; max-height:400px; margin-top:10px; border-radius:12px;"></video>`;
-            } else if(item.fileType && (item.fileType === 'application/pdf' || item.fileType.includes('pdf'))) {
-                popupBody.innerHTML += `<iframe src="${item.fileData}" style="width:100%; height:500px; margin-top:10px; border-radius:12px; border:1px solid #2ecc71;"></iframe>`;
-            } else {
-                popupBody.innerHTML += `<a href="${item.fileData}" download="${item.fileName}" style="display:block; margin-top:10px; color:#2ecc71; font-weight:600;">📎 Download: ${item.fileName}</a>`;
-            }
-        }
-
-        document.getElementById('assignmentPopup').style.display = 'flex';
-    }
-
-    function closePopup() { document.getElementById('assignmentPopup').style.display = 'none'; }
-
-    function renderOthers() {
-        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join('');
-    }
-    function renderTodayAnnounce() {
-        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join('');
-    }
-    function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${new Date(item.date).toLocaleString()}</div></div>`).join(''); }
-
-    // ✅ Walk Of Fame rendering
-    function renderWalkOfFame() {
-        const highest = walkOfFame.filter(e => e.category === 'highest').sort((a, b) => b.points - a.points);
-        const lowest = walkOfFame.filter(e => e.category === 'lowest').sort((a, b) => a.points - b.points);
-        document.getElementById('wofHighest').innerHTML = buildWofTable(highest, 'No one on this board yet.');
-        document.getElementById('wofLowest').innerHTML = buildWofTable(lowest, 'No one on this board yet.');
-    }
-
-    function buildWofTable(rows, emptyText) {
-        if (rows.length === 0) return `<div class="wof-empty">${emptyText}</div>`;
-        const body = rows.map((e, i) => `
-            <tr>
-                <td class="wof-rank">${i + 1}</td>
-                <td>${escapeHtml(e.studentName)}${e.note ? `<div style="font-size:0.8rem; opacity:0.65; margin-top:4px;">${escapeHtml(e.note)}</div>` : ''}</td>
-                <td class="wof-score">${e.points}</td>
-                <td style="width:90px;">${adminRole === 'full' ? `<button class="admin-delete-btn" onclick="deleteWalkOfFame('${e._id}')">Remove</button>` : ''}</td>
-            </tr>`).join('');
-        return `<div class="wof-scroll"><table class="wof-table">
-            <thead><tr><th>Rank</th><th>Student</th><th>Points</th><th></th></tr></thead>
-            <tbody>${body}</tbody></table></div>`;
-    }
-
-    async function addWalkOfFame() {
-        if (adminRole !== 'full') return alert("You don't have permission to edit the Walk Of Fame.");
-        const studentName = document.getElementById('wofStudent').value;
-        const category = document.getElementById('wofCategory').value;
-        const pts = parseFloat(document.getElementById('wofPoints').value);
-        const note = document.getElementById('wofNote').value.trim();
-        if (!studentName) return alert("Select a student.");
-        if (isNaN(pts)) return alert("Enter their points.");
-        const res = await fetch('/api/admin/add-walkoffame', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ studentName, points: pts, category, note, createdBy: currentStudentName || "Admin" })
-        });
+        const res = await fetch('/api/admin/update-points-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentNames, change, message, reason }) });
         if (res.ok) {
-            document.getElementById('wofPoints').value = '';
-            document.getElementById('wofNote').value = '';
+            const data = await res.json();
+            document.getElementById('adminPointChange').value = '';
+            document.getElementById('adminPointMessage').value = '';
+            document.getElementById('adminPointReason').value = '';
+            toggleAllStudents(false);
             await fetchData();
-            renderWalkOfFame();
-            alert("✅ Added to the board!");
+            renderAdminList('admin-points');
+            toast(`Updated ${data.updatedCount} student${data.updatedCount === 1 ? '' : 's'}`);
         } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
+            const err = await res.json(); toast(err.error || 'Failed', true);
         }
-    }
-
-    // Fills the form with the current top or bottom scorer so you don't retype it.
-    function autoFillWalkOfFame() {
-        if (points.length === 0) return alert("No point records yet.");
-        const category = document.getElementById('wofCategory').value;
-        const alreadyListed = walkOfFame.filter(e => e.category === category).map(e => normalizeName(e.studentName));
-        const pool = points.filter(p => !alreadyListed.includes(normalizeName(p.studentName)));
-        if (pool.length === 0) return alert("Everyone with points is already on this board.");
-        const sorted = [...pool].sort((a, b) => category === 'highest' ? b.points - a.points : a.points - b.points);
-        const pick = sorted[0];
-        document.getElementById('wofStudent').value = ROSTER.find(n => normalizeName(n) === normalizeName(pick.studentName)) || '';
-        document.getElementById('wofPoints').value = pick.points;
-    }
-
-    async function deleteWalkOfFame(id) {
-        if (!confirm('Remove this entry from the board?')) return;
-        const res = await fetch(`/api/admin/delete-walkoffame/${id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); renderWalkOfFame(); } else { alert("❌ Failed"); }
-    }
-
-    async function clearWalkOfFame(category) {
-        if (adminRole !== 'full') return alert("You don't have permission to edit the Walk Of Fame.");
-        if (!confirm(`Clear the ${category} board?`)) return;
-        const res = await fetch('/api/admin/clear-walkoffame', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ category })
-        });
-        if (res.ok) { await fetchData(); renderWalkOfFame(); } else { alert("❌ Failed"); }
-    }
-
-    async function addQuestion() { const input = document.getElementById('qaQuestionInput'); const text = input.value.trim(); if(!text) return; const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, realName: currentStudentName || "Guest" }) }); if(res.ok) { input.value=''; fetchData(); alert("✅ Question posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); } }
-
-    async function adminReply(idx) {
-        const input = document.getElementById(`adminReplyInput_${idx}`);
-        const reply = input.value.trim();
-        if(!reply) return;
-        const questionId = qaData[idx].id;
-        const res = await fetch('/api/admin/answer-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId, answer: reply }) });
-        if(res.ok) { input.value=''; fetchData(); alert("✅ Reply posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
     }
 
     async function addNewOffense() {
-        if (adminRole !== 'full') return alert("You don't have permission to add offenses.");
+        if (adminRole !== 'full') return toast('Full admin only', true);
         const input = document.getElementById('newOffenseName');
         const name = input.value.trim();
-        if(!name) return alert("Enter an offense name.");
+        if (!name) return toast('Enter an offense name', true);
         const res = await fetch('/api/admin/add-offense', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-        if(res.ok) {
-            input.value='';
-            fetchData();
-            alert("✅ New offense added!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
+        if (res.ok) { input.value = ''; await fetchData(); toast('Offense added'); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
     }
 
+    async function resetAllPoints() {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        const input = document.getElementById('resetPointsValue');
+        const newPoints = parseInt(input.value) || 15;
+        if (!confirm(`Reset every score to ${newPoints} and wipe all history?`)) return;
+        const res = await fetch('/api/admin/reset-all-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPoints }) });
+        if (res.ok) { input.value = ''; await fetchData(); renderAdminList('admin-points'); toast(`All scores reset to ${newPoints}`); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    // ---------- Admin: content ----------
     function readFileAsBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -814,196 +1107,57 @@
         });
     }
 
+    async function pickFile(inputId) {
+        const fileInput = document.getElementById(inputId);
+        if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            return { fileData: await readFileAsBase64(file), fileName: file.name, fileType: file.type };
+        }
+        return { fileData: null, fileName: null, fileType: null };
+    }
+
     async function adminAddAssignment() {
-        if (!adminRole) return alert("Please login as admin first.");
+        if (!adminRole) return toast('Log in as admin first', true);
         const date = document.getElementById('adminAssignDate').value;
         const title = document.getElementById('adminAssignTitle').value.trim();
         const content = document.getElementById('adminAssignContent').value.trim();
-        const fileInput = document.getElementById('adminAssignFile');
-        if(!date) { alert('Please fill in the Date'); return; }
-        if(!title) { alert('Please fill in the Assignment Title'); return; }
-        let fileData = null, fileName = null, fileType = null;
-        if(fileInput.files && fileInput.files[0]) {
-            const file = fileInput.files[0];
-            fileData = await readFileAsBase64(file);
-            fileName = file.name;
-            fileType = file.type;
-        }
-        const res = await fetch('/api/admin/add-assignment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, date, content, fileData, fileName, fileType, createdBy: currentStudentName || "Admin" })
-        });
-        if(res.ok) {
-            document.getElementById('adminAssignTitle').value='';
-            document.getElementById('adminAssignDate').value='';
-            document.getElementById('adminAssignContent').value='';
-            fileInput.value='';
-            fetchData();
-            alert("✅ Assignment added!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
+        if (!date) return toast('Pick a date', true);
+        if (!title) return toast('Enter a title', true);
+        const f = await pickFile('adminAssignFile');
+        const res = await fetch('/api/admin/add-assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, date, content, ...f, createdBy: currentStudentName || 'Admin' }) });
+        if (res.ok) {
+            ['adminAssignTitle','adminAssignDate','adminAssignContent','adminAssignFile'].forEach(id => document.getElementById(id).value = '');
+            await fetchData(); toast('Assignment added');
+        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
     }
 
     async function adminAddOther() {
-        if (!adminRole) return alert("Please login as admin first.");
+        if (!adminRole) return toast('Log in as admin first', true);
         const text = document.getElementById('adminOtherText').value.trim();
-        const fileInput = document.getElementById('adminOtherFile');
-        if(!text) return alert("Enter announcement text.");
-        let fileData = null, fileName = null, fileType = null;
-        if(fileInput.files && fileInput.files[0]) {
-            const file = fileInput.files[0];
-            fileData = await readFileAsBase64(file);
-            fileName = file.name;
-            fileType = file.type;
-        }
-        const res = await fetch('/api/admin/add-other', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, fileData, fileName, fileType, createdBy: currentStudentName || "Admin" })
-        });
-        if(res.ok) {
-            document.getElementById('adminOtherText').value='';
-            fileInput.value='';
-            fetchData();
-            alert("✅ Added!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
+        if (!text) return toast('Enter some text', true);
+        const f = await pickFile('adminOtherFile');
+        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, ...f, createdBy: currentStudentName || 'Admin' }) });
+        if (res.ok) {
+            document.getElementById('adminOtherText').value = '';
+            document.getElementById('adminOtherFile').value = '';
+            await fetchData(); toast('Post added');
+        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
     }
 
     async function adminAddAnnounce() {
-        if (!adminRole) return alert("Please login as admin first.");
+        if (!adminRole) return toast('Log in as admin first', true);
         const text = document.getElementById('adminAnnounceText').value.trim();
-        const fileInput = document.getElementById('adminAnnounceFile');
-        if(!text) return alert("Enter announcement text.");
-        let fileData = null, fileName = null, fileType = null;
-        if(fileInput.files && fileInput.files[0]) {
-            const file = fileInput.files[0];
-            fileData = await readFileAsBase64(file);
-            fileName = file.name;
-            fileType = file.type;
-        }
-        const res = await fetch('/api/admin/add-today', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, fileData, fileName, fileType, createdBy: currentStudentName || "Admin" })
-        });
-        if(res.ok) {
-            document.getElementById('adminAnnounceText').value='';
-            fileInput.value='';
-            fetchData();
-            alert("✅ Added!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
+        if (!text) return toast('Enter some text', true);
+        const f = await pickFile('adminAnnounceFile');
+        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, ...f, createdBy: currentStudentName || 'Admin' }) });
+        if (res.ok) {
+            document.getElementById('adminAnnounceText').value = '';
+            document.getElementById('adminAnnounceFile').value = '';
+            await fetchData(); toast('Announcement added');
+        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
     }
 
-    async function loadMyPoints() {
-        if (!currentStudentName) return;
-        const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
-        const data = await res.json();
-        const container = document.getElementById('myPointsContainer');
-        if(data.points) {
-            container.innerHTML = `<div class="point-item"><h4>🏆 ${escapeHtml(data.points.studentName || currentStudentName)}</h4><div class="point-text">Current Points: ${data.points.points}/15</div></div>`;
-            const history = data.points.history || [];
-            if(history.length > 0) {
-                container.innerHTML += '<h4 style="margin-top:15px; color:#f1c40f;">History:</h4>';
-                // Newest first so the latest offense is right at the top.
-                [...history].reverse().forEach(h => {
-                    const hasReason = h.reason && h.reason !== 'No reason';
-                    container.innerHTML += `<div class="point-item" style="border-left-color: ${h.change > 0 ? '#2ecc71' : '#b34f4f'}">
-                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                            <strong style="font-size:1.1rem; color:${h.change > 0 ? '#2ecc71' : '#ff8f8f'}">${h.change > 0 ? '+' : ''}${h.change}</strong>
-                            ${hasReason ? `<span class="offense-badge ${h.change > 0 ? 'reward' : ''}">${h.change > 0 ? '⭐' : '⚠️'} ${escapeHtml(h.reason)}</span>` : ''}
-                        </div>
-                        <div class="point-text">${escapeHtml(h.message)}</div>
-                        <div class="point-date">${new Date(h.timestamp).toLocaleString()}</div>
-                    </div>`;
-                });
-            } else {
-                container.innerHTML += '<p style="opacity:0.6; margin-top:12px;">No point changes yet. Keep it that way.</p>';
-            }
-
-            // Summary of how many times each offense was recorded.
-            const tally = {};
-            history.forEach(h => {
-                if (h.reason && h.reason !== 'No reason') {
-                    if (!tally[h.reason]) tally[h.reason] = { count: 0, total: 0 };
-                    tally[h.reason].count++;
-                    tally[h.reason].total += (h.change || 0);
-                }
-            });
-            const reasons = Object.keys(tally);
-            if (reasons.length > 0) {
-                let summary = '<h4 style="margin-top:20px; color:#e74c3c;">My offenses:</h4><div class="wof-scroll"><table class="wof-table"><thead><tr><th style="background:rgba(231,76,60,0.18); color:#e74c3c;">Offense</th><th style="background:rgba(231,76,60,0.18); color:#e74c3c;">Times</th><th style="background:rgba(231,76,60,0.18); color:#e74c3c;">Points</th></tr></thead><tbody>';
-                reasons.sort((a, b) => tally[b].count - tally[a].count).forEach(r => {
-                    const t = tally[r];
-                    summary += `<tr><td>${escapeHtml(r)}</td><td>${t.count}</td><td class="wof-score" style="color:${t.total > 0 ? '#2ecc71' : '#ff8f8f'}">${t.total > 0 ? '+' : ''}${Math.round(t.total * 10) / 10}</td></tr>`;
-                });
-                summary += '</tbody></table></div>';
-                container.innerHTML += summary;
-            }
-        } else {
-            container.innerHTML = '<p style="opacity:0.6;">No points yet.</p>';
-        }
-    }
-
-    // ✅ Now updates every ticked student in one go
-    async function adminUpdatePoint() {
-        if (adminRole !== 'full') return alert("You don't have permission to update points.");
-        const studentNames = getSelectedStudents();
-        const change = parseFloat(document.getElementById('adminPointChange').value);
-        const message = document.getElementById('adminPointMessage').value.trim();
-        const reason = document.getElementById('adminPointReason').value;
-        if(studentNames.length === 0) return alert("Tick at least one student.");
-        if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount.");
-        if(studentNames.length > 1 && !confirm(`Apply ${change > 0 ? '+' : ''}${change} to ${studentNames.length} students?`)) return;
-
-        const res = await fetch('/api/admin/update-points-bulk', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ studentNames, change, message, reason })
-        });
-        if(res.ok) {
-            const data = await res.json();
-            document.getElementById('adminPointChange').value = '';
-            document.getElementById('adminPointMessage').value = '';
-            document.getElementById('adminPointReason').value = '';
-            toggleAllStudents(false);
-            await fetchData();
-            renderAdminList('admin-points');
-            alert(`✅ Updated ${data.updatedCount} student(s).` + (data.failed && data.failed.length ? `\n❌ Skipped: ${data.failed.join(', ')}` : ''));
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
-    }
-
-    async function resetAllPoints() {
-        if (adminRole !== 'full') return alert("You don't have permission to reset points.");
-        const input = document.getElementById('resetPointsValue');
-        const newPoints = parseInt(input.value) || 15;
-        if (!confirm(`Reset ALL to ${newPoints}?`)) return;
-        const res = await fetch('/api/admin/reset-all-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPoints }) });
-        if(res.ok) {
-            input.value='';
-            fetchData();
-            alert(`✅ All scores reset to ${newPoints}!`);
-            renderAdminList('admin-points');
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
-        }
-    }
-
-    function renderMonitor() { renderAdminList('admin-monitor'); }
-    function renderOffenses() { renderAdminList('admin-offenses'); }
-
+    // ---------- Admin lists ----------
     function renderAdminList(tabId) {
         const container = document.getElementById({
             'admin-assignments': 'adminAssignList',
@@ -1016,41 +1170,54 @@
         }[tabId]);
         if (!container) return;
 
-        if(tabId === 'admin-assignments') {
-            container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small>${item.fileData ? `<a href="${item.fileData}" download="${item.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${item.fileName}</a>` : ''}<button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
-        } else if(tabId === 'admin-others') {
-            container.innerHTML = othersAnnounce.map((t, i) => `<div class="announce-item">📌 ${t.text}${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}<button class="admin-delete-btn" onclick="deleteOther(${i})">Delete</button></div>`).join('');
-        } else if(tabId === 'admin-announcements') {
-            container.innerHTML = todayAnnounce.map((t, i) => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}<button class="admin-delete-btn" onclick="deleteToday(${i})">Delete</button></div>`).join('');
-        } else if(tabId === 'admin-qa') {
-            container.innerHTML = qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting...'}</div><div class="meta">from ${item.user} • ${new Date(item.date).toLocaleString()}</div><button class="admin-delete-btn" onclick="deleteQA(${idx})">Delete</button></div>`).join('');
-        } else if(tabId === 'admin-points') {
-            container.innerHTML = points.map(p => `<div class="point-item"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Last update: ${p.history.length > 0 ? new Date(p.history[p.history.length-1].timestamp).toLocaleString() : 'No updates yet'}</div></div>`).join('');
-        } else if(tabId === 'admin-monitor') {
-            container.innerHTML = points.map(p => `<div class="point-item" style="cursor:pointer;" onclick="toggleMonitorDetails('${p._id}')"><h4>🏆 ${p.studentName}</h4><div class="point-text">Current Points: ${p.points}/15</div><div class="point-date">Click for history</div><div id="monitor-details-${p._id}" style="display:none; margin-top:10px;"></div></div>`).join('');
-        } else if(tabId === 'admin-offenses') {
-            container.innerHTML = offenses.map((offense, idx) => {
-                const students = points.filter(p => p.history.some(h => h.reason === offense.name));
-                return `<div class="offense-reason-item" onclick="toggleOffenseDetails(${idx})">
-                    <h4>⚠️ ${offense.name}</h4>
-                    <p style="opacity:0.7; font-size:0.9rem;">${students.length} student(s) have this offense</p>
-                    <button class="admin-delete-btn" onclick="event.stopPropagation(); deleteOffense('${offense._id}')">Remove</button>
-                    <div id="offense-details-${idx}" style="display:none; margin-top:10px;"></div>
-                </div>`;
-            }).join('');
-        }
-    }
-
-    async function deleteOffense(id) {
-        if(!confirm('Remove this offense?')) return;
-        const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
-        if(res.ok) {
-            await fetchData();
-            renderAdminList('admin-offenses');
-            alert("✅ Offense removed!");
-        } else {
-            const error = await res.json();
-            alert("❌ Failed: " + (error.error || "Unknown error"));
+        if (tabId === 'admin-assignments') {
+            const dates = Object.keys(assignments).sort();
+            container.innerHTML = dates.length === 0 ? '<div class="empty">No assignments yet.</div>' :
+                dates.map(date => assignments[date].map((item, idx) => `<div class="list-card">
+                    <div class="card-head"><div><strong>${escapeHtml(item.title)}</strong><div class="meta">${date}</div></div>
+                    <button class="btn red sm" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>
+                    ${fileLink(item)}</div>`).join('')).join('');
+        } else if (tabId === 'admin-others') {
+            container.innerHTML = othersAnnounce.length === 0 ? '<div class="empty">Nothing here yet.</div>' :
+                othersAnnounce.map((t, i) => `<div class="list-card"><div class="card-head"><div class="body-text">${escapeHtml(t.text)}</div>
+                    <button class="btn red sm" onclick="deleteOther(${i})">Delete</button></div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
+        } else if (tabId === 'admin-announcements') {
+            container.innerHTML = todayAnnounce.length === 0 ? '<div class="empty">Nothing here yet.</div>' :
+                todayAnnounce.map((t, i) => `<div class="list-card"><div class="card-head"><div class="body-text">${escapeHtml(t.text)}</div>
+                    <button class="btn red sm" onclick="deleteToday(${i})">Delete</button></div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
+        } else if (tabId === 'admin-qa') {
+            container.innerHTML = qaData.length === 0 ? '<div class="empty">No questions yet.</div>' :
+                qaData.map((item, idx) => `<div class="qa-card">
+                    <div class="card-head"><div class="q">${escapeHtml(item.q)}</div><button class="btn red sm" onclick="deleteQA(${idx})">Delete</button></div>
+                    <div class="a${item.a ? '' : ' pending'}">${item.a ? escapeHtml(item.a) : 'No reply yet'}</div>
+                    <div class="meta" style="font-size:0.74rem; color:var(--muted); margin:8px 0;">${escapeHtml(item.user)} · ${fmtDate(item.date)}</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <input type="text" id="adminReplyInput_${idx}" placeholder="Write a reply..." style="flex:1; min-width:180px;">
+                        <button class="btn sm" onclick="adminReply(${idx})">Reply</button>
+                    </div></div>`).join('');
+        } else if (tabId === 'admin-points') {
+            const sorted = [...points].sort((a, b) => b.points - a.points);
+            container.innerHTML = sorted.length === 0 ? '' : `<h4 style="font-family:'Outfit'; margin:6px 0 10px;">Current standings</h4><div class="table-scroll"><table class="data-table">
+                <thead><tr><th>Student</th><th>Points</th><th>Last update</th></tr></thead><tbody>` +
+                sorted.map(p => `<tr><td>${escapeHtml(p.studentName)}</td><td style="font-weight:700;">${p.points}</td>
+                    <td style="color:var(--muted); font-size:0.82rem;">${p.history.length ? fmtDate(p.history[p.history.length-1].timestamp) : 'No updates'}</td></tr>`).join('') +
+                '</tbody></table></div>';
+        } else if (tabId === 'admin-monitor') {
+            container.innerHTML = points.length === 0 ? '<div class="empty">No point records yet.</div>' :
+                points.map(p => `<div class="list-card" style="cursor:pointer; border-left-color:var(--gold);" onclick="toggleMonitorDetails('${p._id}')">
+                    <div class="card-head"><div><strong>${escapeHtml(p.studentName)}</strong><div class="meta">Tap for history</div></div>
+                    <div style="font-family:'Outfit'; font-size:1.3rem; font-weight:800; color:var(--gold);">${p.points}</div></div>
+                    <div id="monitor-details-${p._id}" style="display:none; margin-top:10px;"></div></div>`).join('');
+        } else if (tabId === 'admin-offenses') {
+            container.innerHTML = offenses.length === 0 ? '<div class="empty">No offense types yet. Add one in the Points tab.</div>' :
+                offenses.map((offense, idx) => {
+                    const students = points.filter(p => p.history.some(h => h.reason === offense.name));
+                    return `<div class="offense-row" onclick="toggleOffenseDetails(${idx})">
+                        <div class="card-head"><div><h4>${escapeHtml(offense.name)}</h4>
+                        <div class="meta" style="font-size:0.8rem; color:var(--muted);">${students.length} student${students.length === 1 ? '' : 's'}</div></div>
+                        <button class="btn red sm" onclick="event.stopPropagation(); deleteOffense('${offense._id}')">Remove</button></div>
+                        <div id="offense-details-${idx}" style="display:none; margin-top:10px;"></div></div>`;
+                }).join('');
         }
     }
 
@@ -1058,19 +1225,12 @@
         const details = document.getElementById('monitor-details-' + id);
         const point = points.find(p => p._id === id);
         if (details.style.display === 'none') {
-            let html = '<h5 style="color:#f1c40f;">History:</h5>';
-            if (point.history.length > 0) {
-                point.history.forEach(h => {
-                    html += `<div style="border-left: 3px solid ${h.change > 0 ? '#2ecc71' : '#b34f4f'}; padding: 8px; margin: 5px 0; background:rgba(255,255,255,0.05);"><strong>${h.change > 0 ? '+' : ''}${h.change}</strong> - ${h.message}<div style="font-size:0.75rem; opacity:0.6;">${new Date(h.timestamp).toLocaleString()}</div></div>`;
-                });
-            } else {
-                html += '<p style="opacity:0.6;">No history yet.</p>';
-            }
-            details.innerHTML = html;
+            const h = point.history;
+            details.innerHTML = h.length
+                ? h.map(x => `<div class="sub-entry ${x.change > 0 ? 'up' : 'down'}"><strong>${x.change > 0 ? '+' : ''}${x.change}</strong>${x.reason && x.reason !== 'No reason' ? ` · ${escapeHtml(x.reason)}` : ''}<div style="margin-top:4px;">${escapeHtml(x.message)}</div><div style="font-size:0.72rem; color:var(--muted); margin-top:4px;">${fmtDate(x.timestamp)}</div></div>`).join('')
+                : '<p style="color:var(--muted); font-size:0.85rem;">No history yet.</p>';
             details.style.display = 'block';
-        } else {
-            details.style.display = 'none';
-        }
+        } else details.style.display = 'none';
     }
 
     function toggleOffenseDetails(idx) {
@@ -1078,60 +1238,60 @@
         const offense = offenses[idx];
         const students = points.filter(p => p.history.some(h => h.reason === offense.name));
         if (details.style.display === 'none') {
-            let html = '<h5 style="color:#f1c40f;">Students with this offense:</h5>';
-            if (students.length > 0) {
-                students.forEach(student => {
-                    const studentOffenses = student.history.filter(h => h.reason === offense.name);
-                    html += `<div style="border-left: 3px solid #e74c3c; padding: 8px; margin: 5px 0; background:rgba(255,255,255,0.05);"><strong>${student.studentName}</strong> (Current: ${student.points}/15)`;
-                    studentOffenses.forEach(h => {
-                        html += `<div style="font-size:0.85rem; margin-top:5px;">- ${h.change > 0 ? '+' : ''}${h.change} points on ${new Date(h.timestamp).toLocaleString()}<br><em>${h.message}</em></div>`;
-                    });
-                    html += '</div>';
-                });
-            } else {
-                html += '<p style="opacity:0.6;">No students have this offense.</p>';
-            }
-            details.innerHTML = html;
+            details.innerHTML = students.length
+                ? students.map(s => {
+                    const own = s.history.filter(h => h.reason === offense.name);
+                    return `<div class="sub-entry down"><strong>${escapeHtml(s.studentName)}</strong> · ${s.points}/15` +
+                        own.map(h => `<div style="margin-top:4px;">${h.change > 0 ? '+' : ''}${h.change} · ${escapeHtml(h.message)}<div style="font-size:0.72rem; color:var(--muted);">${fmtDate(h.timestamp)}</div></div>`).join('') +
+                        '</div>';
+                }).join('')
+                : '<p style="color:var(--muted); font-size:0.85rem;">No one has this offense.</p>';
             details.style.display = 'block';
-        } else {
-            details.style.display = 'none';
-        }
+        } else details.style.display = 'none';
+    }
+
+    async function adminReply(idx) {
+        const input = document.getElementById(`adminReplyInput_${idx}`);
+        const reply = input.value.trim();
+        if (!reply) return;
+        const res = await fetch('/api/admin/answer-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId: qaData[idx].id, answer: reply }) });
+        if (res.ok) { await fetchData(); renderAdminList('admin-qa'); toast('Reply posted'); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    async function deleteOffense(id) {
+        if (!confirm('Remove this offense type?')) return;
+        const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); renderAdminList('admin-offenses'); toast('Offense removed'); } else toast('Failed', true);
     }
 
     async function deleteAssign(date, idx) {
-        if(!confirm('Delete this assignment?')) return;
-        const item = assignments[date][idx];
-        const res = await fetch(`/api/admin/delete-assignment/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { await fetchData(); renderAdminList('admin-assignments'); } else { alert("❌ Failed"); }
+        if (!confirm('Delete this assignment?')) return;
+        const res = await fetch(`/api/admin/delete-assignment/${assignments[date][idx].id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); renderAdminList('admin-assignments'); toast('Deleted'); } else toast('Failed', true);
     }
 
     async function deleteOther(idx) {
-        if(!confirm('Delete this announcement?')) return;
-        const item = othersAnnounce[idx];
-        const res = await fetch(`/api/admin/delete-other/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { await fetchData(); renderAdminList('admin-others'); } else { alert("❌ Failed"); }
+        if (!confirm('Delete this post?')) return;
+        const res = await fetch(`/api/admin/delete-other/${othersAnnounce[idx].id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); renderAdminList('admin-others'); toast('Deleted'); } else toast('Failed', true);
     }
 
     async function deleteToday(idx) {
-        if(!confirm('Delete this announcement?')) return;
-        const item = todayAnnounce[idx];
-        const res = await fetch(`/api/admin/delete-today/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { await fetchData(); renderAdminList('admin-announcements'); } else { alert("❌ Failed"); }
+        if (!confirm('Delete this announcement?')) return;
+        const res = await fetch(`/api/admin/delete-today/${todayAnnounce[idx].id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); renderAdminList('admin-announcements'); toast('Deleted'); } else toast('Failed', true);
     }
 
     async function deleteQA(idx) {
-        if(!confirm('Delete this Q&A?')) return;
-        const item = qaData[idx];
-        const res = await fetch(`/api/admin/delete-question/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { await fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
+        if (!confirm('Delete this question?')) return;
+        const res = await fetch(`/api/admin/delete-question/${qaData[idx].id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); renderAdminList('admin-qa'); toast('Deleted'); } else toast('Failed', true);
     }
 
-    setInterval(() => {
-        if (document.visibilityState === 'visible') {
-            fetchData();
-        }
-    }, 5000);
+    setInterval(() => { if (document.visibilityState === 'visible') fetchData(); }, 5000);
 
+    renderOfficers();
     fetchData();
 </script>
 </body>
