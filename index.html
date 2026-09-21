@@ -84,7 +84,7 @@
         }
         .hero::before {
             content: ''; position: absolute; inset: 0;
-            background: url('PP.png') center/cover no-repeat;
+            background: var(--hero-url, url('PP.png')) center/cover no-repeat;
             transform: scale(1.04); filter: saturate(1.05);
         }
         .hero::after {
@@ -245,6 +245,20 @@
         .sub-entry.up { border-left-color: var(--jade); }
         .sub-entry.down { border-left-color: var(--danger); }
 
+        /* ---------- Admin Replace ---------- */
+        .replace-row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+        .replace-preview { width: 110px; height: 110px; object-fit: cover; border-radius: 16px; border: 1px solid var(--line); background: rgba(0,0,0,0.3); flex: 0 0 auto; }
+        .replace-preview.wide { width: 220px; height: 110px; }
+        .replace-controls { flex: 1; min-width: 200px; }
+        .replace-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .officer-replace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+        .officer-replace-card { background: rgba(2, 14, 7, 0.4); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 14px; }
+        .officer-replace-card .thumb-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+        .officer-replace-card img { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); flex: 0 0 auto; }
+        .officer-replace-card input[type="text"] { margin-bottom: 8px; }
+        .officer-replace-card input[type="file"] { font-size: 0.78rem; padding: 8px 10px; margin-bottom: 8px; }
+        .officer-replace-card .replace-btns { margin-top: 4px; }
+
         .toast-wrap { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
         .toast { background: rgba(6, 32, 16, 0.95); border: 1px solid rgba(46,204,113,0.5); color: var(--ink); padding: 12px 22px; border-radius: var(--radius-pill); font-size: 0.88rem; font-weight: 500; box-shadow: 0 12px 30px rgba(0,0,0,0.5); animation: drop 0.25s ease; max-width: 90vw; }
         .toast.bad { border-color: rgba(231,76,60,0.6); }
@@ -293,6 +307,7 @@
         <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Points</button>
         <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
         <button class="nav-btn admin-tab" data-tab="admin-offenses">⚠️ Offenses</button>
+        <button class="nav-btn admin-tab" data-tab="admin-replace">🖼️ Admin Replace</button>
         <button class="nav-btn hidden-tab" data-tab="admin">⚙️ Admin Panel</button>
     </div>
 
@@ -351,7 +366,7 @@
         <div id="officers" class="tab-content">
             <h3 class="page-title">Class officers</h3>
             <p class="page-sub">7-Jade, A.Y. 26-27 — revised and final. Tap any card to enlarge.</p>
-            <img src="31.png" class="officer-hero" alt="7-Jade class officers" onclick="openLightbox('31.png','7-Jade Class Officers')">
+            <img src="31.png" id="officerHeroImg" class="officer-hero" alt="7-Jade class officers" onclick="openLightbox(officerHeroSrc(),'7-Jade Class Officers')">
             <div class="officer-grid" id="officerGrid"></div>
         </div>
 
@@ -533,6 +548,63 @@
             <p class="page-sub">Tap one to see who committed it.</p>
             <div id="offenseList"></div>
         </div>
+
+        <!-- ADMIN REPLACE -->
+        <div id="admin-replace" class="tab-content">
+            <h3 class="page-title">Replace images & text</h3>
+            <p class="page-sub">Swap the logo, banner, group photo, or any officer's picture, name and role. Leave a field as is to keep it unchanged. "Reset" goes back to the original file in the repo.</p>
+
+            <div class="panel replace-panel">
+                <h4>Site logo</h4>
+                <p class="hint">Shown in the header, the sign-in card, and the welcome screen.</p>
+                <div class="replace-row">
+                    <img id="previewLogo" class="replace-preview" src="logo.png" alt="Current logo">
+                    <div class="replace-controls">
+                        <input type="file" id="fileLogo" accept="image/*" onchange="previewAssetFile('fileLogo','previewLogo')">
+                        <div class="replace-btns">
+                            <button class="btn sm" onclick="adminSaveAsset('logo','fileLogo')">Save new logo</button>
+                            <button class="btn ghost sm" onclick="adminResetAsset('logo','previewLogo','logo.png')">Reset to default</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel replace-panel">
+                <h4>Locked screen banner</h4>
+                <p class="hint">The background photo behind the sign-in card.</p>
+                <div class="replace-row">
+                    <img id="previewHero" class="replace-preview wide" src="PP.png" alt="Current banner">
+                    <div class="replace-controls">
+                        <input type="file" id="fileHero" accept="image/*" onchange="previewAssetFile('fileHero','previewHero')">
+                        <div class="replace-btns">
+                            <button class="btn sm" onclick="adminSaveAsset('hero','fileHero')">Save new banner</button>
+                            <button class="btn ghost sm" onclick="adminResetAsset('hero','previewHero','PP.png')">Reset to default</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel replace-panel">
+                <h4>Officers group photo</h4>
+                <p class="hint">The big poster at the top of the Officers tab.</p>
+                <div class="replace-row">
+                    <img id="previewOfficerHero" class="replace-preview" src="31.png" alt="Current group photo">
+                    <div class="replace-controls">
+                        <input type="file" id="fileOfficerHero" accept="image/*" onchange="previewAssetFile('fileOfficerHero','previewOfficerHero')">
+                        <div class="replace-btns">
+                            <button class="btn sm" onclick="adminSaveAsset('officerHero','fileOfficerHero')">Save new group photo</button>
+                            <button class="btn ghost sm" onclick="adminResetAsset('officerHero','previewOfficerHero','31.png')">Reset to default</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h4>Individual officers</h4>
+                <p class="hint">Update a photo, name, or role — each card saves on its own.</p>
+                <div id="officerReplaceList" class="officer-replace-grid"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -574,8 +646,9 @@
     ];
     const ROSTER = [...new Set(JADE_NAMES)].sort((a, b) => a.localeCompare(b));
 
-    // Officer posters, in the order they appear on the tab.
-    const OFFICERS = [
+    // Officer posters, in the order they appear on the tab. This is the
+    // fallback used whenever the admin hasn't replaced a name/role/photo.
+    const DEFAULT_OFFICERS = [
         { img: '32.png', name: 'Athena Mirasol', role: 'President' },
         { img: '33.png', name: 'Red Alvarez', role: 'Vice-President' },
         { img: '34.png', name: 'Joaquin Balbin', role: 'Secretary' },
@@ -591,6 +664,10 @@
         { img: '44.png', name: 'Sophia Alpe', role: 'Class Beadle' },
         { img: '45.png', name: 'Ken Cereno', role: 'Assistant Class Beadle' }
     ];
+
+    // Admin-replaceable content (logo, hero banner, officer group photo, per-officer overrides).
+    // Fetched from /api/site-content; null fields fall back to the static files above.
+    let siteContent = { logo: null, hero: null, officerHero: null, officers: DEFAULT_OFFICERS.map(o => ({ name: o.name, role: o.role, photo: null })) };
 
     let assignments = {};
     let othersAnnounce = [];
@@ -651,14 +728,54 @@
             if (tab === 'assignments') renderCalendar();
             if (tab === 'admin-points' && adminRole === 'full') populateStudentChecklist();
             if (tab === 'walkoffame') { populateWofDropdown(); renderWalkOfFame(); }
+            if (tab === 'admin-replace' && adminRole === 'full') renderAdminReplaceTab();
         });
     });
 
     function goTab(tab) { document.querySelector(`.nav-btn[data-tab="${tab}"]`).click(); }
 
+    // ---------- Site content (admin-replaceable images & text) ----------
+    function logoSrc() { return siteContent.logo || 'logo.png'; }
+    function heroSrc() { return siteContent.hero || 'PP.png'; }
+    function officerHeroSrc() { return siteContent.officerHero || '31.png'; }
+
+    // Merges DEFAULT_OFFICERS with whatever the admin has overridden.
+    function mergedOfficers() {
+        return DEFAULT_OFFICERS.map((def, i) => {
+            const o = (siteContent.officers && siteContent.officers[i]) || {};
+            return {
+                name: o.name || def.name,
+                role: o.role || def.role,
+                img: o.photo || def.img
+            };
+        });
+    }
+
+    function applySiteContent() {
+        document.querySelectorAll('.brand img, .box-logo, .welcome-card img').forEach(img => img.src = logoSrc());
+        const favicon = document.querySelector('link[rel="icon"]');
+        if (favicon) favicon.href = logoSrc();
+        document.querySelector('.hero').style.setProperty('--hero-url', `url("${heroSrc()}")`);
+        const heroImg = document.getElementById('officerHeroImg');
+        if (heroImg) heroImg.src = officerHeroSrc();
+    }
+
+    async function fetchSiteContent() {
+        try {
+            const res = await fetch('/api/site-content');
+            const data = await res.json();
+            siteContent = data;
+            applySiteContent();
+            renderOfficers();
+            if (document.getElementById('admin-replace').classList.contains('active')) renderAdminReplaceTab();
+        } catch (error) {
+            console.error('Site content fetch error', error);
+        }
+    }
+
     // ---------- Officers ----------
     function renderOfficers() {
-        document.getElementById('officerGrid').innerHTML = OFFICERS.map(o => `
+        document.getElementById('officerGrid').innerHTML = mergedOfficers().map(o => `
             <div class="officer-card" onclick="openLightbox('${o.img}', '${escapeHtml(o.name)} — ${escapeHtml(o.role)}')">
                 <img src="${o.img}" alt="${escapeHtml(o.name)}, ${escapeHtml(o.role)}" loading="lazy">
                 <div class="cap"><div class="nm">${escapeHtml(o.name)}</div><div class="rl">${escapeHtml(o.role)}</div></div>
@@ -686,7 +803,7 @@
             document.getElementById('adminPassBox').style.display = 'none';
             if (data.role === 'content') {
                 document.querySelectorAll('.admin-tab').forEach(b => {
-                    const restricted = ['admin-qa','admin-points','admin-monitor','admin-offenses'].includes(b.dataset.tab);
+                    const restricted = ['admin-qa','admin-points','admin-monitor','admin-offenses','admin-replace'].includes(b.dataset.tab);
                     b.style.display = restricted ? 'none' : 'inline-block';
                 });
                 goTab('admin-add');
@@ -1116,6 +1233,73 @@
         return { fileData: null, fileName: null, fileType: null };
     }
 
+    // ---------- Admin: Replace (logo, banner, officer photos & text) ----------
+    // Shows the picked file immediately, before it's saved.
+    function previewAssetFile(inputId, imgId) {
+        const file = document.getElementById(inputId).files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => { document.getElementById(imgId).src = reader.result; };
+        reader.readAsDataURL(file);
+    }
+
+    async function adminSaveAsset(key, inputId) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        const file = document.getElementById(inputId).files[0];
+        if (!file) return toast('Choose an image first', true);
+        const dataUrl = await readFileAsBase64(file);
+        const res = await fetch('/api/admin/site-content/asset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, dataUrl }) });
+        if (res.ok) { document.getElementById(inputId).value = ''; await fetchSiteContent(); toast('Saved'); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    async function adminResetAsset(key, imgId, defaultSrc) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        if (!confirm('Reset this back to the original image?')) return;
+        const res = await fetch('/api/admin/site-content/asset-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
+        if (res.ok) { document.getElementById(imgId).src = defaultSrc; await fetchSiteContent(); toast('Reset to default'); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    function renderAdminReplaceTab() {
+        document.getElementById('previewLogo').src = logoSrc();
+        document.getElementById('previewHero').src = heroSrc();
+        document.getElementById('previewOfficerHero').src = officerHeroSrc();
+
+        document.getElementById('officerReplaceList').innerHTML = mergedOfficers().map((o, i) => `
+            <div class="officer-replace-card">
+                <div class="thumb-row">
+                    <img id="officerThumb_${i}" src="${o.img}" alt="${escapeHtml(o.name)}">
+                    <input type="file" id="officerFile_${i}" accept="image/*" onchange="previewAssetFile('officerFile_${i}','officerThumb_${i}')" style="flex:1;">
+                </div>
+                <input type="text" id="officerName_${i}" value="${escapeHtml(o.name)}" placeholder="Name">
+                <input type="text" id="officerRole_${i}" value="${escapeHtml(o.role)}" placeholder="Role">
+                <div class="replace-btns">
+                    <button class="btn sm" onclick="adminSaveOfficerReplace(${i})">Save</button>
+                    <button class="btn ghost sm" onclick="adminResetOfficerPhoto(${i})">Reset photo</button>
+                </div>
+            </div>`).join('');
+    }
+
+    async function adminSaveOfficerReplace(index) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        const name = document.getElementById(`officerName_${index}`).value.trim();
+        const role = document.getElementById(`officerRole_${index}`).value.trim();
+        const fileInput = document.getElementById(`officerFile_${index}`);
+        const dataUrl = fileInput.files && fileInput.files[0] ? await readFileAsBase64(fileInput.files[0]) : null;
+        const res = await fetch('/api/admin/site-content/officer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index, name, role, dataUrl }) });
+        if (res.ok) { fileInput.value = ''; await fetchSiteContent(); toast('Officer updated'); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    async function adminResetOfficerPhoto(index) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        if (!confirm("Reset this officer's photo to the original?")) return;
+        const res = await fetch('/api/admin/site-content/officer-photo-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index }) });
+        if (res.ok) { await fetchSiteContent(); toast('Photo reset'); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
     async function adminAddAssignment() {
         if (!adminRole) return toast('Log in as admin first', true);
         const date = document.getElementById('adminAssignDate').value;
@@ -1292,6 +1476,7 @@
     setInterval(() => { if (document.visibilityState === 'visible') fetchData(); }, 5000);
 
     renderOfficers();
+    fetchSiteContent();
     fetchData();
 </script>
 </body>

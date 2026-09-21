@@ -114,6 +114,42 @@ const WalkOfFameSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+// ✅ NEW: Site Content — lets the full admin replace the logo, hero banner,
+// officer group photo, and each officer's photo/name/role without touching code.
+// Any field left null falls back to the static file already in the repo
+// (logo.png, PP.png, 31.png, 32.png...45.png).
+const DEFAULT_OFFICERS = [
+    { name: 'Athena Mirasol', role: 'President' },
+    { name: 'Red Alvarez', role: 'Vice-President' },
+    { name: 'Joaquin Balbin', role: 'Secretary' },
+    { name: 'Jay Bea', role: 'Treasurer' },
+    { name: 'Darel Grageda', role: 'Auditor' },
+    { name: 'Kylie Cordova', role: 'P.I.O.' },
+    { name: 'Princess Clavecilla', role: 'Business Manager' },
+    { name: 'Ethan Ermac', role: 'Business Manager' },
+    { name: 'Sophia Alpe', role: 'Peace Officer' },
+    { name: 'Ken Carinan', role: 'Peace Officer' },
+    { name: 'Mkralj De La Peña', role: 'Escort' },
+    { name: 'Jasmine Acuña', role: 'Muse' },
+    { name: 'Sophia Alpe', role: 'Class Beadle' },
+    { name: 'Ken Cereno', role: 'Assistant Class Beadle' }
+];
+
+const SiteContentSchema = new mongoose.Schema({
+    singleton: { type: String, default: 'main', unique: true },
+    logo: { type: String, default: null },       // replaces logo.png
+    hero: { type: String, default: null },        // replaces PP.png (Locked screen banner)
+    officerHero: { type: String, default: null }, // replaces 31.png (officers group photo)
+    officers: {
+        type: [{
+            name: String,
+            role: String,
+            photo: { type: String, default: null } // replaces 32.png...45.png
+        }],
+        default: DEFAULT_OFFICERS.map(o => ({ name: o.name, role: o.role, photo: null }))
+    }
+});
+
 const Assignment = mongoose.model('Assignment', AssignmentSchema);
 const Other = mongoose.model('Other', OtherSchema);
 const Today = mongoose.model('Today', TodaySchema);
@@ -121,6 +157,24 @@ const Response = mongoose.model('Response', ResponseSchema);
 const Point = mongoose.model('Point', PointSchema);
 const Offense = mongoose.model('Offense', OffenseSchema);
 const WalkOfFame = mongoose.model('WalkOfFame', WalkOfFameSchema);
+const SiteContent = mongoose.model('SiteContent', SiteContentSchema);
+
+// Fetches the one SiteContent doc, creating it with defaults the first time.
+async function getSiteContent() {
+    let doc = await SiteContent.findOne({ singleton: 'main' });
+    if (!doc) {
+        doc = new SiteContent({ singleton: 'main' });
+        await doc.save();
+    }
+    // Guard against an old doc that has fewer than 14 officer slots.
+    if (doc.officers.length < DEFAULT_OFFICERS.length) {
+        for (let i = doc.officers.length; i < DEFAULT_OFFICERS.length; i++) {
+            doc.officers.push({ name: DEFAULT_OFFICERS[i].name, role: DEFAULT_OFFICERS[i].role, photo: null });
+        }
+        await doc.save();
+    }
+    return doc;
+}
 
 let adminSession = { role: null };
 
@@ -384,6 +438,81 @@ app.post('/api/admin/clear-walkoffame', async (req, res) => {
         } else {
             await WalkOfFame.deleteMany({});
         }
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+// ✅ NEW: Site Content — read (everyone) and replace (full admin only)
+app.get('/api/site-content', async (req, res) => {
+    try {
+        const doc = await getSiteContent();
+        res.json(doc);
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+const ASSET_KEYS = ['logo', 'hero', 'officerHero'];
+
+app.post('/api/admin/site-content/asset', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace site images." });
+        const { key, dataUrl } = req.body;
+        if (!ASSET_KEYS.includes(key)) return res.status(400).json({ error: "Unknown asset key" });
+        if (!dataUrl) return res.status(400).json({ error: "No file received" });
+        const doc = await getSiteContent();
+        doc[key] = dataUrl;
+        await doc.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.post('/api/admin/site-content/asset-reset', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace site images." });
+        const { key } = req.body;
+        if (!ASSET_KEYS.includes(key)) return res.status(400).json({ error: "Unknown asset key" });
+        const doc = await getSiteContent();
+        doc[key] = null;
+        await doc.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.post('/api/admin/site-content/officer', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace officers." });
+        const { index, name, role, dataUrl } = req.body;
+        const i = parseInt(index);
+        const doc = await getSiteContent();
+        if (isNaN(i) || i < 0 || i >= doc.officers.length) return res.status(400).json({ error: "Invalid officer index" });
+        if (name != null) doc.officers[i].name = name;
+        if (role != null) doc.officers[i].role = role;
+        if (dataUrl) doc.officers[i].photo = dataUrl;
+        doc.markModified('officers');
+        await doc.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.post('/api/admin/site-content/officer-photo-reset', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace officers." });
+        const { index } = req.body;
+        const i = parseInt(index);
+        const doc = await getSiteContent();
+        if (isNaN(i) || i < 0 || i >= doc.officers.length) return res.status(400).json({ error: "Invalid officer index" });
+        doc.officers[i].photo = null;
+        doc.markModified('officers');
+        await doc.save();
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
