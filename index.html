@@ -110,6 +110,9 @@
         .student-checklist label.checked { background: rgba(46,204,113,0.2); }
         .student-checklist input[type="checkbox"] { width: 18px; height: 18px; flex: 0 0 auto; margin: 0; padding: 0; accent-color: #2ecc71; border-radius: 4px; }
 
+        .offense-badge { display: inline-block; background: rgba(231,76,60,0.2); color: #ff8f8f; border: 1px solid rgba(231,76,60,0.45); padding: 4px 12px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; }
+        .offense-badge.reward { background: rgba(46,204,113,0.18); color: #7ee2a8; border-color: rgba(46,204,113,0.45); }
+
         .offense-reason-item { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #e74c3c; cursor: pointer; transition: 0.2s; }
         .offense-reason-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
         .offense-reason-item h4 { color: #e74c3c; margin-bottom: 5px; }
@@ -304,7 +307,7 @@
             <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
             <div class="admin-point-section">
                 <h4>➕ Add / Deduct Points</h4>
-                <p style="opacity:0.65; font-size:0.85rem;">Tick every student who gets this offense or reward, then update once.</p>
+                <p style="opacity:0.65; font-size:0.85rem;">Tick every student who gets this offense or reward, then update once. The offense you pick below is shown to them in My Points, so choose one instead of leaving it blank.</p>
 
                 <input type="text" id="studentSearch" class="student-search" placeholder="Search a name..." oninput="filterStudentList()">
                 <div class="student-picker-head">
@@ -612,6 +615,8 @@
             renderQA();
             renderWalkOfFame();
             populateOffenseDropdown();
+            // Keep the student's own list live while they're looking at it.
+            if (document.getElementById('points').classList.contains('active')) loadMyPoints();
         } catch (error) {
             console.error("Fetch error", error);
         }
@@ -904,14 +909,45 @@
         const data = await res.json();
         const container = document.getElementById('myPointsContainer');
         if(data.points) {
-            container.innerHTML = `<div class="point-item"><h4>🏆 ${data.points.studentName || currentStudentName}</h4><div class="point-text">Current Points: ${data.points.points}/15</div>`;
-            if(data.points.history && data.points.history.length > 0) {
+            container.innerHTML = `<div class="point-item"><h4>🏆 ${escapeHtml(data.points.studentName || currentStudentName)}</h4><div class="point-text">Current Points: ${data.points.points}/15</div></div>`;
+            const history = data.points.history || [];
+            if(history.length > 0) {
                 container.innerHTML += '<h4 style="margin-top:15px; color:#f1c40f;">History:</h4>';
-                data.points.history.forEach(h => {
-                    container.innerHTML += `<div class="point-item" style="border-left-color: ${h.change > 0 ? '#2ecc71' : '#b34f4f'}"><strong>${h.change > 0 ? '+' : ''}${h.change}</strong> - ${h.message}<div class="point-date">${new Date(h.timestamp).toLocaleString()}</div></div>`;
+                // Newest first so the latest offense is right at the top.
+                [...history].reverse().forEach(h => {
+                    const hasReason = h.reason && h.reason !== 'No reason';
+                    container.innerHTML += `<div class="point-item" style="border-left-color: ${h.change > 0 ? '#2ecc71' : '#b34f4f'}">
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                            <strong style="font-size:1.1rem; color:${h.change > 0 ? '#2ecc71' : '#ff8f8f'}">${h.change > 0 ? '+' : ''}${h.change}</strong>
+                            ${hasReason ? `<span class="offense-badge ${h.change > 0 ? 'reward' : ''}">${h.change > 0 ? '⭐' : '⚠️'} ${escapeHtml(h.reason)}</span>` : ''}
+                        </div>
+                        <div class="point-text">${escapeHtml(h.message)}</div>
+                        <div class="point-date">${new Date(h.timestamp).toLocaleString()}</div>
+                    </div>`;
                 });
+            } else {
+                container.innerHTML += '<p style="opacity:0.6; margin-top:12px;">No point changes yet. Keep it that way.</p>';
             }
-            container.innerHTML += '</div>';
+
+            // Summary of how many times each offense was recorded.
+            const tally = {};
+            history.forEach(h => {
+                if (h.reason && h.reason !== 'No reason') {
+                    if (!tally[h.reason]) tally[h.reason] = { count: 0, total: 0 };
+                    tally[h.reason].count++;
+                    tally[h.reason].total += (h.change || 0);
+                }
+            });
+            const reasons = Object.keys(tally);
+            if (reasons.length > 0) {
+                let summary = '<h4 style="margin-top:20px; color:#e74c3c;">My offenses:</h4><div class="wof-scroll"><table class="wof-table"><thead><tr><th style="background:rgba(231,76,60,0.18); color:#e74c3c;">Offense</th><th style="background:rgba(231,76,60,0.18); color:#e74c3c;">Times</th><th style="background:rgba(231,76,60,0.18); color:#e74c3c;">Points</th></tr></thead><tbody>';
+                reasons.sort((a, b) => tally[b].count - tally[a].count).forEach(r => {
+                    const t = tally[r];
+                    summary += `<tr><td>${escapeHtml(r)}</td><td>${t.count}</td><td class="wof-score" style="color:${t.total > 0 ? '#2ecc71' : '#ff8f8f'}">${t.total > 0 ? '+' : ''}${Math.round(t.total * 10) / 10}</td></tr>`;
+                });
+                summary += '</tbody></table></div>';
+                container.innerHTML += summary;
+            }
         } else {
             container.innerHTML = '<p style="opacity:0.6;">No points yet.</p>';
         }
