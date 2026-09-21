@@ -94,14 +94,45 @@
         .admin-section input, .admin-section textarea, .admin-section input[type="file"] { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255, 255, 255, 0.08); color: white; resize: vertical; margin: 8px 0; }
         .admin-section input:focus, .admin-section textarea:focus, .admin-section input[type="file"]:focus { outline: 2px solid #2ecc71; }
         .admin-section button { background: #2ecc71; border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 500; cursor: pointer; margin-top: 6px; }
-        
+
         .point-select { width: 100%; padding: 12px; border-radius: 16px; border: none; background: rgba(255,255,255,0.08); color: white; margin: 8px 0; font-size: 1rem; }
         .point-select option { background: #1a2e1f; color: white; }
+
+        /* ✅ Multi-student picker */
+        .student-picker-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 4px; }
+        .student-picker-head .mini-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: #eaf0e5; padding: 6px 16px; border-radius: 40px; font-size: 0.8rem; cursor: pointer; margin: 0; }
+        .student-picker-head .mini-btn:hover { background: rgba(255,255,255,0.2); }
+        .student-picker-head .selected-count { font-size: 0.85rem; opacity: 0.75; margin-left: auto; }
+        .student-search { margin: 8px 0 !important; }
+        .student-checklist { max-height: 260px; overflow-y: auto; background: rgba(0,0,0,0.22); border-radius: 18px; padding: 8px; margin: 8px 0 4px; border: 1px solid rgba(255,255,255,0.08); }
+        .student-checklist label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; cursor: pointer; font-size: 0.9rem; transition: 0.15s; }
+        .student-checklist label:hover { background: rgba(46,204,113,0.15); }
+        .student-checklist label.checked { background: rgba(46,204,113,0.2); }
+        .student-checklist input[type="checkbox"] { width: 18px; height: 18px; flex: 0 0 auto; margin: 0; padding: 0; accent-color: #2ecc71; border-radius: 4px; }
 
         .offense-reason-item { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #e74c3c; cursor: pointer; transition: 0.2s; }
         .offense-reason-item:hover { background: rgba(255,255,255,0.12); transform: translateX(4px); }
         .offense-reason-item h4 { color: #e74c3c; margin-bottom: 5px; }
         .offense-history { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 12px; margin-top: 10px; max-height: 300px; overflow-y: auto; }
+
+        /* ✅ Walk Of Fame boards */
+        .wof-board { margin-bottom: 30px; }
+        .wof-board h4 { font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
+        .wof-board .board-note { font-size: 0.85rem; opacity: 0.65; margin-bottom: 10px; }
+        .wof-board.highest h4 { color: #f1c40f; }
+        .wof-board.lowest h4 { color: #e74c3c; }
+        .wof-scroll { overflow-x: auto; border-radius: 20px; }
+        .wof-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.22); min-width: 480px; }
+        .wof-table th { padding: 12px 14px; text-align: left; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; }
+        .wof-table td { padding: 12px 14px; border-top: 1px solid rgba(255,255,255,0.07); font-size: 0.95rem; vertical-align: top; }
+        .wof-table tr:hover td { background: rgba(255,255,255,0.05); }
+        .wof-board.highest th { background: rgba(241,196,15,0.18); color: #f1c40f; }
+        .wof-board.lowest th { background: rgba(231,76,60,0.18); color: #e74c3c; }
+        .wof-rank { width: 56px; font-weight: 800; }
+        .wof-board.highest .wof-rank { color: #f1c40f; }
+        .wof-board.lowest .wof-rank { color: #e74c3c; }
+        .wof-score { font-weight: 700; white-space: nowrap; }
+        .wof-empty { padding: 18px; opacity: 0.6; background: rgba(0,0,0,0.2); border-radius: 20px; font-size: 0.95rem; }
 
         @media (max-width: 700px) { .nav-bar { gap: 8px; } .nav-btn { padding: 8px 14px; font-size: 0.8rem; } .calendar-grid { gap: 6px; } .cal-day { padding: 8px 2px; } .cal-day .day-num { font-size: 1.2rem; } }
     </style>
@@ -115,6 +146,7 @@
         <button class="nav-btn hidden-tab" data-tab="announcements">📢 Announcements</button>
         <button class="nav-btn hidden-tab" data-tab="qa">💬 Q&A</button>
         <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
+        <button class="nav-btn hidden-tab" data-tab="walkoffame">🌟 Points Walk Of Fame</button>
         <button class="nav-btn admin-tab" data-tab="admin-add">➕ Admin Add</button>
         <button class="nav-btn admin-tab" data-tab="admin-assignments">🗑️ Admin Assign</button>
         <button class="nav-btn admin-tab" data-tab="admin-others">🗑️ Admin Others</button>
@@ -179,6 +211,41 @@
             <div class="points-container" id="myPointsContainer"></div>
         </div>
 
+        <!-- ✅ NEW TAB: Points Walk Of Fame -->
+        <div id="walkoffame" class="tab-content">
+            <h3 style="font-weight:300; margin-bottom:14px;">🌟 Points Walk Of Fame</h3>
+
+            <div class="admin-point-section" id="wofAdminBox" style="display:none;">
+                <h4 style="color:#2ecc71; margin-bottom:6px;">Add someone to a board</h4>
+                <p style="opacity:0.6; font-size:0.85rem;">Only the full admin sees this.</p>
+                <select id="wofStudent" class="point-select">
+                    <option value="">-- Select student --</option>
+                </select>
+                <select id="wofCategory" class="point-select">
+                    <option value="highest">🥇 Highest points board</option>
+                    <option value="lowest">🥉 Lowest points board</option>
+                </select>
+                <input type="number" id="wofPoints" placeholder="Points (e.g. 15)" step="0.1">
+                <input type="text" id="wofNote" placeholder="Short note (optional)">
+                <button onclick="addWalkOfFame()">Add to board</button>
+                <button onclick="autoFillWalkOfFame()" style="background:#f1c40f; color:#1a2e1f;">✨ Fill from current points</button>
+                <button onclick="clearWalkOfFame('highest')" style="background:#b34f4f;">Clear highest board</button>
+                <button onclick="clearWalkOfFame('lowest')" style="background:#b34f4f;">Clear lowest board</button>
+            </div>
+
+            <div class="wof-board highest">
+                <h4>🥇 Highest points</h4>
+                <div class="board-note">Ranked from the most points down.</div>
+                <div id="wofHighest"></div>
+            </div>
+
+            <div class="wof-board lowest">
+                <h4>🥉 Lowest points</h4>
+                <div class="board-note">Ranked from the fewest points up.</div>
+                <div id="wofLowest"></div>
+            </div>
+        </div>
+
         <div id="admin" class="tab-content">
             <h3 style="font-weight:300;">⚙️ Admin Panel</h3>
             <div class="admin-pass-box" id="adminPassBox">
@@ -191,7 +258,7 @@
 
         <div id="admin-add" class="tab-content">
             <h3 style="font-weight:300; color:#b34f4f;">➕ Admin: Add Content</h3>
-            
+
             <div class="admin-section">
                 <h4>➕ Add to Assignments (PDF/Video/Image)</h4>
                 <input type="date" id="adminAssignDate" placeholder="Date (e.g. 2026-08-20)">
@@ -200,14 +267,14 @@
                 <input type="file" id="adminAssignFile" accept="*/*">
                 <button onclick="adminAddAssignment()">Add Assignment</button>
             </div>
-            
+
             <div class="admin-section">
                 <h4>➕ Add to Others (PDF/Video/Image)</h4>
                 <textarea id="adminOtherText" placeholder="Announcement text..."></textarea>
                 <input type="file" id="adminOtherFile" accept="*/*">
                 <button onclick="adminAddOther()">Add</button>
             </div>
-            
+
             <div class="admin-section">
                 <h4>➕ Add to General Announcements (PDF/Video/Image)</h4>
                 <textarea id="adminAnnounceText" placeholder="Announcement for today..."></textarea>
@@ -237,15 +304,22 @@
             <h3 style="font-weight:300; color:#b34f4f;">⚙️ Admin: Points</h3>
             <div class="admin-point-section">
                 <h4>➕ Add / Deduct Points</h4>
-                <select id="adminPointStudent" class="point-select">
-                    <option value="">-- Select Student --</option>
-                </select>
+                <p style="opacity:0.65; font-size:0.85rem;">Tick every student who gets this offense or reward, then update once.</p>
+
+                <input type="text" id="studentSearch" class="student-search" placeholder="Search a name..." oninput="filterStudentList()">
+                <div class="student-picker-head">
+                    <button type="button" class="mini-btn" onclick="toggleAllStudents(true)">Select all</button>
+                    <button type="button" class="mini-btn" onclick="toggleAllStudents(false)">Clear</button>
+                    <span class="selected-count" id="selectedCount">0 selected</span>
+                </div>
+                <div class="student-checklist" id="adminPointStudents"></div>
+
                 <input type="number" id="adminPointChange" placeholder="+ or - (e.g. 0.5 or -1.5)" step="0.1">
                 <select id="adminPointReason" class="point-select">
                     <option value="">-- Select Offense (Optional) --</option>
                 </select>
                 <textarea id="adminPointMessage" placeholder="Message / Reason..."></textarea>
-                <button onclick="adminUpdatePoint()">Update Points</button>
+                <button onclick="adminUpdatePoint()">Update points for selected</button>
                 <input type="text" id="newOffenseName" placeholder="Add new offense type...">
                 <button onclick="addNewOffense()" style="background:#f1c40f; color:#1a2e1f;">➕ Add Offense</button>
                 <input type="number" id="resetPointsValue" placeholder="Reset all to (e.g. 15)">
@@ -293,15 +367,18 @@
         "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES",
         "CLAVECILLA, PRINCESS JESSICA ATANACIO", "CORDOVA, KYLA RHEA FE PARIS",
         "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
-        "RODRIGUEZ, RIONNAH ARANETA", "TAPEL, MIKHAELA ALENA TANON"
+        "TAPEL, MIKHAELA ALENA TANON"
     ];
+    // One entry per student, alphabetical, for the pickers.
+    const ROSTER = [...new Set(JADE_NAMES)].sort((a, b) => a.localeCompare(b));
 
-    let assignments = {}; 
+    let assignments = {};
     let othersAnnounce = [];
     let todayAnnounce = [];
     let qaData = [];
     let points = [];
     let offenses = [];
+    let walkOfFame = [];
     let lockedVerified = false;
     let adminRole = null;
     let currentStudentName = null;
@@ -322,6 +399,12 @@
             .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
     }
 
+    function escapeHtml(str) {
+        return String(str == null ? '' : str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -335,9 +418,10 @@
             if(['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor','admin-offenses'].includes(this.dataset.tab)) renderAdminList(this.dataset.tab);
             if(this.dataset.tab === 'points') loadMyPoints();
             if(this.dataset.tab === 'assignments') renderCalendar();
-            if(this.dataset.tab === 'admin-points' && adminRole === 'full') populateStudentDropdown();
+            if(this.dataset.tab === 'admin-points' && adminRole === 'full') populateStudentChecklist();
             if(this.dataset.tab === 'admin-monitor' && adminRole === 'full') renderMonitor();
             if(this.dataset.tab === 'admin-offenses' && adminRole === 'full') renderOffenses();
+            if(this.dataset.tab === 'walkoffame') { populateWofDropdown(); renderWalkOfFame(); }
         });
     });
 
@@ -360,6 +444,8 @@
                 alert('✅ Content Admin');
             } else if (data.role === 'full') {
                 document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
+                document.querySelector('.nav-btn[data-tab="walkoffame"]').style.display = 'inline-block';
+                document.getElementById('wofAdminBox').style.display = 'block';
                 document.querySelector('.nav-btn[data-tab="admin-points"]').click();
                 alert('✅ Full Admin');
             }
@@ -368,19 +454,53 @@
         }
     }
 
-    function populateStudentDropdown() {
-        const select = document.getElementById('adminPointStudent');
-        select.innerHTML = '<option value="">-- Select Student --</option>';
-        JADE_NAMES.forEach(name => {
-            const opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name;
-            select.appendChild(opt);
+    // ✅ Multi-student picker
+    function populateStudentChecklist() {
+        const box = document.getElementById('adminPointStudents');
+        const previously = new Set(getSelectedStudents());
+        box.innerHTML = ROSTER.map((name, i) => `
+            <label data-name="${escapeHtml(name)}" class="${previously.has(name) ? 'checked' : ''}">
+                <input type="checkbox" value="${escapeHtml(name)}" id="stu_${i}" ${previously.has(name) ? 'checked' : ''} onchange="onStudentToggle(this)">
+                <span>${escapeHtml(name)}</span>
+            </label>`).join('');
+        updateSelectedCount();
+    }
+
+    function onStudentToggle(cb) {
+        cb.closest('label').classList.toggle('checked', cb.checked);
+        updateSelectedCount();
+    }
+
+    function getSelectedStudents() {
+        return Array.from(document.querySelectorAll('#adminPointStudents input[type="checkbox"]:checked')).map(cb => cb.value);
+    }
+
+    function updateSelectedCount() {
+        const n = getSelectedStudents().length;
+        document.getElementById('selectedCount').textContent = n + (n === 1 ? ' selected' : ' selected');
+    }
+
+    function toggleAllStudents(state) {
+        document.querySelectorAll('#adminPointStudents label').forEach(label => {
+            if (label.style.display === 'none') return; // respect the search filter
+            const cb = label.querySelector('input[type="checkbox"]');
+            cb.checked = state;
+            label.classList.toggle('checked', state);
+        });
+        updateSelectedCount();
+    }
+
+    function filterStudentList() {
+        const term = normalizeName(document.getElementById('studentSearch').value);
+        document.querySelectorAll('#adminPointStudents label').forEach(label => {
+            const name = normalizeName(label.dataset.name || '');
+            label.style.display = (!term || name.includes(term)) ? 'flex' : 'none';
         });
     }
 
     function populateOffenseDropdown() {
         const select = document.getElementById('adminPointReason');
+        const keep = select.value;
         select.innerHTML = '<option value="">-- Select Offense --</option>';
         offenses.forEach(offense => {
             const opt = document.createElement('option');
@@ -388,6 +508,21 @@
             opt.textContent = offense.name;
             select.appendChild(opt);
         });
+        if (keep) select.value = keep;
+    }
+
+    function populateWofDropdown() {
+        const select = document.getElementById('wofStudent');
+        if (!select) return;
+        const keep = select.value;
+        select.innerHTML = '<option value="">-- Select student --</option>';
+        ROSTER.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+        if (keep) select.value = keep;
     }
 
     function changeMonth(delta) {
@@ -420,9 +555,9 @@
         if (!name) { document.getElementById('verifyMsg').textContent = '❌ Please enter your name.'; return; }
         if (password !== 'Jade lang ang Malakas') { document.getElementById('verifyMsg').textContent = '❌ Incorrect password. Try again.'; return; }
         const normalizedInput = normalizeName(name);
-        const found = JADE_NAMES.some(name => normalizeName(name) === normalizedInput);
+        const found = ROSTER.some(n => normalizeName(n) === normalizedInput);
         if (found) {
-            const exactName = JADE_NAMES.find(name => normalizeName(name) === normalizedInput);
+            const exactName = ROSTER.find(n => normalizeName(n) === normalizedInput);
             currentStudentName = exactName;
             document.getElementById('verifyBox').style.display = 'none';
             document.getElementById('lockedContent').style.display = 'block';
@@ -432,6 +567,7 @@
             if (normalizedInput === "MORGA, CHARISSA ENCISO") {
                 adminRole = 'full';
                 document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
+                document.getElementById('wofAdminBox').style.display = 'block';
                 document.querySelector('.nav-btn[data-tab="admin-points"]').click();
                 alert('✅ Full Admin (Morga)');
             } else {
@@ -449,6 +585,7 @@
         document.getElementById('jadeNameInput').value = '';
         document.getElementById('jadePasswordInput').value = '';
         document.getElementById('verifyMsg').textContent = '';
+        document.getElementById('wofAdminBox').style.display = 'none';
         document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'none');
         document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'none');
         document.querySelector('[data-tab="locked"]').click();
@@ -468,10 +605,12 @@
             qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: r.adminReply || '', user: r.realName, date: r.date }));
             points = data.points;
             offenses = data.offenses || [];
+            walkOfFame = data.walkoffame || [];
             renderCalendar();
             renderOthers();
             renderTodayAnnounce();
             renderQA();
+            renderWalkOfFame();
             populateOffenseDropdown();
         } catch (error) {
             console.error("Fetch error", error);
@@ -488,9 +627,9 @@
         for(let d=1; d<=daysInMonth; d++) {
             const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const div = document.createElement('div'); div.className = 'cal-day';
-            if(assignments[dateStr] && assignments[dateStr].length > 0) { 
-                div.classList.add('has-event'); 
-                div.innerHTML = `<div class="day-num">${d}</div><div class="day-label">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][(firstDay+d-1)%7]}</div><div class="event-dot"></div>`; 
+            if(assignments[dateStr] && assignments[dateStr].length > 0) {
+                div.classList.add('has-event');
+                div.innerHTML = `<div class="day-num">${d}</div><div class="day-label">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][(firstDay+d-1)%7]}</div><div class="event-dot"></div>`;
             }
             else div.innerHTML = `<div class="day-num">${d}</div><div class="day-label">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][(firstDay+d-1)%7]}</div>`;
             div.dataset.date = dateStr;
@@ -522,7 +661,7 @@
         document.getElementById('calendarDefaultMsg').style.display = 'block';
     }
 
-    // ✅ UPDATED: View images, PDFs, videos, files
+    // ✅ View images, PDFs, videos, files
     function openAssignmentPopup(date, idx) {
         const item = assignments[date][idx];
         document.getElementById('popupTitle').textContent = item.title;
@@ -532,7 +671,7 @@
         popupImage.style.display = 'none';
         popupImage.src = '';
         popupBody.innerHTML = item.content || "No detailed content.";
-        
+
         if(item.fileData) {
             if(item.fileType && item.fileType.startsWith('image/')) {
                 popupImage.src = item.fileData;
@@ -545,26 +684,101 @@
                 popupBody.innerHTML += `<a href="${item.fileData}" download="${item.fileName}" style="display:block; margin-top:10px; color:#2ecc71; font-weight:600;">📎 Download: ${item.fileName}</a>`;
             }
         }
-        
+
         document.getElementById('assignmentPopup').style.display = 'flex';
     }
 
     function closePopup() { document.getElementById('assignmentPopup').style.display = 'none'; }
 
-    function renderOthers() { 
-        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join(''); 
+    function renderOthers() {
+        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements yet.</p>' : othersAnnounce.map(t => `<div class="announce-item">📌 ${t.text}${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join('');
     }
-    function renderTodayAnnounce() { 
-        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join(''); 
+    function renderTodayAnnounce() {
+        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0 ? '<p style="opacity:0.6;">No announcements for today.</p>' : todayAnnounce.map(t => `<div class="announce-item">📢 ${t.text}<div class="ann-date">${new Date(t.date).toLocaleString()}</div>${t.fileData ? `<a href="${t.fileData}" download="${t.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${t.fileName}</a>` : ''}</div>`).join('');
     }
     function renderQA() { document.getElementById('qaList').innerHTML = qaData.length === 0 ? '<p style="opacity:0.6;">No questions yet.</p>' : qaData.map((item, idx) => `<div class="qa-item"><div class="q">❓ ${item.q}</div><div class="a">💬 ${item.a || 'Waiting for admin reply...'}</div><div class="meta">from ${item.user || 'anonymous'} • ${new Date(item.date).toLocaleString()}</div></div>`).join(''); }
 
+    // ✅ Walk Of Fame rendering
+    function renderWalkOfFame() {
+        const highest = walkOfFame.filter(e => e.category === 'highest').sort((a, b) => b.points - a.points);
+        const lowest = walkOfFame.filter(e => e.category === 'lowest').sort((a, b) => a.points - b.points);
+        document.getElementById('wofHighest').innerHTML = buildWofTable(highest, 'No one on this board yet.');
+        document.getElementById('wofLowest').innerHTML = buildWofTable(lowest, 'No one on this board yet.');
+    }
+
+    function buildWofTable(rows, emptyText) {
+        if (rows.length === 0) return `<div class="wof-empty">${emptyText}</div>`;
+        const body = rows.map((e, i) => `
+            <tr>
+                <td class="wof-rank">${i + 1}</td>
+                <td>${escapeHtml(e.studentName)}${e.note ? `<div style="font-size:0.8rem; opacity:0.65; margin-top:4px;">${escapeHtml(e.note)}</div>` : ''}</td>
+                <td class="wof-score">${e.points}</td>
+                <td style="width:90px;">${adminRole === 'full' ? `<button class="admin-delete-btn" onclick="deleteWalkOfFame('${e._id}')">Remove</button>` : ''}</td>
+            </tr>`).join('');
+        return `<div class="wof-scroll"><table class="wof-table">
+            <thead><tr><th>Rank</th><th>Student</th><th>Points</th><th></th></tr></thead>
+            <tbody>${body}</tbody></table></div>`;
+    }
+
+    async function addWalkOfFame() {
+        if (adminRole !== 'full') return alert("You don't have permission to edit the Walk Of Fame.");
+        const studentName = document.getElementById('wofStudent').value;
+        const category = document.getElementById('wofCategory').value;
+        const pts = parseFloat(document.getElementById('wofPoints').value);
+        const note = document.getElementById('wofNote').value.trim();
+        if (!studentName) return alert("Select a student.");
+        if (isNaN(pts)) return alert("Enter their points.");
+        const res = await fetch('/api/admin/add-walkoffame', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentName, points: pts, category, note, createdBy: currentStudentName || "Admin" })
+        });
+        if (res.ok) {
+            document.getElementById('wofPoints').value = '';
+            document.getElementById('wofNote').value = '';
+            await fetchData();
+            renderWalkOfFame();
+            alert("✅ Added to the board!");
+        } else {
+            const error = await res.json();
+            alert("❌ Failed: " + (error.error || "Unknown error"));
+        }
+    }
+
+    // Fills the form with the current top or bottom scorer so you don't retype it.
+    function autoFillWalkOfFame() {
+        if (points.length === 0) return alert("No point records yet.");
+        const category = document.getElementById('wofCategory').value;
+        const alreadyListed = walkOfFame.filter(e => e.category === category).map(e => normalizeName(e.studentName));
+        const pool = points.filter(p => !alreadyListed.includes(normalizeName(p.studentName)));
+        if (pool.length === 0) return alert("Everyone with points is already on this board.");
+        const sorted = [...pool].sort((a, b) => category === 'highest' ? b.points - a.points : a.points - b.points);
+        const pick = sorted[0];
+        document.getElementById('wofStudent').value = ROSTER.find(n => normalizeName(n) === normalizeName(pick.studentName)) || '';
+        document.getElementById('wofPoints').value = pick.points;
+    }
+
+    async function deleteWalkOfFame(id) {
+        if (!confirm('Remove this entry from the board?')) return;
+        const res = await fetch(`/api/admin/delete-walkoffame/${id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); renderWalkOfFame(); } else { alert("❌ Failed"); }
+    }
+
+    async function clearWalkOfFame(category) {
+        if (adminRole !== 'full') return alert("You don't have permission to edit the Walk Of Fame.");
+        if (!confirm(`Clear the ${category} board?`)) return;
+        const res = await fetch('/api/admin/clear-walkoffame', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category })
+        });
+        if (res.ok) { await fetchData(); renderWalkOfFame(); } else { alert("❌ Failed"); }
+    }
+
     async function addQuestion() { const input = document.getElementById('qaQuestionInput'); const text = input.value.trim(); if(!text) return; const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, realName: currentStudentName || "Guest" }) }); if(res.ok) { input.value=''; fetchData(); alert("✅ Question posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); } }
 
-    async function adminReply(idx) { 
-        const input = document.getElementById(`adminReplyInput_${idx}`); 
-        const reply = input.value.trim(); 
-        if(!reply) return; 
+    async function adminReply(idx) {
+        const input = document.getElementById(`adminReplyInput_${idx}`);
+        const reply = input.value.trim();
+        if(!reply) return;
         const questionId = qaData[idx].id;
         const res = await fetch('/api/admin/answer-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId, answer: reply }) });
         if(res.ok) { input.value=''; fetchData(); alert("✅ Reply posted!"); } else { const error = await res.json(); alert("❌ Failed: " + (error.error || "Unknown error")); }
@@ -690,8 +904,8 @@
         const data = await res.json();
         const container = document.getElementById('myPointsContainer');
         if(data.points) {
-            container.innerHTML = `<div class="point-item"><h4>🏆 ${data.points.studentName}</h4><div class="point-text">Current Points: ${data.points.points}/15</div>`;
-            if(data.points.history.length > 0) {
+            container.innerHTML = `<div class="point-item"><h4>🏆 ${data.points.studentName || currentStudentName}</h4><div class="point-text">Current Points: ${data.points.points}/15</div>`;
+            if(data.points.history && data.points.history.length > 0) {
                 container.innerHTML += '<h4 style="margin-top:15px; color:#f1c40f;">History:</h4>';
                 data.points.history.forEach(h => {
                     container.innerHTML += `<div class="point-item" style="border-left-color: ${h.change > 0 ? '#2ecc71' : '#b34f4f'}"><strong>${h.change > 0 ? '+' : ''}${h.change}</strong> - ${h.message}<div class="point-date">${new Date(h.timestamp).toLocaleString()}</div></div>`;
@@ -703,22 +917,31 @@
         }
     }
 
+    // ✅ Now updates every ticked student in one go
     async function adminUpdatePoint() {
         if (adminRole !== 'full') return alert("You don't have permission to update points.");
-        const studentName = document.getElementById('adminPointStudent').value;
+        const studentNames = getSelectedStudents();
         const change = parseFloat(document.getElementById('adminPointChange').value);
         const message = document.getElementById('adminPointMessage').value.trim();
         const reason = document.getElementById('adminPointReason').value;
-        if(!studentName) return alert("Select a student.");
+        if(studentNames.length === 0) return alert("Tick at least one student.");
         if(isNaN(change) || change === 0) return alert("Enter a valid +/- amount.");
-        const res = await fetch('/api/admin/update-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, change, message, reason }) });
+        if(studentNames.length > 1 && !confirm(`Apply ${change > 0 ? '+' : ''}${change} to ${studentNames.length} students?`)) return;
+
+        const res = await fetch('/api/admin/update-points-bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentNames, change, message, reason })
+        });
         if(res.ok) {
+            const data = await res.json();
             document.getElementById('adminPointChange').value = '';
             document.getElementById('adminPointMessage').value = '';
             document.getElementById('adminPointReason').value = '';
-            fetchData();
-            alert("✅ Points updated!");
+            toggleAllStudents(false);
+            await fetchData();
             renderAdminList('admin-points');
+            alert(`✅ Updated ${data.updatedCount} student(s).` + (data.failed && data.failed.length ? `\n❌ Skipped: ${data.failed.join(', ')}` : ''));
         } else {
             const error = await res.json();
             alert("❌ Failed: " + (error.error || "Unknown error"));
@@ -742,6 +965,9 @@
         }
     }
 
+    function renderMonitor() { renderAdminList('admin-monitor'); }
+    function renderOffenses() { renderAdminList('admin-offenses'); }
+
     function renderAdminList(tabId) {
         const container = document.getElementById({
             'admin-assignments': 'adminAssignList',
@@ -752,7 +978,8 @@
             'admin-monitor': 'monitorList',
             'admin-offenses': 'offenseList'
         }[tabId]);
-        
+        if (!container) return;
+
         if(tabId === 'admin-assignments') {
             container.innerHTML = Object.keys(assignments).sort().map(date => assignments[date].map((item, idx) => `<div class="assignment-item"><strong>📋 ${item.title}</strong><small>📅 ${date}</small>${item.fileData ? `<a href="${item.fileData}" download="${item.fileName}" style="display:block; margin-top:5px; color:#2ecc71;">📎 ${item.fileName}</a>` : ''}<button class="admin-delete-btn" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>`).join('')).join('');
         } else if(tabId === 'admin-others') {
@@ -771,7 +998,7 @@
                 return `<div class="offense-reason-item" onclick="toggleOffenseDetails(${idx})">
                     <h4>⚠️ ${offense.name}</h4>
                     <p style="opacity:0.7; font-size:0.9rem;">${students.length} student(s) have this offense</p>
-                    <button class="admin-delete-btn" onclick="deleteOffense('${offense._id}')">Remove</button>
+                    <button class="admin-delete-btn" onclick="event.stopPropagation(); deleteOffense('${offense._id}')">Remove</button>
                     <div id="offense-details-${idx}" style="display:none; margin-top:10px;"></div>
                 </div>`;
             }).join('');
@@ -782,7 +1009,7 @@
         if(!confirm('Remove this offense?')) return;
         const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
         if(res.ok) {
-            fetchData();
+            await fetchData();
             renderAdminList('admin-offenses');
             alert("✅ Offense removed!");
         } else {
@@ -839,28 +1066,28 @@
         if(!confirm('Delete this assignment?')) return;
         const item = assignments[date][idx];
         const res = await fetch(`/api/admin/delete-assignment/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-assignments'); } else { alert("❌ Failed"); }
+        if(res.ok) { await fetchData(); renderAdminList('admin-assignments'); } else { alert("❌ Failed"); }
     }
 
     async function deleteOther(idx) {
         if(!confirm('Delete this announcement?')) return;
         const item = othersAnnounce[idx];
         const res = await fetch(`/api/admin/delete-other/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-others'); } else { alert("❌ Failed"); }
+        if(res.ok) { await fetchData(); renderAdminList('admin-others'); } else { alert("❌ Failed"); }
     }
 
     async function deleteToday(idx) {
         if(!confirm('Delete this announcement?')) return;
         const item = todayAnnounce[idx];
         const res = await fetch(`/api/admin/delete-today/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-announcements'); } else { alert("❌ Failed"); }
+        if(res.ok) { await fetchData(); renderAdminList('admin-announcements'); } else { alert("❌ Failed"); }
     }
 
     async function deleteQA(idx) {
         if(!confirm('Delete this Q&A?')) return;
         const item = qaData[idx];
         const res = await fetch(`/api/admin/delete-question/${item.id}`, { method: 'DELETE' });
-        if(res.ok) { fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
+        if(res.ok) { await fetchData(); renderAdminList('admin-qa'); } else { alert("❌ Failed"); }
     }
 
     setInterval(() => {
