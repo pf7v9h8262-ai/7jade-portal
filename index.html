@@ -312,8 +312,8 @@
     <div class="nav-bar" id="navBar">
         <button class="nav-btn active" data-tab="locked">🔒 Locked</button>
         <button class="nav-btn hidden-tab" data-tab="meet">🎓 Meet 7-Jade</button>
-        <button class="nav-btn hidden-tab" data-tab="assignments">📅 Assignments</button>
         <button class="nav-btn hidden-tab" data-tab="officers">🎖️ Officers</button>
+        <button class="nav-btn hidden-tab" data-tab="assignments">📅 Assignments</button>
         <button class="nav-btn hidden-tab" data-tab="others">📌 Others</button>
         <button class="nav-btn hidden-tab" data-tab="gallery">🖼️ Jade Gallery</button>
         <button class="nav-btn hidden-tab" data-tab="announcements">📢 Announcements</button>
@@ -396,6 +396,14 @@
             </div>
         </div>
 
+        <!-- OFFICERS -->
+        <div id="officers" class="tab-content">
+            <h3 class="page-title">Class officers</h3>
+            <p class="page-sub">7-Jade, A.Y. 26-27 — revised and final. Tap any card to enlarge.</p>
+            <img src="31.png" id="officerHeroImg" class="officer-hero" alt="7-Jade class officers" onclick="openLightbox(officerHeroSrc(),'7-Jade Class Officers')">
+            <div class="officer-grid" id="officerGrid"></div>
+        </div>
+
         <!-- ASSIGNMENTS -->
         <div id="assignments" class="tab-content">
             <h3 class="page-title">Assignments & projects</h3>
@@ -412,14 +420,6 @@
                 <button class="btn ghost full" style="margin-top:14px;" onclick="closeDetail()">← Back to calendar</button>
             </div>
             <div id="calendarDefaultMsg" class="empty">Pick a date to see what's due.</div>
-        </div>
-
-        <!-- OFFICERS -->
-        <div id="officers" class="tab-content">
-            <h3 class="page-title">Class officers</h3>
-            <p class="page-sub">7-Jade, A.Y. 26-27 — revised and final. Tap any card to enlarge.</p>
-            <img src="31.png" id="officerHeroImg" class="officer-hero" alt="7-Jade class officers" onclick="openLightbox(officerHeroSrc(),'7-Jade Class Officers')">
-            <div class="officer-grid" id="officerGrid"></div>
         </div>
 
         <!-- OTHERS -->
@@ -921,7 +921,7 @@
                 goTab('admin-points');
                 toast('Full admin unlocked');
             } else {
-                goTab('assignments');
+                goTab('officers');
             }
         } else {
             msg.textContent = 'Name not found. Check the spelling, including Ñ.';
@@ -1061,6 +1061,17 @@
     }
 
     // ---------- Meet 7-Jade ----------
+    // Names here are typed as "First Last" (or "First Middle Last"), so sort
+    // by the last word rather than the raw string, with the full name as a tiebreaker.
+    function lastNameOf(name) {
+        const parts = String(name || '').trim().split(/\s+/);
+        return parts[parts.length - 1] || '';
+    }
+    function byLastName(a, b) {
+        const cmp = lastNameOf(a.name).localeCompare(lastNameOf(b.name), undefined, { sensitivity: 'base' });
+        return cmp !== 0 ? cmp : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+
     function meetCardHtml(m, big) {
         const photo = m.photo || 'logo.png';
         return `<div class="meet-card">
@@ -1081,8 +1092,8 @@
                </div>`
             : (adminRole === 'full' ? '<div class="empty">No adviser added yet — add one above.</div>' : '<div class="empty">No adviser added yet.</div>');
 
-        const boys = meetMembers.filter(m => m.role === 'boy').sort((a, b) => a.order - b.order);
-        const girls = meetMembers.filter(m => m.role === 'girl').sort((a, b) => a.order - b.order);
+        const boys = meetMembers.filter(m => m.role === 'boy').sort(byLastName);
+        const girls = meetMembers.filter(m => m.role === 'girl').sort(byLastName);
         document.getElementById('meetBoys').innerHTML = boys.length ? boys.map(m => meetCardHtml(m)).join('') : '<div class="empty">No one added yet.</div>';
         document.getElementById('meetGirls').innerHTML = girls.length ? girls.map(m => meetCardHtml(m)).join('') : '<div class="empty">No one added yet.</div>';
     }
