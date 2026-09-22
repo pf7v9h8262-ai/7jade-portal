@@ -36,13 +36,19 @@ const JADE_ROSTER = [
 ];
 
 function normalizeName(name) {
-    return name.trim().toUpperCase()
+    return String(name || '').trim().toUpperCase()
         .replace(/Ñ/g, 'Ñ').replace(/ñ/g, 'Ñ')
         .replace(/É/g, 'É').replace(/é/g, 'É')
         .replace(/Á/g, 'Á').replace(/á/g, 'Á')
         .replace(/Í/g, 'Í').replace(/í/g, 'Í')
         .replace(/Ó/g, 'Ó').replace(/ó/g, 'Ó')
         .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
+}
+
+// A looser fold used to grade free-text answers: trims, lowercases, and
+// collapses inner whitespace so "  Manila " matches "manila".
+function normalizeAnswer(s) {
+    return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
 // Escapes regex metacharacters so names with dots/parentheses still match.
@@ -79,15 +85,6 @@ const TodaySchema = new mongoose.Schema({
     date: { type: Date, default: Date.now }
 });
 
-const ResponseSchema = new mongoose.Schema({
-    realName: String,
-    displayName: String,
-    section: String,
-    message: String,
-    adminReply: String,
-    date: { type: Date, default: Date.now }
-});
-
 const PointSchema = new mongoose.Schema({
     studentName: String,
     points: { type: Number, default: 15 },
@@ -104,7 +101,7 @@ const OffenseSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// ✅ NEW: Points Walk Of Fame (two boards: highest / lowest)
+// Points Walk Of Fame (two boards: highest / lowest)
 const WalkOfFameSchema = new mongoose.Schema({
     studentName: String,
     points: Number,
@@ -114,7 +111,7 @@ const WalkOfFameSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// ✅ NEW: Site Content — lets the full admin replace the logo, hero banner,
+// Site Content — lets the full admin replace the logo, hero banner,
 // officer group photo, and each officer's photo/name/role without touching code.
 // Any field left null falls back to the static file already in the repo
 // (logo.png, PP.png, 31.png, 32.png...45.png).
@@ -137,27 +134,67 @@ const DEFAULT_OFFICERS = [
 
 const SiteContentSchema = new mongoose.Schema({
     singleton: { type: String, default: 'main', unique: true },
-    logo: { type: String, default: null },       // replaces logo.png
-    hero: { type: String, default: null },        // replaces PP.png (Locked screen banner)
-    officerHero: { type: String, default: null }, // replaces 31.png (officers group photo)
+    logo: { type: String, default: null },
+    hero: { type: String, default: null },
+    officerHero: { type: String, default: null },
     officers: {
         type: [{
             name: String,
             role: String,
-            photo: { type: String, default: null } // replaces 32.png...45.png
+            photo: { type: String, default: null }
         }],
         default: DEFAULT_OFFICERS.map(o => ({ name: o.name, role: o.role, photo: null }))
     }
 });
 
+// ✅ NEW: Jade Gallery — students post a picture + optional caption.
+// Only the full admin sees who posted it and when, and can delete it.
+const GalleryPostSchema = new mongoose.Schema({
+    imageData: String,
+    imageName: String,
+    imageType: String,
+    caption: String,
+    postedBy: String,
+    createdAt: { type: Date, default: Date.now }
+});
+
+// ✅ NEW: Meet 7-Jade — adviser + classmates, managed entirely by the full admin.
+const MeetMemberSchema = new mongoose.Schema({
+    name: String,
+    photo: { type: String, default: null },
+    role: { type: String, enum: ['adviser', 'boy', 'girl'], default: 'boy' },
+    order: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now }
+});
+
+// ✅ NEW: Daily Questions — the full admin posts a question with a correct
+// answer; students submit one answer each; the admin reviews responses.
+const DailyQuestionSchema = new mongoose.Schema({
+    question: String,
+    correctAnswer: String,
+    createdBy: String,
+    createdAt: { type: Date, default: Date.now }
+});
+
+const DailyResponseSchema = new mongoose.Schema({
+    questionId: String,
+    studentName: String,
+    answer: String,
+    isCorrect: Boolean,
+    timestamp: { type: Date, default: Date.now }
+});
+
 const Assignment = mongoose.model('Assignment', AssignmentSchema);
 const Other = mongoose.model('Other', OtherSchema);
 const Today = mongoose.model('Today', TodaySchema);
-const Response = mongoose.model('Response', ResponseSchema);
 const Point = mongoose.model('Point', PointSchema);
 const Offense = mongoose.model('Offense', OffenseSchema);
 const WalkOfFame = mongoose.model('WalkOfFame', WalkOfFameSchema);
 const SiteContent = mongoose.model('SiteContent', SiteContentSchema);
+const GalleryPost = mongoose.model('GalleryPost', GalleryPostSchema);
+const MeetMember = mongoose.model('MeetMember', MeetMemberSchema);
+const DailyQuestion = mongoose.model('DailyQuestion', DailyQuestionSchema);
+const DailyResponse = mongoose.model('DailyResponse', DailyResponseSchema);
 
 // Fetches the one SiteContent doc, creating it with defaults the first time.
 async function getSiteContent() {
@@ -166,7 +203,6 @@ async function getSiteContent() {
         doc = new SiteContent({ singleton: 'main' });
         await doc.save();
     }
-    // Guard against an old doc that has fewer than 14 officer slots.
     if (doc.officers.length < DEFAULT_OFFICERS.length) {
         for (let i = doc.officers.length; i < DEFAULT_OFFICERS.length; i++) {
             doc.officers.push({ name: DEFAULT_OFFICERS[i].name, role: DEFAULT_OFFICERS[i].role, photo: null });
@@ -180,16 +216,19 @@ let adminSession = { role: null };
 
 app.get('/api/data', async (req, res) => {
     try {
-        const [assignments, others, today, responses, points, offenses, walkoffame] = await Promise.all([
+        const [assignments, others, today, points, offenses, walkoffame, gallery, meetMembers, dailyQuestions, dailyResponses] = await Promise.all([
             Assignment.find().lean(),
             Other.find().lean(),
             Today.find().lean(),
-            Response.find().lean(),
             Point.find().lean(),
             Offense.find().lean(),
-            WalkOfFame.find().lean()
+            WalkOfFame.find().lean(),
+            GalleryPost.find().lean(),
+            MeetMember.find().lean(),
+            DailyQuestion.find().lean(),
+            DailyResponse.find().lean()
         ]);
-        res.json({ assignments, others, today, responses, points, offenses, walkoffame });
+        res.json({ assignments, others, today, points, offenses, walkoffame, gallery, meetMembers, dailyQuestions, dailyResponses });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
@@ -326,7 +365,7 @@ app.post('/api/admin/update-points', async (req, res) => {
     }
 });
 
-// ✅ NEW: give the same offense / point change to many students at once
+// Give the same offense / point change to many students at once
 app.post('/api/admin/update-points-bulk', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
@@ -387,19 +426,7 @@ app.post('/api/admin/reset-all-points', async (req, res) => {
     }
 });
 
-app.post('/api/admin/answer-question', async (req, res) => {
-    try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can answer questions." });
-        const { questionId, answer } = req.body;
-        if (!questionId || !answer) return res.status(400).json({ error: "Question ID and answer required" });
-        await Response.findByIdAndUpdate(questionId, { adminReply: answer });
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: "Server error" });
-    }
-});
-
-// ✅ NEW: Walk Of Fame entries (full admin only)
+// Walk Of Fame entries (full admin only)
 app.post('/api/admin/add-walkoffame', async (req, res) => {
     try {
         if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit the Walk Of Fame." });
@@ -444,7 +471,7 @@ app.post('/api/admin/clear-walkoffame', async (req, res) => {
     }
 });
 
-// ✅ NEW: Site Content — read (everyone) and replace (full admin only)
+// Site Content — read (everyone) and replace (full admin only)
 app.get('/api/site-content', async (req, res) => {
     try {
         const doc = await getSiteContent();
@@ -519,20 +546,132 @@ app.post('/api/admin/site-content/officer-photo-reset', async (req, res) => {
     }
 });
 
+// ✅ NEW: Jade Gallery — any verified student can post; only the full admin
+// sees who posted / when, and can delete.
+app.post('/api/gallery/add', async (req, res) => {
+    try {
+        const { imageData, imageName, imageType, caption, postedBy } = req.body;
+        if (!imageData) return res.status(400).json({ error: "Pick a picture first" });
+        const post = new GalleryPost({
+            imageData,
+            imageName: imageName || null,
+            imageType: imageType || null,
+            caption: caption || "",
+            postedBy: postedBy || "Guest",
+            createdAt: new Date()
+        });
+        await post.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.delete('/api/admin/delete-gallery/:id', async (req, res) => {
+    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete gallery posts." });
+    await GalleryPost.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+});
+
+// ✅ NEW: Meet 7-Jade — full admin manages the adviser + boys/girls roster.
+app.post('/api/admin/meet/add', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
+        const { name, photo, role } = req.body;
+        if (!name) return res.status(400).json({ error: "Name required" });
+        if (!['adviser', 'boy', 'girl'].includes(role)) return res.status(400).json({ error: "Invalid role" });
+        const count = await MeetMember.countDocuments({ role });
+        const member = new MeetMember({ name, photo: photo || null, role, order: count, createdAt: new Date() });
+        await member.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.post('/api/admin/meet/update', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
+        const { id, name, role, photo } = req.body;
+        if (!id) return res.status(400).json({ error: "Missing id" });
+        const update = {};
+        if (name != null && name !== '') update.name = name;
+        if (role != null && ['adviser', 'boy', 'girl'].includes(role)) update.role = role;
+        if (photo) update.photo = photo;
+        await MeetMember.findByIdAndUpdate(id, update);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.delete('/api/admin/meet/delete/:id', async (req, res) => {
+    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
+    await MeetMember.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+});
+
+// ✅ NEW: Daily Questions — full admin posts questions with a correct answer;
+// students submit one answer each; full admin reviews & deletes responses.
+app.post('/api/admin/daily/add-question', async (req, res) => {
+    try {
+        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can add questions." });
+        const { question, correctAnswer, createdBy } = req.body;
+        if (!question) return res.status(400).json({ error: "Question required" });
+        if (!correctAnswer) return res.status(400).json({ error: "Correct answer required" });
+        const q = new DailyQuestion({ question, correctAnswer, createdBy: createdBy || "Admin", createdAt: new Date() });
+        await q.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.delete('/api/admin/daily/delete-question/:id', async (req, res) => {
+    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete questions." });
+    await DailyQuestion.findByIdAndDelete(req.params.id);
+    await DailyResponse.deleteMany({ questionId: req.params.id });
+    res.json({ success: true });
+});
+
+app.post('/api/daily/answer', async (req, res) => {
+    try {
+        const { questionId, studentName, answer } = req.body;
+        if (!questionId || !studentName || !answer) return res.status(400).json({ error: "Missing fields" });
+        const q = await DailyQuestion.findById(questionId);
+        if (!q) return res.status(404).json({ error: "Question not found" });
+        const isCorrect = normalizeAnswer(answer) === normalizeAnswer(q.correctAnswer);
+        let resp = await DailyResponse.findOne({
+            questionId,
+            studentName: { $regex: new RegExp('^' + escapeRegex(normalizeName(studentName)) + '$', 'i') }
+        });
+        if (resp) {
+            resp.answer = answer;
+            resp.isCorrect = isCorrect;
+            resp.timestamp = new Date();
+            await resp.save();
+        } else {
+            resp = new DailyResponse({ questionId, studentName, answer, isCorrect, timestamp: new Date() });
+            await resp.save();
+        }
+        res.json({ success: true, isCorrect });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.delete('/api/admin/daily/delete-response/:id', async (req, res) => {
+    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete responses." });
+    await DailyResponse.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+});
+
 app.post('/api/points/my', async (req, res) => {
     const { studentName } = req.body;
     const myPoints = await Point.findOne({
         studentName: { $regex: new RegExp('^' + escapeRegex(normalizeName(studentName)) + '$', 'i') }
     }).lean();
     res.json({ points: myPoints || { points: 15, history: [] } });
-});
-
-app.post('/api/ask-question', async (req, res) => {
-    const { message, realName } = req.body;
-    if (!message) return res.status(400).json({ error: "Message required" });
-    const newResponse = new Response({ realName: realName || "Guest", displayName: realName || "Guest", section: "7-Jade", message });
-    await newResponse.save();
-    res.json({ success: true });
 });
 
 app.delete('/api/admin/delete-assignment/:id', async (req, res) => {
@@ -547,12 +686,6 @@ app.delete('/api/admin/delete-other/:id', async (req, res) => {
 
 app.delete('/api/admin/delete-today/:id', async (req, res) => {
     await Today.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-});
-
-app.delete('/api/admin/delete-question/:id', async (req, res) => {
-    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete questions." });
-    await Response.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 

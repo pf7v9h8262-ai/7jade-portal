@@ -231,12 +231,31 @@
         .board.low h4 { color: var(--danger); }
         .board .hint { color: var(--muted); font-size: 0.8rem; margin: 2px 0 10px; }
 
-        .qa-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 12px; }
-        .qa-card .q { font-weight: 600; }
-        .qa-card .a { margin-top: 8px; padding-left: 12px; border-left: 2px solid var(--jade); color: var(--mint); font-size: 0.93rem; }
-        .qa-card .a.pending { border-left-color: var(--line); color: var(--muted); font-style: italic; }
-        .qa-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-        .qa-bar input { flex: 1; min-width: 200px; }
+        /* ---------- Meet 7-Jade ---------- */
+        .meet-adviser { display: flex; flex-direction: column; align-items: center; text-align: center; margin: 4px auto 30px; max-width: 220px; }
+        .meet-adviser img { width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid var(--gold); box-shadow: 0 14px 30px rgba(0,0,0,0.45); cursor: zoom-in; }
+        .meet-adviser .meet-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.15rem; margin-top: 12px; }
+        .meet-adviser .meet-tag { font-size: 0.74rem; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+        .meet-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .meet-col-title { font-family: 'Outfit', sans-serif; font-size: 1rem; margin-bottom: 12px; text-align: center; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+        .meet-col-title.boys { color: #6ec6ff; }
+        .meet-col-title.girls { color: #ff8fc7; }
+        .meet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+        .meet-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 10px; text-align: center; }
+        .meet-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; cursor: zoom-in; }
+        .meet-card .meet-name { font-size: 0.82rem; font-weight: 600; margin-top: 8px; line-height: 1.3; }
+        .meet-card .btn { margin-top: 8px; width: 100%; }
+        @media (max-width: 700px) { .meet-columns { grid-template-columns: 1fr; } }
+
+        /* ---------- Jade Gallery ---------- */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .gallery-card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+        .gallery-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; cursor: zoom-in; }
+        .gallery-card .cap { padding: 10px 14px; }
+        .gallery-admin-meta { padding: 8px 14px 12px; border-top: 1px solid var(--line); font-size: 0.72rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+        /* ---------- Daily Questions ---------- */
+        .daily-card h4 { flex: 1; }
 
         .offense-row { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--danger); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
         .offense-row:hover { background: rgba(255,255,255,0.09); }
@@ -292,18 +311,19 @@
 
     <div class="nav-bar" id="navBar">
         <button class="nav-btn active" data-tab="locked">🔒 Locked</button>
+        <button class="nav-btn hidden-tab" data-tab="meet">🎓 Meet 7-Jade</button>
         <button class="nav-btn hidden-tab" data-tab="assignments">📅 Assignments</button>
         <button class="nav-btn hidden-tab" data-tab="officers">🎖️ Officers</button>
         <button class="nav-btn hidden-tab" data-tab="others">📌 Others</button>
+        <button class="nav-btn hidden-tab" data-tab="gallery">🖼️ Jade Gallery</button>
         <button class="nav-btn hidden-tab" data-tab="announcements">📢 Announcements</button>
-        <button class="nav-btn hidden-tab" data-tab="qa">💬 Q&A</button>
+        <button class="nav-btn hidden-tab" data-tab="daily">❓ Daily Questions</button>
         <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
         <button class="nav-btn hidden-tab" data-tab="walkoffame">🌟 Walk Of Fame</button>
         <button class="nav-btn admin-tab" data-tab="admin-add">➕ Admin Add</button>
         <button class="nav-btn admin-tab" data-tab="admin-assignments">🗑️ Assignments</button>
         <button class="nav-btn admin-tab" data-tab="admin-others">🗑️ Others</button>
         <button class="nav-btn admin-tab" data-tab="admin-announcements">🗑️ Announcements</button>
-        <button class="nav-btn admin-tab" data-tab="admin-qa">🗑️ Q&A</button>
         <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Points</button>
         <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
         <button class="nav-btn admin-tab" data-tab="admin-offenses">⚠️ Offenses</button>
@@ -344,6 +364,38 @@
             </div>
         </div>
 
+        <!-- MEET 7-JADE -->
+        <div id="meet" class="tab-content">
+            <h3 class="page-title">Meet 7-Jade</h3>
+            <p class="page-sub">Our adviser and classmates, A.Y. 26-27. Tap a photo to enlarge.</p>
+
+            <div class="panel" id="meetAdminBox" style="display:none;">
+                <h4>Add a member</h4>
+                <p class="hint">Only the full admin sees this.</p>
+                <input type="text" id="meetName" placeholder="Full name">
+                <select id="meetRole">
+                    <option value="boy">Boy</option>
+                    <option value="girl">Girl</option>
+                    <option value="adviser">Adviser</option>
+                </select>
+                <input type="file" id="meetPhoto" accept="image/*">
+                <button class="btn" onclick="addMeetMember()">Add member</button>
+            </div>
+
+            <div id="meetAdviser"></div>
+
+            <div class="meet-columns">
+                <div class="meet-col">
+                    <h4 class="meet-col-title boys">Boys</h4>
+                    <div id="meetBoys" class="meet-grid"></div>
+                </div>
+                <div class="meet-col">
+                    <h4 class="meet-col-title girls">Girls</h4>
+                    <div id="meetGirls" class="meet-grid"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- ASSIGNMENTS -->
         <div id="assignments" class="tab-content">
             <h3 class="page-title">Assignments & projects</h3>
@@ -377,6 +429,21 @@
             <div id="othersList"></div>
         </div>
 
+        <!-- JADE GALLERY -->
+        <div id="gallery" class="tab-content">
+            <h3 class="page-title">Jade Gallery</h3>
+            <p class="page-sub">Share a picture with the class.</p>
+
+            <div class="panel">
+                <h4>Post a picture</h4>
+                <input type="file" id="galleryFile" accept="image/*">
+                <textarea id="galleryCaption" placeholder="Say something about it (optional)..."></textarea>
+                <button class="btn" onclick="addGalleryPost()">Post</button>
+            </div>
+
+            <div class="gallery-grid" id="galleryGrid"></div>
+        </div>
+
         <!-- ANNOUNCEMENTS -->
         <div id="announcements" class="tab-content">
             <h3 class="page-title">Announcements</h3>
@@ -384,15 +451,20 @@
             <div id="todayAnnounceList"></div>
         </div>
 
-        <!-- Q&A -->
-        <div id="qa" class="tab-content">
-            <h3 class="page-title">Questions & answers</h3>
-            <p class="page-sub">Ask anything about class. An admin replies here.</p>
-            <div id="qaList"></div>
-            <div class="qa-bar">
-                <input type="text" id="qaQuestionInput" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') addQuestion()">
-                <button class="btn" onclick="addQuestion()">Post</button>
+        <!-- DAILY QUESTIONS -->
+        <div id="daily" class="tab-content">
+            <h3 class="page-title">Daily Questions</h3>
+            <p class="page-sub">Answer today's question below.</p>
+
+            <div class="panel" id="dailyAdminBox" style="display:none;">
+                <h4>Ask a new question</h4>
+                <p class="hint">Only the full admin sees this. The correct answer decides who's marked right.</p>
+                <textarea id="dailyQuestionText" placeholder="Question..."></textarea>
+                <input type="text" id="dailyCorrectAnswer" placeholder="Correct answer">
+                <button class="btn" onclick="addDailyQuestion()">Post question</button>
             </div>
+
+            <div id="dailyQuestionsList"></div>
         </div>
 
         <!-- MY POINTS -->
@@ -492,11 +564,6 @@
             <h3 class="page-title">Manage announcements</h3>
             <p class="page-sub">Remove anything that's no longer needed.</p>
             <div id="adminAnnList"></div>
-        </div>
-        <div id="admin-qa" class="tab-content">
-            <h3 class="page-title">Manage Q&A</h3>
-            <p class="page-sub">Answer or delete student questions.</p>
-            <div id="adminQAList"></div>
         </div>
 
         <!-- ADMIN POINTS -->
@@ -672,10 +739,13 @@
     let assignments = {};
     let othersAnnounce = [];
     let todayAnnounce = [];
-    let qaData = [];
     let points = [];
     let offenses = [];
     let walkOfFame = [];
+    let galleryPosts = [];
+    let meetMembers = [];
+    let dailyQuestions = [];
+    let dailyResponses = [];
     let lockedVerified = false;
     let adminRole = null;
     let currentStudentName = null;
@@ -723,7 +793,7 @@
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(tab).classList.add('active');
-            if (['admin-assignments','admin-others','admin-announcements','admin-qa','admin-points','admin-monitor','admin-offenses'].includes(tab)) renderAdminList(tab);
+            if (['admin-assignments','admin-others','admin-announcements','admin-points','admin-monitor','admin-offenses'].includes(tab)) renderAdminList(tab);
             if (tab === 'points') loadMyPoints();
             if (tab === 'assignments') renderCalendar();
             if (tab === 'admin-points' && adminRole === 'full') populateStudentChecklist();
@@ -803,7 +873,7 @@
             document.getElementById('adminPassBox').style.display = 'none';
             if (data.role === 'content') {
                 document.querySelectorAll('.admin-tab').forEach(b => {
-                    const restricted = ['admin-qa','admin-points','admin-monitor','admin-offenses','admin-replace'].includes(b.dataset.tab);
+                    const restricted = ['admin-points','admin-monitor','admin-offenses','admin-replace'].includes(b.dataset.tab);
                     b.style.display = restricted ? 'none' : 'inline-block';
                 });
                 goTab('admin-add');
@@ -811,13 +881,22 @@
             } else {
                 document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
                 document.querySelector('.nav-btn[data-tab="walkoffame"]').style.display = 'inline-block';
-                document.getElementById('wofAdminBox').style.display = 'block';
+                showFullAdminBoxes(true);
                 goTab('admin-points');
                 toast('Full admin unlocked');
             }
         } else {
             document.getElementById('adminPassMsg').textContent = 'Invalid password.';
         }
+    }
+
+    // Shows/hides the inline "admin only" panels that live inside student-facing
+    // tabs (Walk Of Fame, Meet 7-Jade, Daily Questions).
+    function showFullAdminBoxes(show) {
+        ['wofAdminBox', 'meetAdminBox', 'dailyAdminBox'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = show ? 'block' : 'none';
+        });
     }
 
     async function verifyJade() {
@@ -838,7 +917,7 @@
             if (normalizedInput === 'MORGA, CHARISSA ENCISO') {
                 adminRole = 'full';
                 document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
-                document.getElementById('wofAdminBox').style.display = 'block';
+                showFullAdminBoxes(true);
                 goTab('admin-points');
                 toast('Full admin unlocked');
             } else {
@@ -857,7 +936,7 @@
         document.getElementById('jadePasswordInput').value = '';
         document.getElementById('verifyMsg').textContent = '';
         document.getElementById('adminPassBox').style.display = 'block';
-        document.getElementById('wofAdminBox').style.display = 'none';
+        showFullAdminBoxes(false);
         document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'none');
         document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'none');
         document.querySelector('[data-tab="locked"]').click();
@@ -875,15 +954,20 @@
             });
             othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, fileData: o.fileData, fileName: o.fileName, fileType: o.fileType, date: o.date, createdBy: o.createdBy }));
             todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, fileData: t.fileData, fileName: t.fileName, fileType: t.fileType, date: t.date, createdBy: t.createdBy }));
-            qaData = data.responses.map(r => ({ id: r._id, q: r.message, a: r.adminReply || '', user: r.realName, date: r.date }));
             points = data.points || [];
             offenses = data.offenses || [];
             walkOfFame = data.walkoffame || [];
+            galleryPosts = data.gallery || [];
+            meetMembers = data.meetMembers || [];
+            dailyQuestions = data.dailyQuestions || [];
+            dailyResponses = data.dailyResponses || [];
             renderCalendar();
             renderOthers();
             renderTodayAnnounce();
-            renderQA();
             renderWalkOfFame();
+            renderGallery();
+            renderMeet();
+            renderDaily();
             populateOffenseDropdown();
             if (document.getElementById('points').classList.contains('active')) loadMyPoints();
         } catch (error) {
@@ -976,23 +1060,172 @@
             : todayAnnounce.map(t => `<div class="list-card"><div class="body-text">${escapeHtml(t.text)}</div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
     }
 
-    function renderQA() {
-        document.getElementById('qaList').innerHTML = qaData.length === 0
-            ? '<div class="empty">No questions yet. Ask the first one.</div>'
-            : qaData.map(item => `<div class="qa-card">
-                <div class="q">${escapeHtml(item.q)}</div>
-                <div class="a${item.a ? '' : ' pending'}">${item.a ? escapeHtml(item.a) : 'Waiting for an admin reply...'}</div>
-                <div class="meta" style="font-size:0.74rem; color:var(--muted); margin-top:8px;">${escapeHtml(item.user || 'anonymous')} · ${fmtDate(item.date)}</div>
+    // ---------- Meet 7-Jade ----------
+    function meetCardHtml(m, big) {
+        const photo = m.photo || 'logo.png';
+        return `<div class="meet-card">
+            <img src="${photo}" alt="${escapeHtml(m.name)}" onclick="openLightbox('${photo}', '${escapeHtml(m.name)}')">
+            <div class="meet-name">${escapeHtml(m.name)}</div>
+            ${adminRole === 'full' ? `<button class="btn red sm" onclick="deleteMeetMember('${m._id}')">Delete</button>` : ''}
+        </div>`;
+    }
+
+    function renderMeet() {
+        const adviser = meetMembers.find(m => m.role === 'adviser');
+        document.getElementById('meetAdviser').innerHTML = adviser
+            ? `<div class="meet-adviser">
+                <img src="${adviser.photo || 'logo.png'}" alt="${escapeHtml(adviser.name)}" onclick="openLightbox('${adviser.photo || 'logo.png'}', '${escapeHtml(adviser.name)}')">
+                <div class="meet-name">${escapeHtml(adviser.name)}</div>
+                <div class="meet-tag">Adviser</div>
+                ${adminRole === 'full' ? `<button class="btn red sm" style="margin-top:10px;" onclick="deleteMeetMember('${adviser._id}')">Delete</button>` : ''}
+               </div>`
+            : (adminRole === 'full' ? '<div class="empty">No adviser added yet — add one above.</div>' : '<div class="empty">No adviser added yet.</div>');
+
+        const boys = meetMembers.filter(m => m.role === 'boy').sort((a, b) => a.order - b.order);
+        const girls = meetMembers.filter(m => m.role === 'girl').sort((a, b) => a.order - b.order);
+        document.getElementById('meetBoys').innerHTML = boys.length ? boys.map(m => meetCardHtml(m)).join('') : '<div class="empty">No one added yet.</div>';
+        document.getElementById('meetGirls').innerHTML = girls.length ? girls.map(m => meetCardHtml(m)).join('') : '<div class="empty">No one added yet.</div>';
+    }
+
+    async function addMeetMember() {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        const name = document.getElementById('meetName').value.trim();
+        const role = document.getElementById('meetRole').value;
+        const fileInput = document.getElementById('meetPhoto');
+        if (!name) return toast('Enter a name', true);
+        const photo = fileInput.files && fileInput.files[0] ? await readFileAsBase64(fileInput.files[0]) : null;
+        const res = await fetch('/api/admin/meet/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role, photo }) });
+        if (res.ok) {
+            document.getElementById('meetName').value = '';
+            fileInput.value = '';
+            await fetchData(); toast('Member added');
+        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    async function deleteMeetMember(id) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        if (!confirm('Remove this member?')) return;
+        const res = await fetch(`/api/admin/meet/delete/${id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); toast('Removed'); } else toast('Failed', true);
+    }
+
+    // ---------- Jade Gallery ----------
+    function renderGallery() {
+        const grid = document.getElementById('galleryGrid');
+        if (!galleryPosts.length) { grid.innerHTML = '<div class="empty">No pictures yet. Be the first to post!</div>'; return; }
+        const sorted = [...galleryPosts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        grid.innerHTML = sorted.map(g => `
+            <div class="gallery-card">
+                <img src="${g.imageData}" alt="Gallery photo" loading="lazy" onclick="openLightbox('${g.imageData}', '${escapeHtml(g.caption || '')}')">
+                ${g.caption ? `<div class="cap"><div class="body-text" style="font-size:0.85rem;">${escapeHtml(g.caption)}</div></div>` : ''}
+                ${adminRole === 'full' ? `<div class="gallery-admin-meta">
+                    <span>${escapeHtml(g.postedBy)} · ${fmtDate(g.createdAt)}</span>
+                    <button class="btn red sm" onclick="deleteGalleryPost('${g._id}')">Delete</button>
+                </div>` : ''}
             </div>`).join('');
     }
 
-    async function addQuestion() {
-        const input = document.getElementById('qaQuestionInput');
-        const text = input.value.trim();
-        if (!text) return;
-        const res = await fetch('/api/ask-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, realName: currentStudentName || 'Guest' }) });
-        if (res.ok) { input.value = ''; await fetchData(); toast('Question posted'); }
-        else toast('Could not post that question', true);
+    async function addGalleryPost() {
+        if (!currentStudentName) return toast('Verify first', true);
+        const fileInput = document.getElementById('galleryFile');
+        const caption = document.getElementById('galleryCaption').value.trim();
+        if (!fileInput.files || !fileInput.files[0]) return toast('Choose a picture first', true);
+        const file = fileInput.files[0];
+        const imageData = await readFileAsBase64(file);
+        const res = await fetch('/api/gallery/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageData, imageName: file.name, imageType: file.type, caption, postedBy: currentStudentName || 'Guest' }) });
+        if (res.ok) {
+            fileInput.value = '';
+            document.getElementById('galleryCaption').value = '';
+            await fetchData(); toast('Posted!');
+        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    async function deleteGalleryPost(id) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        if (!confirm('Delete this picture?')) return;
+        const res = await fetch(`/api/admin/delete-gallery/${id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); toast('Deleted'); } else toast('Failed', true);
+    }
+
+    // ---------- Daily Questions ----------
+    function dailyRow(r, correct) {
+        return `<tr>
+            <td>${escapeHtml(r.studentName)}</td>
+            <td>${escapeHtml(r.answer)}</td>
+            <td style="font-size:0.82rem; color:var(--muted);">${fmtDate(r.timestamp)}</td>
+            <td style="font-weight:700; color:${correct ? 'var(--jade)' : 'var(--danger)'}">${correct ? 'Correct' : 'Wrong'}</td>
+            <td style="text-align:right;"><button class="btn red sm" onclick="deleteDailyResponse('${r._id}')">Delete</button></td>
+        </tr>`;
+    }
+
+    function renderDaily() {
+        const list = document.getElementById('dailyQuestionsList');
+        if (!dailyQuestions.length) { list.innerHTML = '<div class="empty">No questions posted yet.</div>'; return; }
+        const sorted = [...dailyQuestions].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        list.innerHTML = sorted.map(q => {
+            const myResp = currentStudentName ? dailyResponses.find(r => r.questionId === q._id && normalizeName(r.studentName) === normalizeName(currentStudentName)) : null;
+            const responses = dailyResponses.filter(r => r.questionId === q._id);
+            const correct = responses.filter(r => r.isCorrect).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const wrong = responses.filter(r => !r.isCorrect).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            return `<div class="panel daily-card">
+                <div class="card-head">
+                    <h4 style="font-family:'Outfit';">${escapeHtml(q.question)}</h4>
+                    ${adminRole === 'full' ? `<button class="btn red sm" onclick="deleteDailyQuestion('${q._id}')">Delete question</button>` : ''}
+                </div>
+                <div class="meta" style="margin-bottom:12px;">${fmtDate(q.createdAt)}</div>
+                ${myResp
+                    ? `<div class="format-hint">You answered: <strong>${escapeHtml(myResp.answer)}</strong></div>`
+                    : `<div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <input type="text" id="dailyAnswer_${q._id}" placeholder="Type your answer..." style="flex:1; min-width:180px;" onkeydown="if(event.key==='Enter') submitDailyAnswer('${q._id}')">
+                        <button class="btn sm" onclick="submitDailyAnswer('${q._id}')">Submit</button>
+                       </div>`}
+                ${adminRole === 'full' ? `
+                    <h5 style="margin-top:18px; margin-bottom:8px; color:var(--jade); font-family:'Outfit'; font-size:0.95rem;">Responses (${responses.length})</h5>
+                    ${responses.length === 0 ? '<div class="empty">No responses yet.</div>' : `<div class="table-scroll"><table class="data-table">
+                        <thead><tr><th>Responder</th><th>Answer</th><th>Time</th><th>Result</th><th></th></tr></thead>
+                        <tbody>${correct.map(r => dailyRow(r, true)).join('')}${wrong.map(r => dailyRow(r, false)).join('')}</tbody>
+                    </table></div>`}
+                ` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    async function submitDailyAnswer(qid) {
+        if (!currentStudentName) return toast('Verify first', true);
+        const input = document.getElementById(`dailyAnswer_${qid}`);
+        const answer = input.value.trim();
+        if (!answer) return toast('Type an answer first', true);
+        const res = await fetch('/api/daily/answer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId: qid, studentName: currentStudentName, answer }) });
+        if (res.ok) { await fetchData(); toast('Answer submitted'); }
+        else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    async function addDailyQuestion() {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        const question = document.getElementById('dailyQuestionText').value.trim();
+        const correctAnswer = document.getElementById('dailyCorrectAnswer').value.trim();
+        if (!question) return toast('Enter a question', true);
+        if (!correctAnswer) return toast('Enter the correct answer', true);
+        const res = await fetch('/api/admin/daily/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, correctAnswer, createdBy: currentStudentName || 'Admin' }) });
+        if (res.ok) {
+            document.getElementById('dailyQuestionText').value = '';
+            document.getElementById('dailyCorrectAnswer').value = '';
+            await fetchData(); toast('Question posted');
+        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
+    }
+
+    async function deleteDailyQuestion(id) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        if (!confirm('Delete this question and all its responses?')) return;
+        const res = await fetch(`/api/admin/daily/delete-question/${id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); toast('Deleted'); } else toast('Failed', true);
+    }
+
+    async function deleteDailyResponse(id) {
+        if (adminRole !== 'full') return toast('Full admin only', true);
+        if (!confirm('Delete this response?')) return;
+        const res = await fetch(`/api/admin/daily/delete-response/${id}`, { method: 'DELETE' });
+        if (res.ok) { await fetchData(); toast('Deleted'); } else toast('Failed', true);
     }
 
     // ---------- Walk Of Fame ----------
@@ -1347,7 +1580,6 @@
             'admin-assignments': 'adminAssignList',
             'admin-others': 'adminOthersList',
             'admin-announcements': 'adminAnnList',
-            'admin-qa': 'adminQAList',
             'admin-points': 'adminPointsList',
             'admin-monitor': 'monitorList',
             'admin-offenses': 'offenseList'
@@ -1369,16 +1601,6 @@
             container.innerHTML = todayAnnounce.length === 0 ? '<div class="empty">Nothing here yet.</div>' :
                 todayAnnounce.map((t, i) => `<div class="list-card"><div class="card-head"><div class="body-text">${escapeHtml(t.text)}</div>
                     <button class="btn red sm" onclick="deleteToday(${i})">Delete</button></div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
-        } else if (tabId === 'admin-qa') {
-            container.innerHTML = qaData.length === 0 ? '<div class="empty">No questions yet.</div>' :
-                qaData.map((item, idx) => `<div class="qa-card">
-                    <div class="card-head"><div class="q">${escapeHtml(item.q)}</div><button class="btn red sm" onclick="deleteQA(${idx})">Delete</button></div>
-                    <div class="a${item.a ? '' : ' pending'}">${item.a ? escapeHtml(item.a) : 'No reply yet'}</div>
-                    <div class="meta" style="font-size:0.74rem; color:var(--muted); margin:8px 0;">${escapeHtml(item.user)} · ${fmtDate(item.date)}</div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <input type="text" id="adminReplyInput_${idx}" placeholder="Write a reply..." style="flex:1; min-width:180px;">
-                        <button class="btn sm" onclick="adminReply(${idx})">Reply</button>
-                    </div></div>`).join('');
         } else if (tabId === 'admin-points') {
             const sorted = [...points].sort((a, b) => b.points - a.points);
             container.innerHTML = sorted.length === 0 ? '' : `<h4 style="font-family:'Outfit'; margin:6px 0 10px;">Current standings</h4><div class="table-scroll"><table class="data-table">
@@ -1434,15 +1656,6 @@
         } else details.style.display = 'none';
     }
 
-    async function adminReply(idx) {
-        const input = document.getElementById(`adminReplyInput_${idx}`);
-        const reply = input.value.trim();
-        if (!reply) return;
-        const res = await fetch('/api/admin/answer-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId: qaData[idx].id, answer: reply }) });
-        if (res.ok) { await fetchData(); renderAdminList('admin-qa'); toast('Reply posted'); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
     async function deleteOffense(id) {
         if (!confirm('Remove this offense type?')) return;
         const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
@@ -1465,12 +1678,6 @@
         if (!confirm('Delete this announcement?')) return;
         const res = await fetch(`/api/admin/delete-today/${todayAnnounce[idx].id}`, { method: 'DELETE' });
         if (res.ok) { await fetchData(); renderAdminList('admin-announcements'); toast('Deleted'); } else toast('Failed', true);
-    }
-
-    async function deleteQA(idx) {
-        if (!confirm('Delete this question?')) return;
-        const res = await fetch(`/api/admin/delete-question/${qaData[idx].id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); renderAdminList('admin-qa'); toast('Deleted'); } else toast('Failed', true);
     }
 
     setInterval(() => { if (document.visibilityState === 'visible') fetchData(); }, 5000);
