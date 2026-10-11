@@ -3,1699 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7-Jade · Portal</title>
-    <link rel="icon" href="logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <title>7-Jade | Community Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --forest-900: #05190c;
-            --forest-800: #0b2a15;
-            --forest-700: #113a1e;
-            --jade: #2ecc71;
-            --jade-dark: #27ae60;
-            --mint: #a8e6cf;
-            --gold: #f1c40f;
-            --danger: #e74c3c;
-            --ink: #eef7f1;
-            --muted: rgba(238, 247, 241, 0.62);
-            --line: rgba(255, 255, 255, 0.1);
-            --panel: rgba(255, 255, 255, 0.05);
-            --panel-strong: rgba(6, 30, 15, 0.55);
-            --radius-lg: 28px;
-            --radius-md: 18px;
-            --radius-pill: 999px;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
-        html { scroll-behavior: smooth; }
-        body {
-            min-height: 100vh; padding: 18px; color: var(--ink);
-            background:
-                radial-gradient(1100px 700px at 12% -10%, rgba(46, 204, 113, 0.35), transparent 60%),
-                radial-gradient(900px 600px at 105% 8%, rgba(168, 230, 207, 0.22), transparent 55%),
-                linear-gradient(170deg, var(--forest-900) 0%, var(--forest-800) 45%, #0f4423 100%);
-            background-attachment: fixed;
-            display: flex; justify-content: center;
-        }
-        ::selection { background: var(--jade); color: #04210f; }
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(46, 204, 113, 0.35); border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(46, 204, 113, 0.6); background-clip: content-box; }
-        :focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; background: #f4faf6; color: #2c3e50; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; flex-wrap: wrap; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: #1e8449; }
+        .nav-links { display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav-btn { background: none; border: none; font-size: 1rem; font-weight: 600; color: #555; cursor: pointer; transition: 0.3s; }
+        .nav-btn:hover { color: #1e8449; }
+        .nav-btn.active { color: #1e8449; border-bottom: 3px solid #1e8449; }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+        .section { display: none; animation: fadeSlide 0.5s ease-out; }
+        .active-section { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        .app {
-            width: 100%; max-width: 1280px; align-self: flex-start;
-            background: rgba(255, 255, 255, 0.045);
-            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border-radius: 34px; border: 1px solid var(--line);
-            padding: 20px 22px 28px;
-            box-shadow: 0 30px 60px rgba(0, 20, 8, 0.55);
-        }
+        .hero { background: linear-gradient(135deg, #1e8449, #2ecc71); color: white; padding: 40px 30px; border-radius: 25px; text-align: center; margin-bottom: 30px; }
+        .hero h1 { font-size: 3rem; }
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 700px) { .content-grid { grid-template-columns: 1fr; } }
+        
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .card h3 { color: #1e8449; margin-bottom: 15px; }
+        .stats-number { font-size: 3rem; color: #1e8449; font-weight: 800; }
 
-        .brand { display: flex; align-items: center; gap: 14px; padding: 4px 4px 16px; }
-        .brand img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); }
-        .brand .brand-text h1 { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.5px; line-height: 1.1; }
-        .brand .brand-text span { font-size: 0.75rem; color: var(--muted); letter-spacing: 2px; }
+        input, textarea { width: 100%; padding: 12px 15px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; background: #f9f9f9; }
+        input:focus, textarea:focus { border-color: #1e8449; background: white; }
+        .btn-primary { width: 100%; padding: 15px; border: none; border-radius: 30px; background: #1e8449; color: white; font-weight: 700; font-size: 1.1rem; cursor: pointer; }
+        .btn-primary:hover { background: #145A32; }
+        .thankyou-msg { display: none; margin-top: 15px; padding: 15px; background: #e8f5e9; color: #1e8449; border-radius: 10px; font-weight: bold; }
 
-        .nav-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
-        .nav-btn {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid transparent;
-            color: rgba(238, 247, 241, 0.8); padding: 9px 18px; border-radius: var(--radius-pill);
-            font-weight: 500; font-size: 0.88rem; cursor: pointer; transition: 0.2s ease; white-space: nowrap;
-        }
-        .nav-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
-        .nav-btn.active { background: linear-gradient(135deg, var(--jade), var(--jade-dark)); color: #04210f; font-weight: 700; box-shadow: 0 6px 18px rgba(46, 204, 113, 0.3); }
-        .nav-btn.hidden-tab, .nav-btn.admin-tab { display: none; }
+        .gallery-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .gallery-header h2 { color: #1e8449; font-size: 2.5rem; }
+        .btn-upload { background: #1e8449; color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: 700; cursor: pointer; }
+        .btn-upload:hover { background: #145A32; }
 
-        .content-area { min-height: 470px; }
-        .tab-content { display: none; animation: fade 0.35s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .gallery-img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 
-        h3.page-title { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
-        .page-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 18px; }
+        .response-card { background: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #2ecc71; }
+        .response-card strong { color: #1e8449; }
+        .response-card small { color: #888; display: block; margin-top: 5px; }
 
-        /* ---------- Locked / hero ---------- */
-        .hero {
-            position: relative; border-radius: var(--radius-lg); overflow: hidden;
-            border: 1px solid var(--line); min-height: 430px;
-            display: flex; align-items: center; justify-content: center; padding: 34px 20px;
-        }
-        .hero::before {
-            content: ''; position: absolute; inset: 0;
-            background: var(--hero-url, url('PP.png')) center/cover no-repeat;
-            transform: scale(1.04); filter: saturate(1.05);
-        }
-        .hero::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(3, 20, 9, 0.35) 0%, rgba(3, 20, 9, 0.72) 100%);
-        }
-        .verify-box {
-            position: relative; z-index: 2; width: 100%; max-width: 460px;
-            background: rgba(4, 22, 11, 0.72); backdrop-filter: blur(10px);
-            border: 1px solid rgba(46, 204, 113, 0.4); border-radius: var(--radius-lg);
-            padding: 30px 26px 26px; text-align: left;
-            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
-        }
-        .verify-box .box-logo {
-            position: absolute; top: -34px; right: -18px; width: 108px; height: auto;
-            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.6));
-        }
-        .verify-box h3 { font-family: 'Outfit', sans-serif; font-size: 1.45rem; font-weight: 700; padding-right: 76px; }
-        .verify-box .sub { color: var(--muted); font-size: 0.85rem; margin: 4px 0 16px; padding-right: 70px; }
-        .format-hint { background: rgba(46, 204, 113, 0.12); border-left: 3px solid var(--jade); border-radius: 12px; padding: 10px 14px; font-size: 0.78rem; color: var(--mint); margin-bottom: 16px; }
-        .field { margin-bottom: 12px; }
-        .field label { display: block; font-size: 0.72rem; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 6px; }
-        input, textarea, select {
-            width: 100%; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.07); color: var(--ink); font-size: 0.95rem; transition: 0.2s;
-        }
-        input::placeholder, textarea::placeholder { color: rgba(238, 247, 241, 0.38); }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--jade); background: rgba(255, 255, 255, 0.11); box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18); }
-        select option { background: var(--forest-800); color: var(--ink); }
-        textarea { min-height: 88px; resize: vertical; }
-        input[type="file"] { padding: 10px 12px; font-size: 0.85rem; }
-        input[type="date"] { color-scheme: dark; }
+        /* Upload Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 30px; border-radius: 25px; max-width: 450px; width: 90%; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: #888; }
+        .modal-close:hover { color: #e74c3c; }
 
-        .btn { background: linear-gradient(135deg, var(--jade), var(--jade-dark)); color: #04210f; border: none; padding: 12px 26px; border-radius: var(--radius-pill); font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: 0.2s; }
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(46, 204, 113, 0.32); }
-        .btn:active { transform: none; }
-        .btn.full { width: 100%; }
-        .btn.ghost { background: rgba(255, 255, 255, 0.08); color: var(--ink); border: 1px solid var(--line); }
-        .btn.ghost:hover { background: rgba(255, 255, 255, 0.16); box-shadow: none; }
-        .btn.gold { background: linear-gradient(135deg, #f7dc6f, var(--gold)); color: #3a2c00; }
-        .btn.red { background: linear-gradient(135deg, #e86b60, #b34f4f); color: #fff; }
-        .btn.sm { padding: 8px 16px; font-size: 0.8rem; }
-        .verify-msg { margin-top: 12px; color: #ffb3b3; font-size: 0.85rem; min-height: 18px; }
-
-        .welcome-card { position: relative; z-index: 2; max-width: 520px; text-align: center; background: rgba(4, 22, 11, 0.72); border: 1px solid rgba(46, 204, 113, 0.4); border-radius: var(--radius-lg); padding: 40px 30px; backdrop-filter: blur(10px); display: none; }
-        .welcome-card img { width: 96px; margin-bottom: 14px; }
-        .welcome-card h2 { font-family: 'Outfit', sans-serif; font-size: 2rem; color: var(--jade); }
-        .welcome-card p { color: var(--muted); margin-top: 6px; }
-
-        /* ---------- Cards / panels ---------- */
-        .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px 22px; margin-bottom: 16px; }
-        .panel h4 { font-family: 'Outfit', sans-serif; font-size: 1.05rem; margin-bottom: 4px; }
-        .panel .hint { color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; }
-        .panel > input, .panel > textarea, .panel > select { margin-bottom: 10px; }
-        .empty { padding: 26px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: var(--radius-lg); font-size: 0.9rem; }
-
-        .list-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--jade); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 12px; }
-        .list-card .body-text { font-size: 0.97rem; line-height: 1.55; white-space: pre-wrap; }
-        .list-card .meta { font-size: 0.74rem; color: var(--muted); margin-top: 8px; }
-        .list-card .file-link { display: inline-block; margin-top: 10px; color: var(--jade); font-weight: 600; font-size: 0.85rem; text-decoration: none; }
-        .list-card .file-link:hover { text-decoration: underline; }
-        .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-
-        /* ---------- Calendar ---------- */
-        .calendar-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-pill); }
-        .calendar-nav button { background: rgba(255,255,255,0.08); border: 1px solid var(--line); color: var(--ink); padding: 8px 18px; border-radius: var(--radius-pill); font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
-        .calendar-nav button:hover:not(:disabled) { background: var(--jade); color: #04210f; }
-        .calendar-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
-        .calendar-nav .month-label { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin: 20px 0 16px; }
-        .cal-head { text-align: center; font-size: 0.7rem; letter-spacing: 1px; color: var(--muted); padding-bottom: 4px; }
-        .cal-day { position: relative; padding: 14px 6px; min-height: 74px; background: rgba(255,255,255,0.06); border: 1px solid transparent; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .cal-day:hover { background: rgba(255,255,255,0.14); border-color: rgba(255, 255, 255, 0.2); }
-        .cal-day .day-num { font-size: 1.6rem; font-weight: 500; }
-        .cal-day.has-event { background: rgba(46, 204, 113, 0.16); border-color: rgba(46, 204, 113, 0.55); }
-        .cal-day .event-dot { width: 6px; height: 6px; background: var(--jade); border-radius: 50%; margin-top: 6px; }
-        .cal-day.empty-cell { background: none; cursor: default; }
-        .cal-day.empty-cell:hover { background: none; transform: none; }
-
-        .date-detail-box { background: var(--panel-strong); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px 22px; display: none; max-height: 420px; overflow-y: auto; }
-        .date-detail-box.active { display: block; }
-        .date-detail-box h3 { font-family: 'Outfit', sans-serif; font-size: 1.15rem; margin-bottom: 12px; color: var(--jade); }
-        .title-item { background: rgba(255,255,255,0.05); border-left: 3px solid var(--jade); padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
-        .title-item:hover { background: rgba(46, 204, 113, 0.18); transform: translateX(4px); }
-
-        /* ---------- Popups ---------- */
-        .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(2, 12, 6, 0.86); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
-        .popup-overlay.open { display: flex; }
-        .popup-content { background: linear-gradient(160deg, #0d2e18, #071c0f); max-width: 620px; width: 100%; max-height: 86vh; overflow-y: auto; padding: 28px; border-radius: var(--radius-lg); border: 1px solid rgba(46, 204, 113, 0.45); box-shadow: 0 30px 60px rgba(0,0,0,0.7); }
-        .popup-content h2 { font-family: 'Outfit', sans-serif; color: var(--jade); font-size: 1.4rem; }
-        .popup-content .date { color: var(--muted); font-size: 0.8rem; margin: 4px 0 14px; display: block; }
-        .popup-content .body { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
-        .popup-content img, .popup-content video, .popup-content iframe { max-width: 100%; border-radius: 14px; margin-top: 14px; border: 1px solid var(--line); }
-        .popup-close { margin-top: 20px; }
-        .lightbox img { max-width: min(92vw, 520px); max-height: 82vh; border-radius: 20px; border: 2px solid rgba(46,204,113,0.5); box-shadow: 0 30px 60px rgba(0,0,0,0.7); }
-        .lightbox { flex-direction: column; gap: 16px; }
-        .lightbox .cap { font-family: 'Outfit', sans-serif; font-size: 1rem; }
-
-        /* ---------- Officers ---------- */
-        .officer-hero { display: block; width: 100%; max-width: 440px; margin: 0 auto 26px; border-radius: var(--radius-lg); border: 1px solid rgba(46,204,113,0.4); box-shadow: 0 20px 45px rgba(0,0,0,0.5); cursor: zoom-in; }
-        .officer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
-        .officer-card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; cursor: zoom-in; transition: 0.22s; }
-        .officer-card:hover { transform: translateY(-5px); border-color: rgba(46,204,113,0.6); box-shadow: 0 18px 32px rgba(0,0,0,0.42); }
-        .officer-card img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; }
-        .officer-card .cap { padding: 12px 14px 14px; }
-        .officer-card .cap .nm { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.95rem; }
-        .officer-card .cap .rl { font-size: 0.76rem; color: var(--jade); letter-spacing: 0.4px; margin-top: 2px; }
-
-        /* ---------- Points ---------- */
-        .score-hero { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; background: linear-gradient(135deg, rgba(46,204,113,0.16), rgba(241,196,15,0.08)); border: 1px solid rgba(46,204,113,0.35); border-radius: var(--radius-lg); padding: 22px 26px; margin-bottom: 18px; }
-        .score-hero .score { font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 800; line-height: 1; color: var(--jade); }
-        .score-hero .score small { font-size: 1.1rem; color: var(--muted); font-weight: 600; }
-        .score-hero .who { font-family: 'Outfit', sans-serif; font-size: 1.05rem; }
-        .score-hero .label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.5px; }
-        .history-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--danger); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 10px; }
-        .history-card.up { border-left-color: var(--jade); }
-        .history-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .delta { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #ff9b9b; }
-        .history-card.up .delta { color: var(--jade); }
-        .offense-badge { display: inline-block; background: rgba(231,76,60,0.18); color: #ff9b9b; border: 1px solid rgba(231,76,60,0.45); padding: 4px 12px; border-radius: var(--radius-pill); font-size: 0.76rem; font-weight: 600; }
-        .offense-badge.reward { background: rgba(46,204,113,0.16); color: #86e6ad; border-color: rgba(46,204,113,0.45); }
-        .history-card .note { font-size: 0.92rem; margin-top: 8px; line-height: 1.5; }
-        .history-card .when { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
-
-        .student-picker-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 8px; }
-        .selected-count { font-size: 0.8rem; color: var(--muted); margin-left: auto; }
-        .student-checklist { max-height: 250px; overflow-y: auto; background: rgba(2, 14, 7, 0.45); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 8px; margin-bottom: 12px; }
-        .student-checklist label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 0.87rem; transition: 0.15s; }
-        .student-checklist label:hover { background: rgba(46,204,113,0.14); }
-        .student-checklist label.checked { background: rgba(46,204,113,0.2); }
-        .student-checklist input[type="checkbox"] { width: 17px; height: 17px; flex: 0 0 auto; accent-color: var(--jade); padding: 0; }
-
-        table.data-table { width: 100%; border-collapse: collapse; background: rgba(2, 14, 7, 0.4); min-width: 460px; }
-        .table-scroll { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--line); }
-        table.data-table th { padding: 12px 16px; text-align: left; font-size: 0.74rem; letter-spacing: 1px; font-weight: 700; color: var(--jade); background: rgba(46,204,113,0.14); }
-        table.data-table td { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 0.92rem; }
-        table.data-table tr:hover td { background: rgba(255,255,255,0.04); }
-        .rank { width: 54px; font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--gold); }
-        .board.low table.data-table th { color: var(--danger); background: rgba(231,76,60,0.14); }
-        .board.low .rank { color: var(--danger); }
-        .board { margin-bottom: 28px; }
-        .board h4 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; }
-        .board.high h4 { color: var(--gold); }
-        .board.low h4 { color: var(--danger); }
-        .board .hint { color: var(--muted); font-size: 0.8rem; margin: 2px 0 10px; }
-
-        /* ---------- Meet 7-Jade ---------- */
-        .meet-adviser { display: flex; flex-direction: column; align-items: center; text-align: center; margin: 4px auto 30px; max-width: 220px; }
-        .meet-adviser img { width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid var(--gold); box-shadow: 0 14px 30px rgba(0,0,0,0.45); cursor: zoom-in; }
-        .meet-adviser .meet-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.15rem; margin-top: 12px; }
-        .meet-adviser .meet-tag { font-size: 0.74rem; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
-        .meet-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .meet-col-title { font-family: 'Outfit', sans-serif; font-size: 1rem; margin-bottom: 12px; text-align: center; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
-        .meet-col-title.boys { color: #6ec6ff; }
-        .meet-col-title.girls { color: #ff8fc7; }
-        .meet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
-        .meet-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 10px; text-align: center; }
-        .meet-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; cursor: zoom-in; }
-        .meet-card .meet-name { font-size: 0.82rem; font-weight: 600; margin-top: 8px; line-height: 1.3; }
-        .meet-card .btn { margin-top: 8px; width: 100%; }
-        @media (max-width: 700px) { .meet-columns { grid-template-columns: 1fr; } }
-
-        /* ---------- Jade Gallery ---------- */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-        .gallery-card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
-        .gallery-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; cursor: zoom-in; }
-        .gallery-card .cap { padding: 10px 14px; }
-        .gallery-admin-meta { padding: 8px 14px 12px; border-top: 1px solid var(--line); font-size: 0.72rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-
-        /* ---------- Daily Questions ---------- */
-        .daily-card h4 { flex: 1; }
-
-        .offense-row { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--danger); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .offense-row:hover { background: rgba(255,255,255,0.09); }
-        .offense-row h4 { color: var(--danger); font-family: 'Outfit', sans-serif; font-size: 1rem; }
-        .sub-entry { border-left: 2px solid var(--line); padding: 8px 12px; margin: 6px 0; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.85rem; }
-        .sub-entry.up { border-left-color: var(--jade); }
-        .sub-entry.down { border-left-color: var(--danger); }
-
-        /* ---------- Admin Replace ---------- */
-        .replace-row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
-        .replace-preview { width: 110px; height: 110px; object-fit: cover; border-radius: 16px; border: 1px solid var(--line); background: rgba(0,0,0,0.3); flex: 0 0 auto; }
-        .replace-preview.wide { width: 220px; height: 110px; }
-        .replace-controls { flex: 1; min-width: 200px; }
-        .replace-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-        .officer-replace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
-        .officer-replace-card { background: rgba(2, 14, 7, 0.4); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 14px; }
-        .officer-replace-card .thumb-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-        .officer-replace-card img { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); flex: 0 0 auto; }
-        .officer-replace-card input[type="text"] { margin-bottom: 8px; }
-        .officer-replace-card input[type="file"] { font-size: 0.78rem; padding: 8px 10px; margin-bottom: 8px; }
-        .officer-replace-card .replace-btns { margin-top: 4px; }
-
-        .toast-wrap { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
-        .toast { background: rgba(6, 32, 16, 0.95); border: 1px solid rgba(46,204,113,0.5); color: var(--ink); padding: 12px 22px; border-radius: var(--radius-pill); font-size: 0.88rem; font-weight: 500; box-shadow: 0 12px 30px rgba(0,0,0,0.5); animation: drop 0.25s ease; max-width: 90vw; }
-        .toast.bad { border-color: rgba(231,76,60,0.6); }
-        @keyframes drop { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
-
-        @media (max-width: 720px) {
-            body { padding: 10px; }
-            .app { padding: 16px 14px 22px; border-radius: 26px; }
-            .nav-bar { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; }
-            .nav-bar::-webkit-scrollbar { display: none; }
-            .nav-btn { font-size: 0.8rem; padding: 8px 14px; }
-            .verify-box .box-logo { width: 74px; top: -26px; right: -6px; }
-            .verify-box h3 { padding-right: 56px; }
-            .calendar-grid { gap: 6px; }
-            .cal-day { padding: 8px 2px; min-height: 54px; border-radius: 14px; }
-            .cal-day .day-num { font-size: 1.2rem; }
-            .officer-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-            .score-hero .score { font-size: 2.4rem; }
-        }
+        /* Games */
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 700px) { .game-grid { grid-template-columns: 1fr; } }
+        .game-box { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; }
+        .piano-keys { display: flex; justify-content: center; flex-wrap: wrap; }
+        .piano-key { width: 40px; height: 100px; background: white; border: 1px solid #ccc; border-radius: 0 0 5px 5px; margin: 1px; cursor: pointer; box-shadow: 0 4px 0 #bbb; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; font-weight: bold; }
+        .piano-key:active { transform: translateY(4px); box-shadow: none; }
+        .color-target { width: 60px; height: 60px; border-radius: 15px; margin: 15px auto; border: 4px solid white; }
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px auto; max-width: 240px; }
+        .color-box { height: 60px; border-radius: 12px; cursor: pointer; }
+        .color-box:hover { transform: scale(0.95); }
+        .score-text { margin-top: 10px; font-weight: bold; color: #1e8449; }
     </style>
 </head>
 <body>
-<div class="app">
-    <div class="brand">
-        <img src="logo.png" alt="7-Jade logo">
-        <div class="brand-text">
-            <h1>7-Jade Portal</h1>
-            <span>A.Y. 26-27</span>
+
+    <nav>
+        <div class="logo">7-JADE</div>
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="showSection('home')">🏠 Home</button>
+            <button class="nav-btn" onclick="showSection('gallery')">📸 Gallery</button>
+            <button class="nav-btn" onclick="showSection('responses')">📋 Responses</button>
+            <button class="nav-btn" onclick="showSection('games')">🎮 Games</button>
         </div>
-    </div>
+    </nav>
 
-    <div class="nav-bar" id="navBar">
-        <button class="nav-btn active" data-tab="locked">🔒 Locked</button>
-        <button class="nav-btn hidden-tab" data-tab="meet">🎓 Meet 7-Jade</button>
-        <button class="nav-btn hidden-tab" data-tab="officers">🎖️ Officers</button>
-        <button class="nav-btn hidden-tab" data-tab="assignments">📅 Assignments</button>
-        <button class="nav-btn hidden-tab" data-tab="others">📌 Others</button>
-        <button class="nav-btn hidden-tab" data-tab="gallery">🖼️ Jade Gallery</button>
-        <button class="nav-btn hidden-tab" data-tab="announcements">📢 Announcements</button>
-        <button class="nav-btn hidden-tab" data-tab="daily">❓ Daily Questions</button>
-        <button class="nav-btn hidden-tab" data-tab="points">🏆 My Points</button>
-        <button class="nav-btn hidden-tab" data-tab="walkoffame">🌟 Walk Of Fame</button>
-        <button class="nav-btn admin-tab" data-tab="admin-add">➕ Admin Add</button>
-        <button class="nav-btn admin-tab" data-tab="admin-assignments">🗑️ Assignments</button>
-        <button class="nav-btn admin-tab" data-tab="admin-others">🗑️ Others</button>
-        <button class="nav-btn admin-tab" data-tab="admin-announcements">🗑️ Announcements</button>
-        <button class="nav-btn admin-tab" data-tab="admin-points">⚙️ Points</button>
-        <button class="nav-btn admin-tab" data-tab="admin-monitor">📊 Monitor</button>
-        <button class="nav-btn admin-tab" data-tab="admin-offenses">⚠️ Offenses</button>
-        <button class="nav-btn admin-tab" data-tab="admin-replace">🖼️ Admin Replace</button>
-        <button class="nav-btn hidden-tab" data-tab="admin">⚙️ Admin Panel</button>
-    </div>
-
-    <div class="content-area">
-        <!-- LOCKED -->
-        <div id="locked" class="tab-content active">
+    <div class="container">
+        
+        <!-- HOME -->
+        <div id="home" class="section active-section">
             <div class="hero">
-                <div id="verifyBox" class="verify-box">
-                    <img src="logo.png" class="box-logo" alt="7-Jade logo">
-                    <h3>Verify & enter</h3>
-                    <p class="sub">Type your exact 7-Jade name.</p>
-                    <div class="format-hint">
-                        <strong>Format:</strong> Last Name, First Name Middle Name<br>
-                        <em>Example: DELA CRUZ, JUAN LOZANO</em>
-                    </div>
-                    <div class="field">
-                        <label for="jadeNameInput">Full name</label>
-                        <input type="text" id="jadeNameInput" placeholder="DELA CRUZ, JUAN LOZANO" autocomplete="off" onkeydown="if(event.key==='Enter') verifyJade()">
-                    </div>
-                    <div class="field">
-                        <label for="jadePasswordInput">Class password</label>
-                        <input type="password" id="jadePasswordInput" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter') verifyJade()">
-                    </div>
-                    <button class="btn full" onclick="verifyJade()">Enter</button>
-                    <div id="verifyMsg" class="verify-msg"></div>
+                <h1>Welcome, 7-Jade!</h1>
+                <p>Batch 2026 - 2027. Global Community Hub.</p>
+            </div>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>📊 Submissions</h3>
+                    <div class="stats-number" id="submission-count">0</div>
                 </div>
-
-                <div id="lockedContent" class="welcome-card">
-                    <img src="logo.png" alt="7-Jade logo">
-                    <h2>Welcome, Jade</h2>
-                    <p id="welcomeName">Student</p>
-                    <button class="btn ghost" style="margin-top:22px;" onclick="exitLocked()">← Sign out</button>
+                <div class="card">
+                    <h3>✍️ Leave a Message</h3>
+                    <form id="jadeForm">
+                        <input type="text" id="fullName" placeholder="Full Name" required>
+                        <input type="text" id="gradeSection" placeholder="Grade & Section" required>
+                        <textarea id="message" rows="2" placeholder="Write something..."></textarea>
+                        <button type="submit" class="btn-primary">Submit Response</button>
+                    </form>
+                    <div id="thankYouMessage" class="thankyou-msg">✅ Saved to server!</div>
                 </div>
             </div>
         </div>
 
-        <!-- MEET 7-JADE -->
-        <div id="meet" class="tab-content">
-            <h3 class="page-title">Meet 7-Jade</h3>
-            <p class="page-sub">Our adviser and classmates, A.Y. 26-27. Tap a photo to enlarge.</p>
-
-            <div class="panel" id="meetAdminBox" style="display:none;">
-                <h4>Add a member</h4>
-                <p class="hint">Only the full admin sees this.</p>
-                <input type="text" id="meetName" placeholder="Full name">
-                <select id="meetRole">
-                    <option value="boy">Boy</option>
-                    <option value="girl">Girl</option>
-                    <option value="adviser">Adviser</option>
-                </select>
-                <input type="file" id="meetPhoto" accept="image/*">
-                <button class="btn" onclick="addMeetMember()">Add member</button>
+        <!-- GALLERY (with Upload Button) -->
+        <div id="gallery" class="section">
+            <div class="gallery-header">
+                <h2>📸 Gallery</h2>
+                <button class="btn-upload" onclick="openModal()">➕ Upload Photo</button>
             </div>
-
-            <div id="meetAdviser"></div>
-
-            <div class="meet-columns">
-                <div class="meet-col">
-                    <h4 class="meet-col-title boys">Boys</h4>
-                    <div id="meetBoys" class="meet-grid"></div>
-                </div>
-                <div class="meet-col">
-                    <h4 class="meet-col-title girls">Girls</h4>
-                    <div id="meetGirls" class="meet-grid"></div>
-                </div>
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Images injected here -->
             </div>
         </div>
 
-        <!-- OFFICERS -->
-        <div id="officers" class="tab-content">
-            <h3 class="page-title">Class officers</h3>
-            <p class="page-sub">7-Jade, A.Y. 26-27 — revised and final. Tap any card to enlarge.</p>
-            <img src="31.png" id="officerHeroImg" class="officer-hero" alt="7-Jade class officers" onclick="openLightbox(officerHeroSrc(),'7-Jade Class Officers')">
-            <div class="officer-grid" id="officerGrid"></div>
+        <!-- RESPONSES -->
+        <div id="responses" class="section">
+            <h2 style="color:#1e8449; margin-bottom:20px;">📋 Batch Responses</h2>
+            <div id="responsesContainer"></div>
         </div>
 
-        <!-- ASSIGNMENTS -->
-        <div id="assignments" class="tab-content">
-            <h3 class="page-title">Assignments & projects</h3>
-            <p class="page-sub">Green dates have something due. Tap one to open it.</p>
-            <div class="calendar-nav">
-                <button id="prevMonthBtn" onclick="changeMonth(-1)">◀ Prev</button>
-                <span class="month-label" id="monthLabel">June 2026</span>
-                <button id="nextMonthBtn" onclick="changeMonth(1)">Next ▶</button>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-            <div class="date-detail-box" id="dateDetailBox">
-                <h3 id="detailDateTitle">Assignments on this date</h3>
-                <div id="detailContent"></div>
-                <button class="btn ghost full" style="margin-top:14px;" onclick="closeDetail()">← Back to calendar</button>
-            </div>
-            <div id="calendarDefaultMsg" class="empty">Pick a date to see what's due.</div>
-        </div>
-
-        <!-- OTHERS -->
-        <div id="others" class="tab-content">
-            <h3 class="page-title">Others</h3>
-            <p class="page-sub">Reminders and posts that aren't tied to a date.</p>
-            <div id="othersList"></div>
-        </div>
-
-        <!-- JADE GALLERY -->
-        <div id="gallery" class="tab-content">
-            <h3 class="page-title">Jade Gallery</h3>
-            <p class="page-sub">Share a picture with the class.</p>
-
-            <div class="panel">
-                <h4>Post a picture</h4>
-                <input type="file" id="galleryFile" accept="image/*">
-                <textarea id="galleryCaption" placeholder="Say something about it (optional)..."></textarea>
-                <button class="btn" onclick="addGalleryPost()">Post</button>
-            </div>
-
-            <div class="gallery-grid" id="galleryGrid"></div>
-        </div>
-
-        <!-- ANNOUNCEMENTS -->
-        <div id="announcements" class="tab-content">
-            <h3 class="page-title">Announcements</h3>
-            <p class="page-sub">Latest news for the class.</p>
-            <div id="todayAnnounceList"></div>
-        </div>
-
-        <!-- DAILY QUESTIONS -->
-        <div id="daily" class="tab-content">
-            <h3 class="page-title">Daily Questions</h3>
-            <p class="page-sub">Answer today's question below.</p>
-
-            <div class="panel" id="dailyAdminBox" style="display:none;">
-                <h4>Ask a new question</h4>
-                <p class="hint">Only the full admin sees this. The correct answer decides who's marked right.</p>
-                <textarea id="dailyQuestionText" placeholder="Question..."></textarea>
-                <input type="text" id="dailyCorrectAnswer" placeholder="Correct answer">
-                <button class="btn" onclick="addDailyQuestion()">Post question</button>
-            </div>
-
-            <div id="dailyQuestionsList"></div>
-        </div>
-
-        <!-- MY POINTS -->
-        <div id="points" class="tab-content">
-            <h3 class="page-title">My points</h3>
-            <p class="page-sub">Every change to your score, and what caused it.</p>
-            <div id="myPointsContainer"></div>
-        </div>
-
-        <!-- WALK OF FAME -->
-        <div id="walkoffame" class="tab-content">
-            <h3 class="page-title">Points Walk Of Fame</h3>
-            <p class="page-sub">Highest scorers on top, lowest below.</p>
-
-            <div class="panel" id="wofAdminBox" style="display:none;">
-                <h4>Add someone to a board</h4>
-                <p class="hint">Only the full admin sees this.</p>
-                <select id="wofStudent"><option value="">Select student</option></select>
-                <select id="wofCategory">
-                    <option value="highest">🥇 Highest points board</option>
-                    <option value="lowest">🥉 Lowest points board</option>
-                </select>
-                <input type="number" id="wofPoints" placeholder="Points (e.g. 15)" step="0.1">
-                <input type="text" id="wofNote" placeholder="Short note (optional)">
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="btn" onclick="addWalkOfFame()">Add to board</button>
-                    <button class="btn gold" onclick="autoFillWalkOfFame()">Fill from current points</button>
-                    <button class="btn red sm" onclick="clearWalkOfFame('highest')">Clear highest</button>
-                    <button class="btn red sm" onclick="clearWalkOfFame('lowest')">Clear lowest</button>
-                </div>
-            </div>
-
-            <div class="board high">
-                <h4>🥇 Highest points</h4>
-                <div class="hint">Ranked from the most points down.</div>
-                <div id="wofHighest"></div>
-            </div>
-            <div class="board low">
-                <h4>🥉 Lowest points</h4>
-                <div class="hint">Ranked from the fewest points up.</div>
-                <div id="wofLowest"></div>
-            </div>
-        </div>
-
-        <!-- ADMIN PANEL -->
-        <div id="admin" class="tab-content">
-            <h3 class="page-title">Admin panel</h3>
-            <p class="page-sub">Enter the passcode to unlock admin tabs.</p>
-            <div class="panel" id="adminPassBox" style="max-width:420px;">
-                <input type="password" id="adminPassInput" placeholder="Passcode" onkeydown="if(event.key==='Enter') adminLogin()">
-                <button class="btn full" onclick="adminLogin()">Unlock</button>
-                <div id="adminPassMsg" style="color:#ffb3b3; margin-top:10px; font-size:0.85rem;"></div>
-            </div>
-        </div>
-
-        <!-- ADMIN ADD -->
-        <div id="admin-add" class="tab-content">
-            <h3 class="page-title">Add content</h3>
-            <p class="page-sub">Files are stored with the post — images, video and PDFs preview inline.</p>
-
-            <div class="panel">
-                <h4>New assignment</h4>
-                <p class="hint">Shows up on the calendar for the date you pick.</p>
-                <input type="date" id="adminAssignDate">
-                <input type="text" id="adminAssignTitle" placeholder="Assignment title">
-                <textarea id="adminAssignContent" placeholder="Details..."></textarea>
-                <input type="file" id="adminAssignFile" accept="*/*">
-                <button class="btn" onclick="adminAddAssignment()">Add assignment</button>
-            </div>
-
-            <div class="panel">
-                <h4>New post in Others</h4>
-                <textarea id="adminOtherText" placeholder="Text..."></textarea>
-                <input type="file" id="adminOtherFile" accept="*/*">
-                <button class="btn" onclick="adminAddOther()">Add post</button>
-            </div>
-
-            <div class="panel">
-                <h4>New announcement</h4>
-                <textarea id="adminAnnounceText" placeholder="Announcement..."></textarea>
-                <input type="file" id="adminAnnounceFile" accept="*/*">
-                <button class="btn" onclick="adminAddAnnounce()">Add announcement</button>
-            </div>
-        </div>
-
-        <div id="admin-assignments" class="tab-content">
-            <h3 class="page-title">Manage assignments</h3>
-            <p class="page-sub">Remove anything that's no longer needed.</p>
-            <div id="adminAssignList"></div>
-        </div>
-        <div id="admin-others" class="tab-content">
-            <h3 class="page-title">Manage Others</h3>
-            <p class="page-sub">Remove anything that's no longer needed.</p>
-            <div id="adminOthersList"></div>
-        </div>
-        <div id="admin-announcements" class="tab-content">
-            <h3 class="page-title">Manage announcements</h3>
-            <p class="page-sub">Remove anything that's no longer needed.</p>
-            <div id="adminAnnList"></div>
-        </div>
-
-        <!-- ADMIN POINTS -->
-        <div id="admin-points" class="tab-content">
-            <h3 class="page-title">Points</h3>
-            <p class="page-sub">Tick everyone who gets the same offense or reward, then update once.</p>
-
-            <div class="panel">
-                <h4>Add or deduct points</h4>
-                <p class="hint">The offense you pick is shown to each student in My Points, so choose one instead of leaving it blank.</p>
-                <input type="text" id="studentSearch" placeholder="Search a name..." oninput="filterStudentList()">
-                <div class="student-picker-head">
-                    <button type="button" class="btn ghost sm" onclick="toggleAllStudents(true)">Select all</button>
-                    <button type="button" class="btn ghost sm" onclick="toggleAllStudents(false)">Clear</button>
-                    <span class="selected-count" id="selectedCount">0 selected</span>
-                </div>
-                <div class="student-checklist" id="adminPointStudents"></div>
-                <input type="number" id="adminPointChange" placeholder="+ or − (e.g. 0.5 or -1.5)" step="0.1">
-                <select id="adminPointReason"><option value="">Select offense (optional)</option></select>
-                <textarea id="adminPointMessage" placeholder="Message shown to the student..."></textarea>
-                <button class="btn full" onclick="adminUpdatePoint()">Update points for selected</button>
-            </div>
-
-            <div class="panel">
-                <h4>Offense types</h4>
-                <p class="hint">These fill the dropdown above.</p>
-                <input type="text" id="newOffenseName" placeholder="New offense name...">
-                <button class="btn gold" onclick="addNewOffense()">Add offense</button>
-            </div>
-
-            <div class="panel">
-                <h4>Reset everyone</h4>
-                <p class="hint">Wipes all history and sets every score to the same value.</p>
-                <input type="number" id="resetPointsValue" placeholder="Reset all to (e.g. 15)">
-                <button class="btn red full" onclick="resetAllPoints()">Reset all scores</button>
-            </div>
-
-            <div id="adminPointsList"></div>
-        </div>
-
-        <div id="admin-monitor" class="tab-content">
-            <h3 class="page-title">Points monitor</h3>
-            <p class="page-sub">Tap a student to see their full history.</p>
-            <div id="monitorList"></div>
-        </div>
-
-        <div id="admin-offenses" class="tab-content">
-            <h3 class="page-title">Offenses</h3>
-            <p class="page-sub">Tap one to see who committed it.</p>
-            <div id="offenseList"></div>
-        </div>
-
-        <!-- ADMIN REPLACE -->
-        <div id="admin-replace" class="tab-content">
-            <h3 class="page-title">Replace images & text</h3>
-            <p class="page-sub">Swap the logo, banner, group photo, or any officer's picture, name and role. Leave a field as is to keep it unchanged. "Reset" goes back to the original file in the repo.</p>
-
-            <div class="panel replace-panel">
-                <h4>Site logo</h4>
-                <p class="hint">Shown in the header, the sign-in card, and the welcome screen.</p>
-                <div class="replace-row">
-                    <img id="previewLogo" class="replace-preview" src="logo.png" alt="Current logo">
-                    <div class="replace-controls">
-                        <input type="file" id="fileLogo" accept="image/*" onchange="previewAssetFile('fileLogo','previewLogo')">
-                        <div class="replace-btns">
-                            <button class="btn sm" onclick="adminSaveAsset('logo','fileLogo')">Save new logo</button>
-                            <button class="btn ghost sm" onclick="adminResetAsset('logo','previewLogo','logo.png')">Reset to default</button>
-                        </div>
+        <!-- GAMES -->
+        <div id="games" class="section">
+            <h2 style="color:#1e8449; margin-bottom:20px; text-align:center;">🎮 Mini Games</h2>
+            <div class="game-grid">
+                <div class="game-box">
+                    <h3>🎹 Piano</h3>
+                    <div class="piano-keys">
+                        <div class="piano-key" onclick="playSound(261.63)">C</div>
+                        <div class="piano-key" onclick="playSound(293.66)">D</div>
+                        <div class="piano-key" onclick="playSound(329.63)">E</div>
+                        <div class="piano-key" onclick="playSound(349.23)">F</div>
+                        <div class="piano-key" onclick="playSound(392.00)">G</div>
+                        <div class="piano-key" onclick="playSound(440.00)">A</div>
+                        <div class="piano-key" onclick="playSound(493.88)">B</div>
+                        <div class="piano-key" onclick="playSound(523.25)">C</div>
                     </div>
                 </div>
-            </div>
-
-            <div class="panel replace-panel">
-                <h4>Locked screen banner</h4>
-                <p class="hint">The background photo behind the sign-in card.</p>
-                <div class="replace-row">
-                    <img id="previewHero" class="replace-preview wide" src="PP.png" alt="Current banner">
-                    <div class="replace-controls">
-                        <input type="file" id="fileHero" accept="image/*" onchange="previewAssetFile('fileHero','previewHero')">
-                        <div class="replace-btns">
-                            <button class="btn sm" onclick="adminSaveAsset('hero','fileHero')">Save new banner</button>
-                            <button class="btn ghost sm" onclick="adminResetAsset('hero','previewHero','PP.png')">Reset to default</button>
-                        </div>
+                <div class="game-box">
+                    <h3>🎨 Color Clicker</h3>
+                    <div class="color-target" id="targetColorBox"></div>
+                    <div class="color-grid" id="colorGrid">
+                        <div class="color-box" style="background:#ff5733;" onclick="checkColor(this)"></div>
+                        <div class="color-box" style="background:#33ff57;" onclick="checkColor(this)"></div>
+                        <div class="color-box" style="background:#3357ff;" onclick="checkColor(this)"></div>
                     </div>
+                    <div class="score-text">Score: <span id="gameScore">0</span></div>
                 </div>
-            </div>
-
-            <div class="panel replace-panel">
-                <h4>Officers group photo</h4>
-                <p class="hint">The big poster at the top of the Officers tab.</p>
-                <div class="replace-row">
-                    <img id="previewOfficerHero" class="replace-preview" src="31.png" alt="Current group photo">
-                    <div class="replace-controls">
-                        <input type="file" id="fileOfficerHero" accept="image/*" onchange="previewAssetFile('fileOfficerHero','previewOfficerHero')">
-                        <div class="replace-btns">
-                            <button class="btn sm" onclick="adminSaveAsset('officerHero','fileOfficerHero')">Save new group photo</button>
-                            <button class="btn ghost sm" onclick="adminResetAsset('officerHero','previewOfficerHero','31.png')">Reset to default</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h4>Individual officers</h4>
-                <p class="hint">Update a photo, name, or role — each card saves on its own.</p>
-                <div id="officerReplaceList" class="officer-replace-grid"></div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="popup-overlay" id="assignmentPopup" onclick="if(event.target===this) closePopup()">
-    <div class="popup-content">
-        <h2 id="popupTitle">Assignment</h2>
-        <span class="date" id="popupDate">Date</span>
-        <div class="body" id="popupBody"></div>
-        <img id="popupImage" src="" style="display:none;" alt="">
-        <button class="btn ghost full popup-close" onclick="closePopup()">Close</button>
+    <!-- UPLOAD MODAL -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal-box">
+            <span class="modal-close" onclick="closeModal()">×</span>
+            <h3>Upload a Photo</h3>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="text" id="uploaderName" placeholder="Your Name" required>
+                <input type="file" id="photoFile" accept="image/*" required style="background:white; border:none;">
+                <button type="submit" class="btn-primary">Upload to Server</button>
+            </form>
+        </div>
     </div>
-</div>
 
-<div class="popup-overlay lightbox" id="imgPopup" onclick="closeLightbox()">
-    <img id="lightboxImg" src="" alt="">
-    <div class="cap" id="lightboxCap"></div>
-</div>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
 
-<div class="toast-wrap" id="toastWrap"></div>
-
-<script>
-    const JADE_NAMES = [
-        "ALVAREZ, RED XANDER LOZANO", "BALBIN, JULIUS JOAQUIN BUBAN",
-        "BEA, JAY GIL B.", "BELARDO, SEAN EMMANUEL BALASTA",
-        "BELER, MATT JOSHUA ESCUETA", "BERSABE, JOHN NESTOR OCTA",
-        "CARINAN, KEN BRYAN NOBLEZA", "CERENO, KEN JERVIN BERCASIO",
-        "DE LA PEÑA, MKRALJ BJORN OLAN", "ERMAC, ETHAN JOHN LUZANDE",
-        "FORMALEJO, EARLJOHN CLARK MARTINEZ", "GARCES, SIMEON CEAZARNIE MAGISTRADO",
-        "GRAGEDA, DAREL JR. DAZAL", "ILAO, ELISEO JOHAN IBANA",
-        "MORGA, CHARISSA ENCISO",
-        "NACARIO, KROHN EROS REMOLADOR", "PURQUED, DANILO ALFON",
-        "RODRIGUEZ, RIONNAH ARANETA", "SALCEDA, EMMAN BALLON",
-        "TOLOSA, CRIS ALCHED FERRERAS", "VARGAS, GIOLUIS ALISTAIR MANLANGIT",
-        "VILLARIN, KELLAN KRISTOF ASETRE", "YU, SHERWIN JOHN",
-        "ACUÑA, JASMINE ABUNDO", "ALPE, SOPHIA ELLEN ROSALES",
-        "CLAVECILLA, PRINCESS JESSICA ATANACIO", "CORDOVA, KYLA RHEA FE PARIS",
-        "ESPIRITU, ZIA EMMANUELLE BARCILLANO", "MIRASOL, ATHENA THERESE CUERDO",
-        "TAPEL, MIKHAELA ALENA TANON"
-    ];
-    const ROSTER = [...new Set(JADE_NAMES)].sort((a, b) => a.localeCompare(b));
-
-    // Officer posters, in the order they appear on the tab. This is the
-    // fallback used whenever the admin hasn't replaced a name/role/photo.
-    const DEFAULT_OFFICERS = [
-        { img: '32.png', name: 'Athena Mirasol', role: 'President' },
-        { img: '33.png', name: 'Red Alvarez', role: 'Vice-President' },
-        { img: '34.png', name: 'Joaquin Balbin', role: 'Secretary' },
-        { img: '35.png', name: 'Jay Bea', role: 'Treasurer' },
-        { img: '36.png', name: 'Darel Grageda', role: 'Auditor' },
-        { img: '37.png', name: 'Kylie Cordova', role: 'P.I.O.' },
-        { img: '38.png', name: 'Princess Clavecilla', role: 'Business Manager' },
-        { img: '39.png', name: 'Ethan Ermac', role: 'Business Manager' },
-        { img: '40.png', name: 'Sophia Alpe', role: 'Peace Officer' },
-        { img: '41.png', name: 'Ken Carinan', role: 'Peace Officer' },
-        { img: '42.png', name: 'Mkralj De La Peña', role: 'Escort' },
-        { img: '43.png', name: 'Jasmine Acuña', role: 'Muse' },
-        { img: '44.png', name: 'Sophia Alpe', role: 'Class Beadle' },
-        { img: '45.png', name: 'Ken Cereno', role: 'Assistant Class Beadle' }
-    ];
-
-    // Admin-replaceable content (logo, hero banner, officer group photo, per-officer overrides).
-    // Fetched from /api/site-content; null fields fall back to the static files above.
-    let siteContent = { logo: null, hero: null, officerHero: null, officers: DEFAULT_OFFICERS.map(o => ({ name: o.name, role: o.role, photo: null })) };
-
-    let assignments = {};
-    let othersAnnounce = [];
-    let todayAnnounce = [];
-    let points = [];
-    let offenses = [];
-    let walkOfFame = [];
-    let galleryPosts = [];
-    let meetMembers = [];
-    let dailyQuestions = [];
-    let dailyResponses = [];
-    let lockedVerified = false;
-    let adminRole = null;
-    let currentStudentName = null;
-    let currentMonth = 5;
-    let currentYear = 2026;
-    const MIN_MONTH = 5, MIN_YEAR = 2026, MAX_MONTH = 4, MAX_YEAR = 2027;
-    const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-    const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-    function normalizeName(name) {
-        return String(name || '').trim().toUpperCase()
-            .replace(/Ñ/g, 'Ñ').replace(/ñ/g, 'Ñ')
-            .replace(/É/g, 'É').replace(/é/g, 'É')
-            .replace(/Á/g, 'Á').replace(/á/g, 'Á')
-            .replace(/Í/g, 'Í').replace(/í/g, 'Í')
-            .replace(/Ó/g, 'Ó').replace(/ó/g, 'Ó')
-            .replace(/Ú/g, 'Ú').replace(/ú/g, 'Ú');
-    }
-
-    function escapeHtml(str) {
-        return String(str == null ? '' : str)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-
-    function toast(msg, bad) {
-        const el = document.createElement('div');
-        el.className = 'toast' + (bad ? ' bad' : '');
-        el.textContent = msg;
-        document.getElementById('toastWrap').appendChild(el);
-        setTimeout(() => el.remove(), 3200);
-    }
-
-    function fmtDate(d) {
-        return new Date(d).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-    }
-
-    // ---------- Navigation ----------
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tab = this.dataset.tab;
-            if (document.getElementById('verifyBox').style.display !== 'none' && tab !== 'locked') return toast('Verify first.', true);
-            if (tab === 'locked' && lockedVerified) exitLocked();
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            if (['admin-assignments','admin-others','admin-announcements','admin-points','admin-monitor','admin-offenses'].includes(tab)) renderAdminList(tab);
-            if (tab === 'points') loadMyPoints();
-            if (tab === 'assignments') renderCalendar();
-            if (tab === 'admin-points' && adminRole === 'full') populateStudentChecklist();
-            if (tab === 'walkoffame') { populateWofDropdown(); renderWalkOfFame(); }
-            if (tab === 'admin-replace' && adminRole === 'full') renderAdminReplaceTab();
-        });
-    });
-
-    function goTab(tab) { document.querySelector(`.nav-btn[data-tab="${tab}"]`).click(); }
-
-    // ---------- Site content (admin-replaceable images & text) ----------
-    function logoSrc() { return siteContent.logo || 'logo.png'; }
-    function heroSrc() { return siteContent.hero || 'PP.png'; }
-    function officerHeroSrc() { return siteContent.officerHero || '31.png'; }
-
-    // Merges DEFAULT_OFFICERS with whatever the admin has overridden.
-    function mergedOfficers() {
-        return DEFAULT_OFFICERS.map((def, i) => {
-            const o = (siteContent.officers && siteContent.officers[i]) || {};
-            return {
-                name: o.name || def.name,
-                role: o.role || def.role,
-                img: o.photo || def.img
-            };
-        });
-    }
-
-    function applySiteContent() {
-        document.querySelectorAll('.brand img, .box-logo, .welcome-card img').forEach(img => img.src = logoSrc());
-        const favicon = document.querySelector('link[rel="icon"]');
-        if (favicon) favicon.href = logoSrc();
-        document.querySelector('.hero').style.setProperty('--hero-url', `url("${heroSrc()}")`);
-        const heroImg = document.getElementById('officerHeroImg');
-        if (heroImg) heroImg.src = officerHeroSrc();
-    }
-
-    async function fetchSiteContent() {
-        try {
-            const res = await fetch('/api/site-content');
-            const data = await res.json();
-            siteContent = data;
-            applySiteContent();
-            renderOfficers();
-            if (document.getElementById('admin-replace').classList.contains('active')) renderAdminReplaceTab();
-        } catch (error) {
-            console.error('Site content fetch error', error);
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active-section'));
+            document.getElementById(id).classList.add('active-section');
+            if(id === 'gallery' || id === 'responses' || id === 'home') fetchData();
         }
-    }
 
-    // ---------- Officers ----------
-    function renderOfficers() {
-        document.getElementById('officerGrid').innerHTML = mergedOfficers().map(o => `
-            <div class="officer-card" onclick="openLightbox('${o.img}', '${escapeHtml(o.name)} — ${escapeHtml(o.role)}')">
-                <img src="${o.img}" alt="${escapeHtml(o.name)}, ${escapeHtml(o.role)}" loading="lazy">
-                <div class="cap"><div class="nm">${escapeHtml(o.name)}</div><div class="rl">${escapeHtml(o.role)}</div></div>
-            </div>`).join('');
-    }
-
-    function openLightbox(src, caption) {
-        document.getElementById('lightboxImg').src = src;
-        document.getElementById('lightboxCap').textContent = caption || '';
-        document.getElementById('imgPopup').classList.add('open');
-    }
-    function closeLightbox() { document.getElementById('imgPopup').classList.remove('open'); }
-
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { closeLightbox(); closePopup(); }
-    });
-
-    // ---------- Auth ----------
-    async function adminLogin() {
-        const pass = document.getElementById('adminPassInput').value;
-        const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
-        const data = await res.json();
-        if (data.success) {
-            adminRole = data.role;
-            document.getElementById('adminPassBox').style.display = 'none';
-            if (data.role === 'content') {
-                document.querySelectorAll('.admin-tab').forEach(b => {
-                    const restricted = ['admin-points','admin-monitor','admin-offenses','admin-replace'].includes(b.dataset.tab);
-                    b.style.display = restricted ? 'none' : 'inline-block';
+        async function fetchData() {
+            try {
+                const res = await fetch(`${API_URL}/data`);
+                const data = await res.json();
+                
+                document.getElementById('submission-count').innerText = data.responses.length;
+                
+                const galleryGrid = document.getElementById('galleryGrid');
+                let html = '';
+                data.photos.slice().reverse().forEach(p => {
+                    html += `<img src="${p.url}" class="gallery-img" alt="Uploaded by ${p.uploader}">`;
                 });
-                goTab('admin-add');
-                toast('Content admin unlocked');
-            } else {
-                document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
-                document.querySelector('.nav-btn[data-tab="walkoffame"]').style.display = 'inline-block';
-                showFullAdminBoxes(true);
-                goTab('admin-points');
-                toast('Full admin unlocked');
+                galleryGrid.innerHTML = html;
+
+                const respContainer = document.getElementById('responsesContainer');
+                let respHtml = '';
+                data.responses.slice().reverse().forEach(r => {
+                    respHtml += `
+                        <div class="response-card">
+                            <strong>${r.name}</strong>
+                            <small>${r.grade} • ${r.date}</small>
+                            <p>"${r.message}"</p>
+                        </div>
+                    `;
+                });
+                respContainer.innerHTML = respHtml || '<p style="text-align:center; color:#888;">No messages yet.</p>';
+            } catch (error) {
+                console.error("Failed to fetch data", error);
+                alert("Error connecting to server. Make sure 'node server.js' is running!");
             }
-        } else {
-            document.getElementById('adminPassMsg').textContent = 'Invalid password.';
         }
-    }
 
-    // Shows/hides the inline "admin only" panels that live inside student-facing
-    // tabs (Walk Of Fame, Meet 7-Jade, Daily Questions).
-    function showFullAdminBoxes(show) {
-        ['wofAdminBox', 'meetAdminBox', 'dailyAdminBox'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = show ? 'block' : 'none';
-        });
-    }
-
-    async function verifyJade() {
-        const name = document.getElementById('jadeNameInput').value.trim();
-        const password = document.getElementById('jadePasswordInput').value.trim();
-        const msg = document.getElementById('verifyMsg');
-        if (!name) { msg.textContent = 'Enter your name first.'; return; }
-        if (password !== 'Jade lang ang Malakas') { msg.textContent = 'Wrong class password.'; return; }
-        const normalizedInput = normalizeName(name);
-        const exactName = ROSTER.find(n => normalizeName(n) === normalizedInput);
-        if (exactName) {
-            currentStudentName = exactName;
-            document.getElementById('verifyBox').style.display = 'none';
-            document.getElementById('lockedContent').style.display = 'block';
-            lockedVerified = true;
-            document.getElementById('welcomeName').textContent = exactName + ' · 7-Jade';
-            document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'inline-block');
-            if (normalizedInput === 'MORGA, CHARISSA ENCISO') {
-                adminRole = 'full';
-                document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'inline-block');
-                showFullAdminBoxes(true);
-                goTab('admin-points');
-                toast('Full admin unlocked');
-            } else {
-                goTab('officers');
-            }
-        } else {
-            msg.textContent = 'Name not found. Check the spelling, including Ñ.';
-        }
-    }
-
-    function exitLocked() {
-        lockedVerified = false; adminRole = null; currentStudentName = null;
-        document.getElementById('verifyBox').style.display = 'block';
-        document.getElementById('lockedContent').style.display = 'none';
-        document.getElementById('jadeNameInput').value = '';
-        document.getElementById('jadePasswordInput').value = '';
-        document.getElementById('verifyMsg').textContent = '';
-        document.getElementById('adminPassBox').style.display = 'block';
-        showFullAdminBoxes(false);
-        document.querySelectorAll('.hidden-tab').forEach(b => b.style.display = 'none');
-        document.querySelectorAll('.admin-tab').forEach(b => b.style.display = 'none');
-        document.querySelector('[data-tab="locked"]').click();
-    }
-
-    // ---------- Data ----------
-    async function fetchData() {
-        try {
-            const res = await fetch('/api/data');
-            const data = await res.json();
-            assignments = {};
-            data.assignments.forEach(a => {
-                if (!assignments[a.date]) assignments[a.date] = [];
-                assignments[a.date].push({ id: a._id, title: a.title, content: a.content, fileData: a.fileData, fileName: a.fileName, fileType: a.fileType, createdBy: a.createdBy, createdAt: a.createdAt });
+        document.getElementById('jadeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const res = await fetch(`${API_URL}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('fullName').value,
+                    grade: document.getElementById('gradeSection').value,
+                    message: document.getElementById('message').value
+                })
             });
-            othersAnnounce = data.others.map(o => ({ id: o._id, text: o.text, fileData: o.fileData, fileName: o.fileName, fileType: o.fileType, date: o.date, createdBy: o.createdBy }));
-            todayAnnounce = data.today.map(t => ({ id: t._id, text: t.text, fileData: t.fileData, fileName: t.fileName, fileType: t.fileType, date: t.date, createdBy: t.createdBy }));
-            points = data.points || [];
-            offenses = data.offenses || [];
-            walkOfFame = data.walkoffame || [];
-            galleryPosts = data.gallery || [];
-            meetMembers = data.meetMembers || [];
-            dailyQuestions = data.dailyQuestions || [];
-            dailyResponses = data.dailyResponses || [];
-            renderCalendar();
-            renderOthers();
-            renderTodayAnnounce();
-            renderWalkOfFame();
-            renderGallery();
-            renderMeet();
-            renderDaily();
-            populateOffenseDropdown();
-            if (document.getElementById('points').classList.contains('active')) loadMyPoints();
-        } catch (error) {
-            console.error('Fetch error', error);
-        }
-    }
-
-    // ---------- Calendar ----------
-    function changeMonth(delta) {
-        let m = currentMonth + delta, y = currentYear;
-        if (m > 11) { m = 0; y++; }
-        if (m < 0) { m = 11; y--; }
-        if (y === MIN_YEAR && m < MIN_MONTH) return;
-        if (y === MAX_YEAR && m > MAX_MONTH) return;
-        currentMonth = m; currentYear = y;
-        renderCalendar();
-    }
-
-    function updateMonthNavButtons() {
-        document.getElementById('monthLabel').textContent = MONTH_NAMES[currentMonth] + ' ' + currentYear;
-        document.getElementById('prevMonthBtn').disabled = (currentYear === MIN_YEAR && currentMonth === MIN_MONTH);
-        document.getElementById('nextMonthBtn').disabled = (currentYear === MAX_YEAR && currentMonth === MAX_MONTH);
-    }
-
-    function renderCalendar() {
-        updateMonthNavButtons();
-        const grid = document.getElementById('calendarGrid');
-        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        let html = DAYS.map(l => `<div class="cal-head">${l}</div>`).join('');
-        for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty-cell"></div>';
-        for (let d = 1; d <= daysInMonth; d++) {
-            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const has = assignments[dateStr] && assignments[dateStr].length > 0;
-            html += `<div class="cal-day${has ? ' has-event' : ''}" onclick="showDateDetails('${dateStr}')">
-                <div class="day-num">${d}</div>${has ? '<div class="event-dot"></div>' : ''}</div>`;
-        }
-        grid.innerHTML = html;
-    }
-
-    function showDateDetails(dateStr) {
-        const box = document.getElementById('dateDetailBox');
-        const list = assignments[dateStr] || [];
-        document.getElementById('detailDateTitle').textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-        document.getElementById('detailContent').innerHTML = list.length
-            ? list.map((item, idx) => `<div class="title-item" onclick="openAssignmentPopup('${dateStr}', ${idx})">📋 ${escapeHtml(item.title)}</div>`).join('')
-            : '<p style="color:var(--muted);">Nothing due on this date.</p>';
-        box.classList.add('active');
-        document.getElementById('calendarDefaultMsg').style.display = 'none';
-    }
-
-    function closeDetail() {
-        document.getElementById('dateDetailBox').classList.remove('active');
-        document.getElementById('calendarDefaultMsg').style.display = 'block';
-    }
-
-    function openAssignmentPopup(date, idx) {
-        const item = assignments[date][idx];
-        document.getElementById('popupTitle').textContent = item.title;
-        document.getElementById('popupDate').textContent = date;
-        const body = document.getElementById('popupBody');
-        const img = document.getElementById('popupImage');
-        img.style.display = 'none'; img.src = '';
-        body.textContent = item.content || 'No details.';
-        if (item.fileData) {
-            const type = item.fileType || '';
-            if (type.startsWith('image/')) { img.src = item.fileData; img.style.display = 'block'; }
-            else if (type.startsWith('video/')) body.innerHTML += `<video src="${item.fileData}" controls style="width:100%; max-height:400px;"></video>`;
-            else if (type.includes('pdf')) body.innerHTML += `<iframe src="${item.fileData}" style="width:100%; height:480px;"></iframe>`;
-            else body.innerHTML += `<a class="file-link" href="${item.fileData}" download="${escapeHtml(item.fileName)}" style="display:block; margin-top:14px; color:var(--jade); font-weight:600;">📎 Download ${escapeHtml(item.fileName)}</a>`;
-        }
-        document.getElementById('assignmentPopup').classList.add('open');
-    }
-    function closePopup() { document.getElementById('assignmentPopup').classList.remove('open'); }
-
-    // ---------- Lists ----------
-    function fileLink(item) {
-        return item.fileData ? `<a class="file-link" href="${item.fileData}" download="${escapeHtml(item.fileName)}">📎 ${escapeHtml(item.fileName)}</a>` : '';
-    }
-
-    function renderOthers() {
-        document.getElementById('othersList').innerHTML = othersAnnounce.length === 0
-            ? '<div class="empty">Nothing here yet.</div>'
-            : othersAnnounce.map(t => `<div class="list-card"><div class="body-text">${escapeHtml(t.text)}</div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
-    }
-
-    function renderTodayAnnounce() {
-        document.getElementById('todayAnnounceList').innerHTML = todayAnnounce.length === 0
-            ? '<div class="empty">No announcements yet.</div>'
-            : todayAnnounce.map(t => `<div class="list-card"><div class="body-text">${escapeHtml(t.text)}</div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
-    }
-
-    // ---------- Meet 7-Jade ----------
-    // Names here are typed as "First Last" (or "First Middle Last"), so sort
-    // by the last word rather than the raw string, with the full name as a tiebreaker.
-    function lastNameOf(name) {
-        const parts = String(name || '').trim().split(/\s+/);
-        return parts[parts.length - 1] || '';
-    }
-    function byLastName(a, b) {
-        const cmp = lastNameOf(a.name).localeCompare(lastNameOf(b.name), undefined, { sensitivity: 'base' });
-        return cmp !== 0 ? cmp : a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-    }
-
-    function meetCardHtml(m, big) {
-        const photo = m.photo || 'logo.png';
-        return `<div class="meet-card">
-            <img src="${photo}" alt="${escapeHtml(m.name)}" onclick="openLightbox('${photo}', '${escapeHtml(m.name)}')">
-            <div class="meet-name">${escapeHtml(m.name)}</div>
-            ${adminRole === 'full' ? `<button class="btn red sm" onclick="deleteMeetMember('${m._id}')">Delete</button>` : ''}
-        </div>`;
-    }
-
-    function renderMeet() {
-        const adviser = meetMembers.find(m => m.role === 'adviser');
-        document.getElementById('meetAdviser').innerHTML = adviser
-            ? `<div class="meet-adviser">
-                <img src="${adviser.photo || 'logo.png'}" alt="${escapeHtml(adviser.name)}" onclick="openLightbox('${adviser.photo || 'logo.png'}', '${escapeHtml(adviser.name)}')">
-                <div class="meet-name">${escapeHtml(adviser.name)}</div>
-                <div class="meet-tag">Adviser</div>
-                ${adminRole === 'full' ? `<button class="btn red sm" style="margin-top:10px;" onclick="deleteMeetMember('${adviser._id}')">Delete</button>` : ''}
-               </div>`
-            : (adminRole === 'full' ? '<div class="empty">No adviser added yet — add one above.</div>' : '<div class="empty">No adviser added yet.</div>');
-
-        const boys = meetMembers.filter(m => m.role === 'boy').sort(byLastName);
-        const girls = meetMembers.filter(m => m.role === 'girl').sort(byLastName);
-        document.getElementById('meetBoys').innerHTML = boys.length ? boys.map(m => meetCardHtml(m)).join('') : '<div class="empty">No one added yet.</div>';
-        document.getElementById('meetGirls').innerHTML = girls.length ? girls.map(m => meetCardHtml(m)).join('') : '<div class="empty">No one added yet.</div>';
-    }
-
-    async function addMeetMember() {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const name = document.getElementById('meetName').value.trim();
-        const role = document.getElementById('meetRole').value;
-        const fileInput = document.getElementById('meetPhoto');
-        if (!name) return toast('Enter a name', true);
-        const photo = fileInput.files && fileInput.files[0] ? await readFileAsBase64(fileInput.files[0]) : null;
-        const res = await fetch('/api/admin/meet/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role, photo }) });
-        if (res.ok) {
-            document.getElementById('meetName').value = '';
-            fileInput.value = '';
-            await fetchData(); toast('Member added');
-        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function deleteMeetMember(id) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        if (!confirm('Remove this member?')) return;
-        const res = await fetch(`/api/admin/meet/delete/${id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); toast('Removed'); } else toast('Failed', true);
-    }
-
-    // ---------- Jade Gallery ----------
-    function renderGallery() {
-        const grid = document.getElementById('galleryGrid');
-        if (!galleryPosts.length) { grid.innerHTML = '<div class="empty">No pictures yet. Be the first to post!</div>'; return; }
-        const sorted = [...galleryPosts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        grid.innerHTML = sorted.map(g => `
-            <div class="gallery-card">
-                <img src="${g.imageData}" alt="Gallery photo" loading="lazy" onclick="openLightbox('${g.imageData}', '${escapeHtml(g.caption || '')}')">
-                ${g.caption ? `<div class="cap"><div class="body-text" style="font-size:0.85rem;">${escapeHtml(g.caption)}</div></div>` : ''}
-                ${adminRole === 'full' ? `<div class="gallery-admin-meta">
-                    <span>${escapeHtml(g.postedBy)} · ${fmtDate(g.createdAt)}</span>
-                    <button class="btn red sm" onclick="deleteGalleryPost('${g._id}')">Delete</button>
-                </div>` : ''}
-            </div>`).join('');
-    }
-
-    async function addGalleryPost() {
-        if (!currentStudentName) return toast('Verify first', true);
-        const fileInput = document.getElementById('galleryFile');
-        const caption = document.getElementById('galleryCaption').value.trim();
-        if (!fileInput.files || !fileInput.files[0]) return toast('Choose a picture first', true);
-        const file = fileInput.files[0];
-        const imageData = await readFileAsBase64(file);
-        const res = await fetch('/api/gallery/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageData, imageName: file.name, imageType: file.type, caption, postedBy: currentStudentName || 'Guest' }) });
-        if (res.ok) {
-            fileInput.value = '';
-            document.getElementById('galleryCaption').value = '';
-            await fetchData(); toast('Posted!');
-        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function deleteGalleryPost(id) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        if (!confirm('Delete this picture?')) return;
-        const res = await fetch(`/api/admin/delete-gallery/${id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); toast('Deleted'); } else toast('Failed', true);
-    }
-
-    // ---------- Daily Questions ----------
-    function dailyRow(r, correct) {
-        return `<tr>
-            <td>${escapeHtml(r.studentName)}</td>
-            <td>${escapeHtml(r.answer)}</td>
-            <td style="font-size:0.82rem; color:var(--muted);">${fmtDate(r.timestamp)}</td>
-            <td style="font-weight:700; color:${correct ? 'var(--jade)' : 'var(--danger)'}">${correct ? 'Correct' : 'Wrong'}</td>
-            <td style="text-align:right;"><button class="btn red sm" onclick="deleteDailyResponse('${r._id}')">Delete</button></td>
-        </tr>`;
-    }
-
-    function renderDaily() {
-        const list = document.getElementById('dailyQuestionsList');
-        if (!dailyQuestions.length) { list.innerHTML = '<div class="empty">No questions posted yet.</div>'; return; }
-        const sorted = [...dailyQuestions].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        list.innerHTML = sorted.map(q => {
-            const myResp = currentStudentName ? dailyResponses.find(r => r.questionId === q._id && normalizeName(r.studentName) === normalizeName(currentStudentName)) : null;
-            const responses = dailyResponses.filter(r => r.questionId === q._id);
-            const correct = responses.filter(r => r.isCorrect).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            const wrong = responses.filter(r => !r.isCorrect).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            return `<div class="panel daily-card">
-                <div class="card-head">
-                    <h4 style="font-family:'Outfit';">${escapeHtml(q.question)}</h4>
-                    ${adminRole === 'full' ? `<button class="btn red sm" onclick="deleteDailyQuestion('${q._id}')">Delete question</button>` : ''}
-                </div>
-                <div class="meta" style="margin-bottom:12px;">${fmtDate(q.createdAt)}</div>
-                ${myResp
-                    ? `<div class="format-hint">You answered: <strong>${escapeHtml(myResp.answer)}</strong></div>`
-                    : `<div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <input type="text" id="dailyAnswer_${q._id}" placeholder="Type your answer..." style="flex:1; min-width:180px;" onkeydown="if(event.key==='Enter') submitDailyAnswer('${q._id}')">
-                        <button class="btn sm" onclick="submitDailyAnswer('${q._id}')">Submit</button>
-                       </div>`}
-                ${adminRole === 'full' ? `
-                    <h5 style="margin-top:18px; margin-bottom:8px; color:var(--jade); font-family:'Outfit'; font-size:0.95rem;">Responses (${responses.length})</h5>
-                    ${responses.length === 0 ? '<div class="empty">No responses yet.</div>' : `<div class="table-scroll"><table class="data-table">
-                        <thead><tr><th>Responder</th><th>Answer</th><th>Time</th><th>Result</th><th></th></tr></thead>
-                        <tbody>${correct.map(r => dailyRow(r, true)).join('')}${wrong.map(r => dailyRow(r, false)).join('')}</tbody>
-                    </table></div>`}
-                ` : ''}
-            </div>`;
-        }).join('');
-    }
-
-    async function submitDailyAnswer(qid) {
-        if (!currentStudentName) return toast('Verify first', true);
-        const input = document.getElementById(`dailyAnswer_${qid}`);
-        const answer = input.value.trim();
-        if (!answer) return toast('Type an answer first', true);
-        const res = await fetch('/api/daily/answer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ questionId: qid, studentName: currentStudentName, answer }) });
-        if (res.ok) { await fetchData(); toast('Answer submitted'); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function addDailyQuestion() {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const question = document.getElementById('dailyQuestionText').value.trim();
-        const correctAnswer = document.getElementById('dailyCorrectAnswer').value.trim();
-        if (!question) return toast('Enter a question', true);
-        if (!correctAnswer) return toast('Enter the correct answer', true);
-        const res = await fetch('/api/admin/daily/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, correctAnswer, createdBy: currentStudentName || 'Admin' }) });
-        if (res.ok) {
-            document.getElementById('dailyQuestionText').value = '';
-            document.getElementById('dailyCorrectAnswer').value = '';
-            await fetchData(); toast('Question posted');
-        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function deleteDailyQuestion(id) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        if (!confirm('Delete this question and all its responses?')) return;
-        const res = await fetch(`/api/admin/daily/delete-question/${id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); toast('Deleted'); } else toast('Failed', true);
-    }
-
-    async function deleteDailyResponse(id) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        if (!confirm('Delete this response?')) return;
-        const res = await fetch(`/api/admin/daily/delete-response/${id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); toast('Deleted'); } else toast('Failed', true);
-    }
-
-    // ---------- Walk Of Fame ----------
-    function renderWalkOfFame() {
-        const high = walkOfFame.filter(e => e.category === 'highest').sort((a, b) => b.points - a.points);
-        const low = walkOfFame.filter(e => e.category === 'lowest').sort((a, b) => a.points - b.points);
-        document.getElementById('wofHighest').innerHTML = buildWofTable(high);
-        document.getElementById('wofLowest').innerHTML = buildWofTable(low);
-    }
-
-    function buildWofTable(rows) {
-        if (rows.length === 0) return '<div class="empty">No one on this board yet.</div>';
-        const body = rows.map((e, i) => `<tr>
-            <td class="rank">${i + 1}</td>
-            <td>${escapeHtml(e.studentName)}${e.note ? `<div style="font-size:0.78rem; color:var(--muted); margin-top:4px;">${escapeHtml(e.note)}</div>` : ''}</td>
-            <td style="font-weight:700;">${e.points}</td>
-            <td style="width:100px; text-align:right;">${adminRole === 'full' ? `<button class="btn red sm" onclick="deleteWalkOfFame('${e._id}')">Remove</button>` : ''}</td>
-        </tr>`).join('');
-        return `<div class="table-scroll"><table class="data-table">
-            <thead><tr><th>Rank</th><th>Student</th><th>Points</th><th></th></tr></thead>
-            <tbody>${body}</tbody></table></div>`;
-    }
-
-    function populateWofDropdown() {
-        const select = document.getElementById('wofStudent');
-        const keep = select.value;
-        select.innerHTML = '<option value="">Select student</option>' + ROSTER.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
-        if (keep) select.value = keep;
-    }
-
-    async function addWalkOfFame() {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const studentName = document.getElementById('wofStudent').value;
-        const category = document.getElementById('wofCategory').value;
-        const pts = parseFloat(document.getElementById('wofPoints').value);
-        const note = document.getElementById('wofNote').value.trim();
-        if (!studentName) return toast('Select a student', true);
-        if (isNaN(pts)) return toast('Enter their points', true);
-        const res = await fetch('/api/admin/add-walkoffame', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName, points: pts, category, note, createdBy: currentStudentName || 'Admin' }) });
-        if (res.ok) {
-            document.getElementById('wofPoints').value = '';
-            document.getElementById('wofNote').value = '';
-            await fetchData(); renderWalkOfFame(); toast('Added to the board');
-        } else {
-            const err = await res.json(); toast(err.error || 'Failed', true);
-        }
-    }
-
-    function autoFillWalkOfFame() {
-        if (points.length === 0) return toast('No point records yet', true);
-        const category = document.getElementById('wofCategory').value;
-        const listed = walkOfFame.filter(e => e.category === category).map(e => normalizeName(e.studentName));
-        const pool = points.filter(p => !listed.includes(normalizeName(p.studentName)));
-        if (pool.length === 0) return toast('Everyone is already on this board', true);
-        const pick = [...pool].sort((a, b) => category === 'highest' ? b.points - a.points : a.points - b.points)[0];
-        document.getElementById('wofStudent').value = ROSTER.find(n => normalizeName(n) === normalizeName(pick.studentName)) || '';
-        document.getElementById('wofPoints').value = pick.points;
-    }
-
-    async function deleteWalkOfFame(id) {
-        if (!confirm('Remove this entry from the board?')) return;
-        const res = await fetch(`/api/admin/delete-walkoffame/${id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); renderWalkOfFame(); toast('Removed'); } else toast('Failed', true);
-    }
-
-    async function clearWalkOfFame(category) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        if (!confirm(`Clear the ${category} board?`)) return;
-        const res = await fetch('/api/admin/clear-walkoffame', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category }) });
-        if (res.ok) { await fetchData(); renderWalkOfFame(); toast('Board cleared'); } else toast('Failed', true);
-    }
-
-    // ---------- Student points ----------
-    async function loadMyPoints() {
-        if (!currentStudentName) return;
-        const res = await fetch('/api/points/my', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentName: currentStudentName }) });
-        const data = await res.json();
-        const container = document.getElementById('myPointsContainer');
-        const p = data.points || { points: 15, history: [] };
-        const history = p.history || [];
-
-        let html = `<div class="score-hero">
-            <div class="score">${p.points}<small>/15</small></div>
-            <div>
-                <div class="label">Current score</div>
-                <div class="who">${escapeHtml(p.studentName || currentStudentName)}</div>
-            </div>
-        </div>`;
-
-        const tally = {};
-        history.forEach(h => {
-            if (h.reason && h.reason !== 'No reason') {
-                if (!tally[h.reason]) tally[h.reason] = { count: 0, total: 0 };
-                tally[h.reason].count++;
-                tally[h.reason].total += (h.change || 0);
+            if(res.ok) {
+                document.getElementById('thankYouMessage').style.display = 'block';
+                this.reset();
+                setTimeout(() => document.getElementById('thankYouMessage').style.display = 'none', 4000);
+                fetchData();
             }
         });
-        const reasons = Object.keys(tally).sort((a, b) => tally[b].count - tally[a].count);
-        if (reasons.length) {
-            html += `<h4 style="font-family:'Outfit'; margin:22px 0 8px; color:var(--danger);">My offenses</h4>
-            <div class="table-scroll"><table class="data-table">
-                <thead><tr><th>Offense</th><th>Times</th><th>Points</th></tr></thead><tbody>` +
-                reasons.map(r => `<tr><td>${escapeHtml(r)}</td><td>${tally[r].count}</td>
-                    <td style="font-weight:700; color:${tally[r].total > 0 ? 'var(--jade)' : '#ff9b9b'}">${tally[r].total > 0 ? '+' : ''}${Math.round(tally[r].total * 10) / 10}</td></tr>`).join('') +
-                '</tbody></table></div>';
-        }
 
-        html += `<h4 style="font-family:'Outfit'; margin:22px 0 8px;">History</h4>`;
-        if (history.length) {
-            html += [...history].reverse().map(h => {
-                const up = h.change > 0;
-                const hasReason = h.reason && h.reason !== 'No reason';
-                return `<div class="history-card${up ? ' up' : ''}">
-                    <div class="history-row">
-                        <span class="delta">${up ? '+' : ''}${h.change}</span>
-                        ${hasReason ? `<span class="offense-badge${up ? ' reward' : ''}">${up ? '⭐' : '⚠️'} ${escapeHtml(h.reason)}</span>` : ''}
-                    </div>
-                    <div class="note">${escapeHtml(h.message)}</div>
-                    <div class="when">${fmtDate(h.timestamp)}</div>
-                </div>`;
-            }).join('');
-        } else {
-            html += '<div class="empty">No point changes yet. Keep it that way.</div>';
-        }
-        container.innerHTML = html;
-    }
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('uploader', document.getElementById('uploaderName').value);
+            formData.append('photo', document.getElementById('photoFile').files[0]);
 
-    // ---------- Admin: points ----------
-    function populateStudentChecklist() {
-        const box = document.getElementById('adminPointStudents');
-        const previously = new Set(getSelectedStudents());
-        box.innerHTML = ROSTER.map((name, i) => `
-            <label data-name="${escapeHtml(name)}" class="${previously.has(name) ? 'checked' : ''}">
-                <input type="checkbox" value="${escapeHtml(name)}" id="stu_${i}" ${previously.has(name) ? 'checked' : ''} onchange="onStudentToggle(this)">
-                <span>${escapeHtml(name)}</span>
-            </label>`).join('');
-        updateSelectedCount();
-    }
-
-    function onStudentToggle(cb) {
-        cb.closest('label').classList.toggle('checked', cb.checked);
-        updateSelectedCount();
-    }
-
-    function getSelectedStudents() {
-        return Array.from(document.querySelectorAll('#adminPointStudents input[type="checkbox"]:checked')).map(cb => cb.value);
-    }
-
-    function updateSelectedCount() {
-        document.getElementById('selectedCount').textContent = getSelectedStudents().length + ' selected';
-    }
-
-    function toggleAllStudents(state) {
-        document.querySelectorAll('#adminPointStudents label').forEach(label => {
-            if (label.style.display === 'none') return;
-            const cb = label.querySelector('input[type="checkbox"]');
-            cb.checked = state;
-            label.classList.toggle('checked', state);
+            const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+            if(res.ok) {
+                closeModal();
+                fetchData();
+            }
         });
-        updateSelectedCount();
-    }
 
-    function filterStudentList() {
-        const term = normalizeName(document.getElementById('studentSearch').value);
-        document.querySelectorAll('#adminPointStudents label').forEach(label => {
-            label.style.display = (!term || normalizeName(label.dataset.name).includes(term)) ? 'flex' : 'none';
-        });
-    }
+        function openModal() { document.getElementById('uploadModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('uploadModal').style.display = 'none'; }
 
-    function populateOffenseDropdown() {
-        const select = document.getElementById('adminPointReason');
-        const keep = select.value;
-        select.innerHTML = '<option value="">Select offense (optional)</option>' + offenses.map(o => `<option value="${escapeHtml(o.name)}">${escapeHtml(o.name)}</option>`).join('');
-        if (keep) select.value = keep;
-    }
-
-    async function adminUpdatePoint() {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const studentNames = getSelectedStudents();
-        const change = parseFloat(document.getElementById('adminPointChange').value);
-        const message = document.getElementById('adminPointMessage').value.trim();
-        const reason = document.getElementById('adminPointReason').value;
-        if (studentNames.length === 0) return toast('Tick at least one student', true);
-        if (isNaN(change) || change === 0) return toast('Enter a valid +/− amount', true);
-        if (studentNames.length > 1 && !confirm(`Apply ${change > 0 ? '+' : ''}${change} to ${studentNames.length} students?`)) return;
-
-        const res = await fetch('/api/admin/update-points-bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentNames, change, message, reason }) });
-        if (res.ok) {
-            const data = await res.json();
-            document.getElementById('adminPointChange').value = '';
-            document.getElementById('adminPointMessage').value = '';
-            document.getElementById('adminPointReason').value = '';
-            toggleAllStudents(false);
-            await fetchData();
-            renderAdminList('admin-points');
-            toast(`Updated ${data.updatedCount} student${data.updatedCount === 1 ? '' : 's'}`);
-        } else {
-            const err = await res.json(); toast(err.error || 'Failed', true);
+        function playSound(freq) {
+            const audioCtx = new AudioContext();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
         }
-    }
 
-    async function addNewOffense() {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const input = document.getElementById('newOffenseName');
-        const name = input.value.trim();
-        if (!name) return toast('Enter an offense name', true);
-        const res = await fetch('/api/admin/add-offense', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-        if (res.ok) { input.value = ''; await fetchData(); toast('Offense added'); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function resetAllPoints() {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const input = document.getElementById('resetPointsValue');
-        const newPoints = parseInt(input.value) || 15;
-        if (!confirm(`Reset every score to ${newPoints} and wipe all history?`)) return;
-        const res = await fetch('/api/admin/reset-all-points', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPoints }) });
-        if (res.ok) { input.value = ''; await fetchData(); renderAdminList('admin-points'); toast(`All scores reset to ${newPoints}`); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    // ---------- Admin: content ----------
-    function readFileAsBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    async function pickFile(inputId) {
-        const fileInput = document.getElementById(inputId);
-        if (fileInput.files && fileInput.files[0]) {
-            const file = fileInput.files[0];
-            return { fileData: await readFileAsBase64(file), fileName: file.name, fileType: file.type };
+        const target = document.getElementById('targetColorBox');
+        const boxes = document.querySelectorAll('.color-box');
+        let score = 0;
+        let colors = ['#ff5733', '#33ff57', '#3357ff', '#f1c40f', '#9b59b6', '#e74c3c'];
+        function newRound() {
+            let c = colors[Math.floor(Math.random() * colors.length)];
+            target.style.background = c;
+            boxes.forEach(b => {
+                b.style.background = colors[Math.floor(Math.random() * colors.length)];
+                b.dataset.color = b.style.background;
+            });
+            boxes[Math.floor(Math.random() * boxes.length)].style.background = c;
+            boxes[Math.floor(Math.random() * boxes.length)].dataset.color = c;
         }
-        return { fileData: null, fileName: null, fileType: null };
-    }
-
-    // ---------- Admin: Replace (logo, banner, officer photos & text) ----------
-    // Shows the picked file immediately, before it's saved.
-    function previewAssetFile(inputId, imgId) {
-        const file = document.getElementById(inputId).files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => { document.getElementById(imgId).src = reader.result; };
-        reader.readAsDataURL(file);
-    }
-
-    async function adminSaveAsset(key, inputId) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const file = document.getElementById(inputId).files[0];
-        if (!file) return toast('Choose an image first', true);
-        const dataUrl = await readFileAsBase64(file);
-        const res = await fetch('/api/admin/site-content/asset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, dataUrl }) });
-        if (res.ok) { document.getElementById(inputId).value = ''; await fetchSiteContent(); toast('Saved'); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function adminResetAsset(key, imgId, defaultSrc) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        if (!confirm('Reset this back to the original image?')) return;
-        const res = await fetch('/api/admin/site-content/asset-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
-        if (res.ok) { document.getElementById(imgId).src = defaultSrc; await fetchSiteContent(); toast('Reset to default'); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    function renderAdminReplaceTab() {
-        document.getElementById('previewLogo').src = logoSrc();
-        document.getElementById('previewHero').src = heroSrc();
-        document.getElementById('previewOfficerHero').src = officerHeroSrc();
-
-        document.getElementById('officerReplaceList').innerHTML = mergedOfficers().map((o, i) => `
-            <div class="officer-replace-card">
-                <div class="thumb-row">
-                    <img id="officerThumb_${i}" src="${o.img}" alt="${escapeHtml(o.name)}">
-                    <input type="file" id="officerFile_${i}" accept="image/*" onchange="previewAssetFile('officerFile_${i}','officerThumb_${i}')" style="flex:1;">
-                </div>
-                <input type="text" id="officerName_${i}" value="${escapeHtml(o.name)}" placeholder="Name">
-                <input type="text" id="officerRole_${i}" value="${escapeHtml(o.role)}" placeholder="Role">
-                <div class="replace-btns">
-                    <button class="btn sm" onclick="adminSaveOfficerReplace(${i})">Save</button>
-                    <button class="btn ghost sm" onclick="adminResetOfficerPhoto(${i})">Reset photo</button>
-                </div>
-            </div>`).join('');
-    }
-
-    async function adminSaveOfficerReplace(index) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        const name = document.getElementById(`officerName_${index}`).value.trim();
-        const role = document.getElementById(`officerRole_${index}`).value.trim();
-        const fileInput = document.getElementById(`officerFile_${index}`);
-        const dataUrl = fileInput.files && fileInput.files[0] ? await readFileAsBase64(fileInput.files[0]) : null;
-        const res = await fetch('/api/admin/site-content/officer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index, name, role, dataUrl }) });
-        if (res.ok) { fileInput.value = ''; await fetchSiteContent(); toast('Officer updated'); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function adminResetOfficerPhoto(index) {
-        if (adminRole !== 'full') return toast('Full admin only', true);
-        if (!confirm("Reset this officer's photo to the original?")) return;
-        const res = await fetch('/api/admin/site-content/officer-photo-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index }) });
-        if (res.ok) { await fetchSiteContent(); toast('Photo reset'); }
-        else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function adminAddAssignment() {
-        if (!adminRole) return toast('Log in as admin first', true);
-        const date = document.getElementById('adminAssignDate').value;
-        const title = document.getElementById('adminAssignTitle').value.trim();
-        const content = document.getElementById('adminAssignContent').value.trim();
-        if (!date) return toast('Pick a date', true);
-        if (!title) return toast('Enter a title', true);
-        const f = await pickFile('adminAssignFile');
-        const res = await fetch('/api/admin/add-assignment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, date, content, ...f, createdBy: currentStudentName || 'Admin' }) });
-        if (res.ok) {
-            ['adminAssignTitle','adminAssignDate','adminAssignContent','adminAssignFile'].forEach(id => document.getElementById(id).value = '');
-            await fetchData(); toast('Assignment added');
-        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function adminAddOther() {
-        if (!adminRole) return toast('Log in as admin first', true);
-        const text = document.getElementById('adminOtherText').value.trim();
-        if (!text) return toast('Enter some text', true);
-        const f = await pickFile('adminOtherFile');
-        const res = await fetch('/api/admin/add-other', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, ...f, createdBy: currentStudentName || 'Admin' }) });
-        if (res.ok) {
-            document.getElementById('adminOtherText').value = '';
-            document.getElementById('adminOtherFile').value = '';
-            await fetchData(); toast('Post added');
-        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    async function adminAddAnnounce() {
-        if (!adminRole) return toast('Log in as admin first', true);
-        const text = document.getElementById('adminAnnounceText').value.trim();
-        if (!text) return toast('Enter some text', true);
-        const f = await pickFile('adminAnnounceFile');
-        const res = await fetch('/api/admin/add-today', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, ...f, createdBy: currentStudentName || 'Admin' }) });
-        if (res.ok) {
-            document.getElementById('adminAnnounceText').value = '';
-            document.getElementById('adminAnnounceFile').value = '';
-            await fetchData(); toast('Announcement added');
-        } else { const err = await res.json(); toast(err.error || 'Failed', true); }
-    }
-
-    // ---------- Admin lists ----------
-    function renderAdminList(tabId) {
-        const container = document.getElementById({
-            'admin-assignments': 'adminAssignList',
-            'admin-others': 'adminOthersList',
-            'admin-announcements': 'adminAnnList',
-            'admin-points': 'adminPointsList',
-            'admin-monitor': 'monitorList',
-            'admin-offenses': 'offenseList'
-        }[tabId]);
-        if (!container) return;
-
-        if (tabId === 'admin-assignments') {
-            const dates = Object.keys(assignments).sort();
-            container.innerHTML = dates.length === 0 ? '<div class="empty">No assignments yet.</div>' :
-                dates.map(date => assignments[date].map((item, idx) => `<div class="list-card">
-                    <div class="card-head"><div><strong>${escapeHtml(item.title)}</strong><div class="meta">${date}</div></div>
-                    <button class="btn red sm" onclick="deleteAssign('${date}', ${idx})">Delete</button></div>
-                    ${fileLink(item)}</div>`).join('')).join('');
-        } else if (tabId === 'admin-others') {
-            container.innerHTML = othersAnnounce.length === 0 ? '<div class="empty">Nothing here yet.</div>' :
-                othersAnnounce.map((t, i) => `<div class="list-card"><div class="card-head"><div class="body-text">${escapeHtml(t.text)}</div>
-                    <button class="btn red sm" onclick="deleteOther(${i})">Delete</button></div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
-        } else if (tabId === 'admin-announcements') {
-            container.innerHTML = todayAnnounce.length === 0 ? '<div class="empty">Nothing here yet.</div>' :
-                todayAnnounce.map((t, i) => `<div class="list-card"><div class="card-head"><div class="body-text">${escapeHtml(t.text)}</div>
-                    <button class="btn red sm" onclick="deleteToday(${i})">Delete</button></div>${fileLink(t)}<div class="meta">${fmtDate(t.date)}</div></div>`).join('');
-        } else if (tabId === 'admin-points') {
-            const sorted = [...points].sort((a, b) => b.points - a.points);
-            container.innerHTML = sorted.length === 0 ? '' : `<h4 style="font-family:'Outfit'; margin:6px 0 10px;">Current standings</h4><div class="table-scroll"><table class="data-table">
-                <thead><tr><th>Student</th><th>Points</th><th>Last update</th></tr></thead><tbody>` +
-                sorted.map(p => `<tr><td>${escapeHtml(p.studentName)}</td><td style="font-weight:700;">${p.points}</td>
-                    <td style="color:var(--muted); font-size:0.82rem;">${p.history.length ? fmtDate(p.history[p.history.length-1].timestamp) : 'No updates'}</td></tr>`).join('') +
-                '</tbody></table></div>';
-        } else if (tabId === 'admin-monitor') {
-            container.innerHTML = points.length === 0 ? '<div class="empty">No point records yet.</div>' :
-                points.map(p => `<div class="list-card" style="cursor:pointer; border-left-color:var(--gold);" onclick="toggleMonitorDetails('${p._id}')">
-                    <div class="card-head"><div><strong>${escapeHtml(p.studentName)}</strong><div class="meta">Tap for history</div></div>
-                    <div style="font-family:'Outfit'; font-size:1.3rem; font-weight:800; color:var(--gold);">${p.points}</div></div>
-                    <div id="monitor-details-${p._id}" style="display:none; margin-top:10px;"></div></div>`).join('');
-        } else if (tabId === 'admin-offenses') {
-            container.innerHTML = offenses.length === 0 ? '<div class="empty">No offense types yet. Add one in the Points tab.</div>' :
-                offenses.map((offense, idx) => {
-                    const students = points.filter(p => p.history.some(h => h.reason === offense.name));
-                    return `<div class="offense-row" onclick="toggleOffenseDetails(${idx})">
-                        <div class="card-head"><div><h4>${escapeHtml(offense.name)}</h4>
-                        <div class="meta" style="font-size:0.8rem; color:var(--muted);">${students.length} student${students.length === 1 ? '' : 's'}</div></div>
-                        <button class="btn red sm" onclick="event.stopPropagation(); deleteOffense('${offense._id}')">Remove</button></div>
-                        <div id="offense-details-${idx}" style="display:none; margin-top:10px;"></div></div>`;
-                }).join('');
+        function checkColor(e) {
+            if(e.dataset.color === target.style.background) { score++; document.getElementById('gameScore').innerText = score; newRound(); }
         }
-    }
+        newRound();
 
-    function toggleMonitorDetails(id) {
-        const details = document.getElementById('monitor-details-' + id);
-        const point = points.find(p => p._id === id);
-        if (details.style.display === 'none') {
-            const h = point.history;
-            details.innerHTML = h.length
-                ? h.map(x => `<div class="sub-entry ${x.change > 0 ? 'up' : 'down'}"><strong>${x.change > 0 ? '+' : ''}${x.change}</strong>${x.reason && x.reason !== 'No reason' ? ` · ${escapeHtml(x.reason)}` : ''}<div style="margin-top:4px;">${escapeHtml(x.message)}</div><div style="font-size:0.72rem; color:var(--muted); margin-top:4px;">${fmtDate(x.timestamp)}</div></div>`).join('')
-                : '<p style="color:var(--muted); font-size:0.85rem;">No history yet.</p>';
-            details.style.display = 'block';
-        } else details.style.display = 'none';
-    }
-
-    function toggleOffenseDetails(idx) {
-        const details = document.getElementById('offense-details-' + idx);
-        const offense = offenses[idx];
-        const students = points.filter(p => p.history.some(h => h.reason === offense.name));
-        if (details.style.display === 'none') {
-            details.innerHTML = students.length
-                ? students.map(s => {
-                    const own = s.history.filter(h => h.reason === offense.name);
-                    return `<div class="sub-entry down"><strong>${escapeHtml(s.studentName)}</strong> · ${s.points}/15` +
-                        own.map(h => `<div style="margin-top:4px;">${h.change > 0 ? '+' : ''}${h.change} · ${escapeHtml(h.message)}<div style="font-size:0.72rem; color:var(--muted);">${fmtDate(h.timestamp)}</div></div>`).join('') +
-                        '</div>';
-                }).join('')
-                : '<p style="color:var(--muted); font-size:0.85rem;">No one has this offense.</p>';
-            details.style.display = 'block';
-        } else details.style.display = 'none';
-    }
-
-    async function deleteOffense(id) {
-        if (!confirm('Remove this offense type?')) return;
-        const res = await fetch(`/api/admin/delete-offense/${id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); renderAdminList('admin-offenses'); toast('Offense removed'); } else toast('Failed', true);
-    }
-
-    async function deleteAssign(date, idx) {
-        if (!confirm('Delete this assignment?')) return;
-        const res = await fetch(`/api/admin/delete-assignment/${assignments[date][idx].id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); renderAdminList('admin-assignments'); toast('Deleted'); } else toast('Failed', true);
-    }
-
-    async function deleteOther(idx) {
-        if (!confirm('Delete this post?')) return;
-        const res = await fetch(`/api/admin/delete-other/${othersAnnounce[idx].id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); renderAdminList('admin-others'); toast('Deleted'); } else toast('Failed', true);
-    }
-
-    async function deleteToday(idx) {
-        if (!confirm('Delete this announcement?')) return;
-        const res = await fetch(`/api/admin/delete-today/${todayAnnounce[idx].id}`, { method: 'DELETE' });
-        if (res.ok) { await fetchData(); renderAdminList('admin-announcements'); toast('Deleted'); } else toast('Failed', true);
-    }
-
-    setInterval(() => { if (document.visibilityState === 'visible') fetchData(); }, 5000);
-
-    renderOfficers();
-    fetchSiteContent();
-    fetchData();
-</script>
+        fetchData();
+    </script>
 </body>
 </html>

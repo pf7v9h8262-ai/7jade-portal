@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -55,6 +56,20 @@ function normalizeAnswer(s) {
 function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+// ---------------------------------------------------------------
+// Points access rules
+//  - Sophia Alpe gets a points-only admin tab and may ONLY deduct points,
+//    and ONLY from the two protected students below.
+//  - The full admin (Redamber_1221 / Charissa Morga) can never add, deduct
+//    or view the points of the protected students.
+//  - The protected students cannot open their own My Points tab.
+// ---------------------------------------------------------------
+const POINTS_ADMIN_NAME = "ALPE, SOPHIA ELLEN ROSALES";
+const PROTECTED_NAMES = ["ALVAREZ, RED XANDER LOZANO", "MIRASOL, ATHENA THERESE CUERDO"];
+const PROTECTED_KEYS = new Set(PROTECTED_NAMES.map(normalizeName));
+function isProtected(name) { return PROTECTED_KEYS.has(normalizeName(name)); }
+const PROTECTED_REGEXES = PROTECTED_NAMES.map(n => new RegExp('^' + escapeRegex(normalizeName(n)) + '$', 'i'));
 
 const AssignmentSchema = new mongoose.Schema({
     title: String,
@@ -212,7 +227,37 @@ async function getSiteContent() {
     return doc;
 }
 
-let adminSession = { role: null };
+// Per-user sessions (the old single shared login state let one person's
+// login change everybody else's permissions).
+const sessions = new Map();
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+
+function newSession() {
+    const now = Date.now();
+    for (const [t, sess] of sessions) if (now - sess.created > SESSION_TTL_MS) sessions.delete(t);
+    const token = crypto.randomBytes(24).toString('hex');
+    const sess = { role: null, name: null, pointsAdmin: false, created: now };
+    sessions.set(token, sess);
+    return { token, sess };
+}
+
+app.use((req, res, next) => {
+    const token = req.get('x-auth-token');
+    req.token = token || null;
+    req.auth = (token && sessions.get(token)) || { role: null, name: null, pointsAdmin: false };
+    next();
+});
+
+// Returns an error string if this user may not apply `change` to `studentName`.
+function pointsAccessError(req, studentName, change) {
+    if (isProtected(studentName)) {
+        if (!req.auth.pointsAdmin) return "You don't have access to this student's points.";
+        if (!(change < 0)) return "You can only deduct points from this student.";
+        return null;
+    }
+    if (req.auth.role !== 'full') return "Unauthorized. Only full admin can update points.";
+    return null;
+}
 
 app.get('/api/data', async (req, res) => {
     try {
@@ -228,7 +273,17 @@ app.get('/api/data', async (req, res) => {
             DailyQuestion.find().lean(),
             DailyResponse.find().lean()
         ]);
-        res.json({ assignments, others, today, points, offenses, walkoffame, gallery, meetMembers, dailyQuestions, dailyResponses });
+        // Protected students' points are only visible to the points admin.
+        const seesProtected = !!req.auth.pointsAdmin;
+        const seesOthers = !req.auth.pointsAdmin || req.auth.role === 'full';
+        const visible = r => isProtected(r.studentName) ? seesProtected : seesOthers;
+        res.json({
+            assignments, others, today,
+            points: points.filter(visible),
+            offenses,
+            walkoffame: walkoffame.filter(visible),
+            gallery, meetMembers, dailyQuestions, dailyResponses
+        });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
@@ -239,33 +294,33 @@ app.post('/api/verify', (req, res) => {
     if (section !== "7-Jade") return res.json({ success: false, message: "Only 7-Jade" });
     const found = JADE_ROSTER.some(s => normalizeName(s) === normalizeName(name));
     if (found) {
-        if (normalizeName(name) === "MORGA, CHARISSA ENCISO") {
-            adminSession.role = 'full';
-        } else {
-            adminSession.role = null;
-        }
-        return res.json({ success: true, message: "Verified!" });
+        const { token, sess } = newSession();
+        sess.name = normalizeName(name);
+        sess.role = sess.name === normalizeName("MORGA, CHARISSA ENCISO") ? 'full' : null;
+        sess.pointsAdmin = sess.name === normalizeName(POINTS_ADMIN_NAME);
+        return res.json({ success: true, message: "Verified!", token, role: sess.role, pointsAdmin: sess.pointsAdmin });
     }
     return res.json({ success: false, message: "Name not found. Check spelling (Ñ, ñ, special chars)." });
 });
 
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
-    if (password === '1221') {
-        adminSession.role = 'content';
-        return res.json({ success: true, role: 'content' });
-    } else if (password === 'Redamber_1221') {
-        adminSession.role = 'full';
-        return res.json({ success: true, role: 'full' });
-    } else {
-        return res.status(401).json({ error: "Invalid password" });
-    }
+    let role = null;
+    if (password === '1221') role = 'content';
+    else if (password === 'Redamber_1221') role = 'full';
+    else return res.status(401).json({ error: "Invalid password" });
+
+    let token = req.token;
+    let sess = token && sessions.get(token);
+    if (!sess) ({ token, sess } = newSession());
+    sess.role = role;
+    return res.json({ success: true, role, token });
 });
 
 // ✅ ADD ASSIGNMENT (Base64 file)
 app.post('/api/admin/add-assignment', async (req, res) => {
     try {
-        if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
+        if (!req.auth.role) return res.status(401).json({ error: "Not logged in" });
         const { title, date, content, fileData, fileName, fileType, createdBy } = req.body;
         if (!title || !date) return res.status(400).json({ error: "Title & Date required" });
         const newAssignment = new Assignment({
@@ -288,7 +343,7 @@ app.post('/api/admin/add-assignment', async (req, res) => {
 // ✅ ADD OTHER (Base64 file)
 app.post('/api/admin/add-other', async (req, res) => {
     try {
-        if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
+        if (!req.auth.role) return res.status(401).json({ error: "Not logged in" });
         const { text, fileData, fileName, fileType, createdBy } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
         const newOther = new Other({
@@ -309,7 +364,7 @@ app.post('/api/admin/add-other', async (req, res) => {
 // ✅ ADD TODAY ANNOUNCEMENT (Base64 file)
 app.post('/api/admin/add-today', async (req, res) => {
     try {
-        if (!adminSession.role) return res.status(401).json({ error: "Not logged in" });
+        if (!req.auth.role) return res.status(401).json({ error: "Not logged in" });
         const { text, fileData, fileName, fileType, createdBy } = req.body;
         if (!text) return res.status(400).json({ error: "Text required" });
         const newToday = new Today({
@@ -353,11 +408,12 @@ async function applyPointChange(studentName, decimalChange, message, reason) {
 
 app.post('/api/admin/update-points', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
         const { studentName, change, message, reason } = req.body;
         if (!studentName || !change) return res.status(400).json({ error: "Student name and change amount required" });
         const decimalChange = parseFloat(change);
         if (isNaN(decimalChange)) return res.status(400).json({ error: "Invalid change amount" });
+        const denied = pointsAccessError(req, studentName, decimalChange);
+        if (denied) return res.status(403).json({ error: denied });
         const pointDoc = await applyPointChange(studentName, decimalChange, message, reason);
         res.json({ success: true, points: pointDoc.points });
     } catch (error) {
@@ -368,13 +424,17 @@ app.post('/api/admin/update-points', async (req, res) => {
 // Give the same offense / point change to many students at once
 app.post('/api/admin/update-points-bulk', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can update points." });
         const { studentNames, change, message, reason } = req.body;
         if (!Array.isArray(studentNames) || studentNames.length === 0) {
             return res.status(400).json({ error: "Pick at least one student" });
         }
         const decimalChange = parseFloat(change);
         if (isNaN(decimalChange) || decimalChange === 0) return res.status(400).json({ error: "Invalid change amount" });
+        // Check everyone first so a denied name means nothing gets applied.
+        for (const n of studentNames) {
+            const denied = pointsAccessError(req, n, decimalChange);
+            if (denied) return res.status(403).json({ error: denied });
+        }
 
         const updated = [];
         const failed = [];
@@ -394,7 +454,7 @@ app.post('/api/admin/update-points-bulk', async (req, res) => {
 
 app.post('/api/admin/add-offense', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can add offenses." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can add offenses." });
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: "Offense name required" });
         const newOffense = new Offense({ name });
@@ -407,11 +467,12 @@ app.post('/api/admin/add-offense', async (req, res) => {
 
 app.post('/api/admin/reset-all-points', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can reset points." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can reset points." });
         const { newPoints } = req.body;
         const resetValue = parseInt(newPoints) || 15;
-        await Point.updateMany({}, { points: resetValue, history: [] });
+        await Point.updateMany({ studentName: { $nin: PROTECTED_REGEXES } }, { points: resetValue, history: [] });
         for (const studentName of JADE_ROSTER) {
+            if (isProtected(studentName)) continue;
             const existing = await Point.findOne({
                 studentName: { $regex: new RegExp('^' + escapeRegex(normalizeName(studentName)) + '$', 'i') }
             });
@@ -429,9 +490,10 @@ app.post('/api/admin/reset-all-points', async (req, res) => {
 // Walk Of Fame entries (full admin only)
 app.post('/api/admin/add-walkoffame', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit the Walk Of Fame." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit the Walk Of Fame." });
         const { studentName, points, category, note, createdBy } = req.body;
         if (!studentName) return res.status(400).json({ error: "Student name required" });
+        if (isProtected(studentName)) return res.status(403).json({ error: "You don't have access to this student's points." });
         if (category !== 'highest' && category !== 'lowest') return res.status(400).json({ error: "Category must be highest or lowest" });
         const parsedPoints = parseFloat(points);
         if (isNaN(parsedPoints)) return res.status(400).json({ error: "Points required" });
@@ -451,14 +513,14 @@ app.post('/api/admin/add-walkoffame', async (req, res) => {
 });
 
 app.delete('/api/admin/delete-walkoffame/:id', async (req, res) => {
-    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit the Walk Of Fame." });
+    if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit the Walk Of Fame." });
     await WalkOfFame.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
 app.post('/api/admin/clear-walkoffame', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit the Walk Of Fame." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit the Walk Of Fame." });
         const { category } = req.body;
         if (category === 'highest' || category === 'lowest') {
             await WalkOfFame.deleteMany({ category });
@@ -485,7 +547,7 @@ const ASSET_KEYS = ['logo', 'hero', 'officerHero'];
 
 app.post('/api/admin/site-content/asset', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace site images." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace site images." });
         const { key, dataUrl } = req.body;
         if (!ASSET_KEYS.includes(key)) return res.status(400).json({ error: "Unknown asset key" });
         if (!dataUrl) return res.status(400).json({ error: "No file received" });
@@ -500,7 +562,7 @@ app.post('/api/admin/site-content/asset', async (req, res) => {
 
 app.post('/api/admin/site-content/asset-reset', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace site images." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace site images." });
         const { key } = req.body;
         if (!ASSET_KEYS.includes(key)) return res.status(400).json({ error: "Unknown asset key" });
         const doc = await getSiteContent();
@@ -514,7 +576,7 @@ app.post('/api/admin/site-content/asset-reset', async (req, res) => {
 
 app.post('/api/admin/site-content/officer', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace officers." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace officers." });
         const { index, name, role, dataUrl } = req.body;
         const i = parseInt(index);
         const doc = await getSiteContent();
@@ -532,7 +594,7 @@ app.post('/api/admin/site-content/officer', async (req, res) => {
 
 app.post('/api/admin/site-content/officer-photo-reset', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace officers." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can replace officers." });
         const { index } = req.body;
         const i = parseInt(index);
         const doc = await getSiteContent();
@@ -568,7 +630,7 @@ app.post('/api/gallery/add', async (req, res) => {
 });
 
 app.delete('/api/admin/delete-gallery/:id', async (req, res) => {
-    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete gallery posts." });
+    if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete gallery posts." });
     await GalleryPost.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
@@ -576,7 +638,7 @@ app.delete('/api/admin/delete-gallery/:id', async (req, res) => {
 // ✅ NEW: Meet 7-Jade — full admin manages the adviser + boys/girls roster.
 app.post('/api/admin/meet/add', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
         const { name, photo, role } = req.body;
         if (!name) return res.status(400).json({ error: "Name required" });
         if (!['adviser', 'boy', 'girl'].includes(role)) return res.status(400).json({ error: "Invalid role" });
@@ -591,7 +653,7 @@ app.post('/api/admin/meet/add', async (req, res) => {
 
 app.post('/api/admin/meet/update', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
         const { id, name, role, photo } = req.body;
         if (!id) return res.status(400).json({ error: "Missing id" });
         const update = {};
@@ -606,7 +668,7 @@ app.post('/api/admin/meet/update', async (req, res) => {
 });
 
 app.delete('/api/admin/meet/delete/:id', async (req, res) => {
-    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
+    if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can edit Meet 7-Jade." });
     await MeetMember.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
@@ -615,7 +677,7 @@ app.delete('/api/admin/meet/delete/:id', async (req, res) => {
 // students submit one answer each; full admin reviews & deletes responses.
 app.post('/api/admin/daily/add-question', async (req, res) => {
     try {
-        if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can add questions." });
+        if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can add questions." });
         const { question, correctAnswer, createdBy } = req.body;
         if (!question) return res.status(400).json({ error: "Question required" });
         if (!correctAnswer) return res.status(400).json({ error: "Correct answer required" });
@@ -628,7 +690,7 @@ app.post('/api/admin/daily/add-question', async (req, res) => {
 });
 
 app.delete('/api/admin/daily/delete-question/:id', async (req, res) => {
-    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete questions." });
+    if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete questions." });
     await DailyQuestion.findByIdAndDelete(req.params.id);
     await DailyResponse.deleteMany({ questionId: req.params.id });
     res.json({ success: true });
@@ -661,13 +723,14 @@ app.post('/api/daily/answer', async (req, res) => {
 });
 
 app.delete('/api/admin/daily/delete-response/:id', async (req, res) => {
-    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete responses." });
+    if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete responses." });
     await DailyResponse.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
 app.post('/api/points/my', async (req, res) => {
     const { studentName } = req.body;
+    if (isProtected(studentName)) return res.status(403).json({ error: "Points are not available for this student." });
     const myPoints = await Point.findOne({
         studentName: { $regex: new RegExp('^' + escapeRegex(normalizeName(studentName)) + '$', 'i') }
     }).lean();
@@ -690,12 +753,15 @@ app.delete('/api/admin/delete-today/:id', async (req, res) => {
 });
 
 app.delete('/api/admin/delete-point/:id', async (req, res) => {
+    if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete point records." });
+    const doc = await Point.findById(req.params.id);
+    if (doc && isProtected(doc.studentName)) return res.status(403).json({ error: "You don't have access to this student's points." });
     await Point.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
 app.delete('/api/admin/delete-offense/:id', async (req, res) => {
-    if (adminSession.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete offenses." });
+    if (req.auth.role !== 'full') return res.status(401).json({ error: "Unauthorized. Only full admin can delete offenses." });
     await Offense.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
